@@ -15,14 +15,25 @@ class IsFriendsWith(models.Model):
         related_name='user2'
     )
 
-    def save(self, *args, **kwargs):
+    def clean(self):
+        """
+        Validation to prevent duplicate entries and blocked friends
+        """
+        if IsBlockedBy.objects.filter(
+            Q(blocker=self.user1, blocked=self.user2) |
+            Q(blocker=self.user2, blocked=self.user1)
+        ).exists():
+            raise ValidationError(
+                "Unable to add someone who you blocked or has you blocked"
+            )
         if IsFriendsWith.objects.filter(
                 user1=self.user2, user2=self.user1
         ).exists():
-            # Friendship already exists, don't create a duplicate entry
-            pass
-        else:
-            super().save(*args, **kwargs)
+            raise ValidationError("Friendship already exists")
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        super().save(*args, **kwargs)
 
     class Meta:
         constraints = [
@@ -48,6 +59,14 @@ class IsBlockedBy(models.Model):
         on_delete=models.CASCADE,
         related_name='blocked_by'
     )
+
+    def save(self, *args, **kwargs):
+        friendship = IsFriendsWith.objects.filter(
+            user1=self.blocker, user2=self.blocked
+        )
+        if friendship.exists():
+            friendship[0].delete()
+        super().save(*args, **kwargs)
 
     class Meta:
         constraints = [
@@ -78,6 +97,13 @@ class FriendInvite(models.Model):
         """
         Custom validation to prevent sending invites to friends.
         """
+        if IsBlockedBy.objects.filter(
+            Q(blocker=self.sender, blocked=self.receiver) |
+            Q(blocked=self.receiver, blocker=self.sender)
+        ).exists():
+            raise ValidationError(
+                "Unable to add someone who you blocked or has you blocked"
+            )
         if IsFriendsWith.objects.filter(
             Q(user1=self.sender, user2=self.receiver) |
             Q(user1=self.receiver, user2=self.sender)
@@ -88,14 +114,14 @@ class FriendInvite(models.Model):
 
     def save(self, *args, **kwargs):
         """
-        Overridden save method to enforce validation and superclass save.
+        Overridden save method to enforce validation
         """
         self.clean()
         invite = FriendInvite.objects.filter(
             sender=self.receiver, receiver=self.sender
         )
         if invite.exists():
-            invite[0].accept()
+            invite[0].respond(accepted=True)
         else:
             super().save(*args, **kwargs)
 

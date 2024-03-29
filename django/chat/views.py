@@ -2,6 +2,7 @@ from django.template import loader
 from django.http import HttpResponse
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
+from django.http import HttpResponseForbidden
 
 from user.models import User
 import chat.models as models
@@ -22,8 +23,13 @@ def chatList(request):
 def chatRoom(request, id):
     chat = get_object_or_404(models.Chat, pk=id)
     if chat.starter != request.user and chat.receiver != request.user:
-        return HttpResponse(status_code=403)
+        return HttpResponseForbidden('Not your chat')
+    other_user = chat.receiver if chat.starter == request.user else chat.starter
+    if other_user in request.user.get_blocks():
+        return HttpResponseForbidden('This user was blocked')
     if request.method == 'POST':
+        if request.user in other_user.get_blocks():
+            return HttpResponseForbidden('This user blocked you')
         content = request.POST.get('content')
         try:
             message = models.Message(

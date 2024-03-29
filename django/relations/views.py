@@ -31,6 +31,12 @@ def friendInvitesReceived(request):
     return HttpResponse(template.render(context, request))
 
 
+def blocklist(request):
+    template = loader.get_template("relations/blocklist.html")
+    context = {}
+    return HttpResponse(template.render(context, request))
+
+
 def sendFriendInvites(request):
     if request.method == 'POST':
         name = request.POST.get('username')
@@ -42,8 +48,27 @@ def sendFriendInvites(request):
             request.user.add_friend(user)
             # add 201 response that is not rendered on the front end
         except Exception as e:
+            # add 40x response that is not rendered on the front end
             return HttpResponse(e)
     template = loader.get_template("relations/send_invites.html")
+    context = {}
+    return HttpResponse(template.render(context, request))
+
+
+def blockUser(request):
+    if request.method == 'POST':
+        name = request.POST.get('username')
+        user = get_object_or_404(
+            User,
+            username=name,
+        )
+        try:
+            request.user.block_user(user)
+            # add 201 response that is not rendered on the front end
+        except Exception as e:
+            # add 40x response that is not rendered on the front end
+            return HttpResponse(e)
+    template = loader.get_template("relations/block_user.html")
     context = {}
     return HttpResponse(template.render(context, request))
 
@@ -59,6 +84,19 @@ def excludeFriend(request, user_id):
         except Exception as e:
             return HttpResponse(e)
     return redirect('friendList')
+
+
+def unblockUser(request, user_id):
+    if request.method == 'POST':
+        user = get_object_or_404(
+            User,
+            pk=user_id,
+        )
+        try:
+            request.user.unblock_user(user)
+        except Exception as e:
+            return HttpResponse(e)
+    return redirect('blockList')
 
 
 def respondFriendInvite(request, invite_id):

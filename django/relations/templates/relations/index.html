@@ -25,7 +25,9 @@
     <button onclick="render('{% url 'sendFriendInvites' %}')">
       Add friends
     </button>
+    <button onclick="render('{% url 'blockUser' %}')">Block Users</button>
     <button onclick="render('{% url 'friendList' %}')">Friendlist</button>
+    <button onclick="render('{% url 'blockList' %}')">Blocklist</button>
   </div>
   <div id="friends-rendered-data"></div>
   {% else %}
