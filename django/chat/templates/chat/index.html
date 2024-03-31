@@ -17,7 +17,7 @@
       <ul class="chatList-ul">
         {% for chat in user.get_chats %}
         {% if user == chat.starter %}
-        <button id="{{ chat.id }}" onclick="render('{% url 'chatRoom' id=chat.id %}')">
+        <button id="{{ chat.id }}" class="chatOption" onclick="render('{% url 'chatRoom' id=chat.id %}')">
           {{chat.receiver.username}}</button>
         {% else %}
         <button onclick="render('{% url 'chatRoom' id=chat.id %}')"> {{ chat.starter.username}} </button>
@@ -104,5 +104,25 @@
       }
       return url;
     }
+    function monitorarCliques() {
+      // Seleciona todas as divs com a classe específica
+      var divsEspecificas = document.querySelectorAll('.chatOption');
+
+      // Adiciona evento de clique a cada div
+      divsEspecificas.forEach(function (div) {
+        div.addEventListener('click', function () {
+          // Remove a classe de todas as divs com a classe específica
+          divsEspecificas.forEach(function (div) {
+            div.classList.remove('selected');
+          });
+
+          // Adiciona a classe à div clicada
+          this.classList.add('selected');
+        });
+      });
+    }
+
+    // Chame a função para começar a monitorar os cliques
+    monitorarCliques();
   </script>
 </body>

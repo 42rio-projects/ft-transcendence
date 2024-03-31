@@ -33,7 +33,7 @@ a {
   justify-content: flex-end;
 	margin-right: 10px;
   height: 100vh;
-  background-color: green;
+  background-color: blue;
   position: relative;
 }
 
@@ -47,6 +47,14 @@ a {
   flex-direction: column;
   align-items: stretch;
 }
+/* 
+.chatSelected {
+  background-color: green;
+  border-radius: 10px;
+  padding: 10px;
+  margin: 10px;
+  cursor: pointer;
+} */
 
 .chat-input {
   background-color: #345;
@@ -55,7 +63,6 @@ a {
   border-radius: 1px;
   flex-grow: 1;
   outline: none;
-  color: #f2f2f2;
   font-size: 1rem;
  }
 
@@ -67,11 +74,19 @@ a {
 	align-items: stretch;
 	margin-top: 1%;
 	margin-bottom: 1%;
+  background-color: transparent;
+}
+
+.chatOption {
+  background-color: transparent;
+}
+
+.chatOption.selected {
+  background-color: #f2f2f2;
 }
 
 .chatList-ul button {
   margin: 1%;
-	background: none;
 	text-decoration: none;
 	border: none;
 	width: 100%;
@@ -141,8 +156,8 @@ a {
   flex-direction: column;
   justify-content: flex-end;
   height: 100%;
-  margin-bottom: 10%;
-
+  margin-bottom: 3%;
+  overflow: auto;
 }
 
 .renderChat > p {
