@@ -66,6 +66,30 @@ a {
   font-size: 1rem;
  }
 
+.embranceForms {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  background-color: #0a0a0a;
+  border-radius: 1px;
+  margin-top: 10px;
+}
+
+.inviteToPlay {
+  background-color: rgb(85, 51, 51);
+  flex: 0 0 10%;
+  padding: 1%;
+  text-align: center;
+  cursor: pointer;
+}
+.inviteToPlay:hover {
+  background-color: rgb(192, 12, 6);
+  border: 2px solid #f2f2f2;
+  animation: pulse 1s infinite;
+}
+
+
 /* chat direita list */
 
 .chatList-ul {
@@ -128,6 +152,7 @@ a {
   /* width: 100%; */
   position: sticky;
   bottom:0;
+  flex: 1;
  }
 
  .input-button {

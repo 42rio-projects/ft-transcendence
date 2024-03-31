@@ -20,7 +20,7 @@
         <button id="{{ chat.id }}" class="chatOption" onclick="render('{% url 'chatRoom' id=chat.id %}')">
           {{chat.receiver.username}}</button>
         {% else %}
-        <button onclick="render('{% url 'chatRoom' id=chat.id %}')"> {{ chat.starter.username}} </button>
+        <button id="{{ chat.id }}" class="chatOption" onclick="render('{% url 'chatRoom' id=chat.id %}')"> {{ chat.starter.username}} </button>
         {% endif %} {% endfor %}
       </ul>
       <button class="startChatBtn" onclick="render('{% url 'startChat' %}')">start new chat</button>

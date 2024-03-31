@@ -1,5 +1,6 @@
+from django.forms import ValidationError
 from django.template import loader
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseBadRequest
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 
@@ -48,6 +49,8 @@ def startChat(request):
         try:
             models.Chat(starter=request.user, receiver=user).save()
             # add 201 response that is not rendered on the front end
+        # except ValidationError as e:
+            # return HttpResponse(e)
         except Exception as e:
             return HttpResponse(e)
     template = loader.get_template("chat/start_chat.html")
