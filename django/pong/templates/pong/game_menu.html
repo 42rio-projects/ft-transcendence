@@ -1,0 +1,74 @@
+<!doctype html>
+<head>
+  <style>
+    .menuDiv {
+      display: flex;
+      justify-content: center;
+      gap: 5px;
+    }
+    .verticalDiv {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+  </style>
+</head>
+<body>
+  {% if user.is_authenticated %}
+  <div id="friends-menu" class="verticalDiv">
+    <button onclick="render('{% url 'localGame' %}')">Local Game</button>
+    <button onclick="render('{% url 'onlineGame' %}')">Online Game</button>
+  </div>
+  <div id="game-data"></div>
+  {% else %}
+  <p>Welcome, new user. Please <a href="/">Login</a></p>
+  {% endif %} {% load static %}
+  <script src="{% static 'relations/js/statusWebSocket.js' %}"></script>
+  <script>
+    window.addEventListener("popstate", handlePopState);
+    history.replaceState(
+      { view: "{% url 'gameMenu' %}" },
+      "",
+      "{% url 'gameMenu' %}",
+    );
+
+    async function handlePopState(event) {
+      await render(event.state?.view, false, true);
+    }
+
+    function handleForm(event) {
+      event.preventDefault();
+
+      const form = event.target;
+      const data = new FormData(form);
+      const url = data.get("url");
+      fetch(url, {
+        method: form.method,
+        body: data,
+      })
+        .then((response) => response.text())
+        .then((data) => {
+          document.getElementById("friends-rendered-data").innerHTML = data;
+        });
+    }
+
+    async function render(url, setPushState = true, isPopState = false) {
+      console.log(url + " == " + window.location.pathname);
+      if (url == window.location.pathname && !isPopState) return;
+      if (url == "{% url 'friendsIndex' %}") {
+        url = "{% url 'friendList' %}";
+      }
+      fetch(url)
+        .then((response) => response.text())
+        .then((data) => {
+          document.getElementById("game-data").innerHTML = data;
+          if (setPushState) {
+            history.pushState({ view: url }, "", url);
+          }
+          if (url == "{% url 'friendList' %}") {
+            statusSocket.setInitialStatus();
+          }
+        });
+    }
+  </script>
+</body>
