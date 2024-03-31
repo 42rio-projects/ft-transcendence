@@ -33,7 +33,7 @@
   {% else %}
   <p>Welcome, new user. Please <a href="/">Login</a></p>
   {% endif %} {% load static %}
-  <script src="{% static 'user/js/statusWebSocket.js' %}"></script>
+  <script src="{% static 'relations/js/statusWebSocket.js' %}"></script>
   <script>
     window.addEventListener("popstate", handlePopState);
     history.replaceState(
