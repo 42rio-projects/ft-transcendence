@@ -1,0 +1,13 @@
+<div>
+  <h2>Blocklist</h2>
+  <ul id="Blocklist">
+    {% for user in user.get_blocks%}
+    <li>{{ user.username }}</li>
+    <form method="POST" onsubmit="handleForm(event)">
+      {% csrf_token %}
+      <button type="submit">Unblock</button>
+      <input type="hidden" name="url" value="{% url 'unblockUser' user.id %}" />
+    </form>
+    {% endfor %}
+  </ul>
+</div>

@@ -1,0 +1,12 @@
+<h2>Send Invite</h2>
+<form
+  method="post"
+  action="{% url 'sendFriendInvites' %}"
+  onsubmit="handleForm(event)"
+>
+  {% csrf_token %}
+  <label for="username">Username:</label>
+  <input type="text" name="username" id="username" required />
+  <input type="hidden" name="url" value="{% url 'sendFriendInvites' %}" />
+  <button type="submit">Submit</button>
+</form>

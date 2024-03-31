@@ -1,24 +1,21 @@
-import os
-from django.shortcuts import render, redirect
-from django.contrib import messages
-from django.contrib.auth import authenticate, login as django_login, logout as django_logout
-from .models import User
-from twilio.rest import Client
-from .forms import ChangePasswordForm
-from .forms import EmailChangeForm
-from django.contrib.auth import update_session_auth_hash
+from django.shortcuts import redirect
 from django.contrib.auth.decorators import login_required
-from .forms import UserProfileForm
-from django.http import HttpResponse
-from django.template import loader
-from django.shortcuts import get_object_or_404, redirect
-from django.core.exceptions import PermissionDenied
+from django.contrib.auth import update_session_auth_hash
+from twilio.rest import Client
+from django.contrib.auth import authenticate, login as django_login, logout as django_logout
+from django.contrib import messages
+from django.shortcuts import render
+import os
 
-import user.models as models
+from user.models import User
+from user.forms import EmailChangeForm
+from user.forms import ChangePasswordForm
+from user.forms import UserProfileForm
 
 SERVICE_SID = os.environ["TWILIO_SERVICE_SID"]
 ACCOUNT_SID = os.environ["TWILIO_ACCOUNT_SID"]
 AUTH_TOKEN = os.environ["TWILIO_AUTH_TOKEN"]
+
 
 def profile(request):
     if request.method == "GET":
@@ -78,10 +75,12 @@ def register(request):
     if request.method == "GET":
         return render(request, "register.html")
 
+
 @login_required
 def upload_avatar(request):
     if request.method == 'POST':
-        form = UserProfileForm(request.POST, request.FILES, instance=request.user)
+        form = UserProfileForm(
+            request.POST, request.FILES, instance=request.user)
         if form.is_valid():
             form.save()
     else:
@@ -94,7 +93,10 @@ def change_password(request):
         form = ChangePasswordForm(request.POST)
         email_verified = request.user.email_verified
         if not email_verified:
-            messages.error(request, "You must verify your email before changing your password")
+            messages.error(
+                request,
+                "You must verify your email before changing your password"
+            )
             return render(request, "change_password.html", {"form": form})
         if form.is_valid():
             user = request.user
@@ -105,7 +107,7 @@ def change_password(request):
                 user.save()
                 update_session_auth_hash(request, user)
                 messages.success(request, "Password changed successfully")
-            else :
+            else:
                 form.add_error('current_password', "Senha atual incorreta")
 
     if request.method == 'GET':
@@ -132,12 +134,16 @@ def email_change(request):
                 SERVICE_SID).verifications.create(to=newEmail, channel="email")
 
             if verification.status == "pending":
-                messages.success(request, f'Um código de verificação foi enviado para o email {newEmail}.')
+                messages.success(
+                    request,
+                    f'Um código de verificação foi enviado para o email {newEmail}.'
+                )
                 return render(request, "email_change_check_form.html")
 
         messages.error(request, 'Dados inválidos.')
         form = EmailChangeForm()
         return render(request, "email_change_form.html", {"form": form})
+
 
 def email_change_check(request):
 
@@ -156,6 +162,7 @@ def email_change_check(request):
 
     messages.error(request, 'Código de verificação inválido.')
     return render(request, "email_change_check_form.html")
+
 
 def logout(request):
     if request.method == "GET":
@@ -187,7 +194,8 @@ def edit_profile(request):
                 if User.objects.filter(email=email).exists():
                     messages.error(request, "Email already in use")
                 elif len(email) < 3:
-                    messages.error(request, "Email must be at least 3 characters")
+                    messages.error(
+                        request, "Email must be at least 3 characters")
                 else:
                     user.email = email
                     user.email_verified = False
@@ -196,12 +204,19 @@ def edit_profile(request):
 
         user.save()
 
-        return render(request, "edit_profile.html", {"username": user.username, "email": user.email})
+        return render(
+            request,
+            "edit_profile.html",
+            {"username": user.username, "email": user.email}
+        )
 
     if request.method == "GET":
-        return render(request, "edit_profile.html",
-                      {"username": request.user.username,
-                       "email": request.user.email})
+        return render(
+            request,
+            "edit_profile.html",
+            {"username": request.user.username, "email": request.user.email}
+        )
+
 
 def email_verify_code(request):
     if request.method == "GET":
@@ -241,87 +256,3 @@ def email_verify_check(request):
 
         messages.error(request, "Wrong verification code")
         return render(request, "email_verify_check_form.html")
-
-
-def friends(request):
-    template = loader.get_template('user/index.html')
-    context = {}
-    return HttpResponse(template.render(context, request))
-
-
-def friendlist(request):
-    template = loader.get_template("user/friendlist.html")
-    context = {}
-    return HttpResponse(template.render(context, request))
-
-
-def friendInvitesSent(request):
-    template = loader.get_template("user/invites_sent.html")
-    context = {}
-    return HttpResponse(template.render(context, request))
-
-
-def friendInvitesReceived(request):
-    template = loader.get_template("user/invites_received.html")
-    context = {}
-    return HttpResponse(template.render(context, request))
-
-
-def sendFriendInvites(request):
-    if request.method == 'POST':
-        name = request.POST.get('username')
-        user = get_object_or_404(
-            models.User,
-            username=name,
-        )
-        try:
-            request.user.add_friend(user)
-            # add 201 response that is not rendered on the front end
-        except Exception as e:
-            return HttpResponse(e)
-    template = loader.get_template("user/send_invites.html")
-    context = {}
-    return HttpResponse(template.render(context, request))
-
-
-def excludeFriend(request, user_id):
-    if request.method == 'POST':
-        user = get_object_or_404(
-            models.User,
-            pk=user_id,
-        )
-        try:
-            request.user.del_friend(user)
-        except Exception as e:
-            return HttpResponse(e)
-    return redirect('friendList')
-
-
-def respondFriendInvite(request, invite_id):
-    invite = get_object_or_404(
-        models.FriendInvite,
-        pk=invite_id,
-    )
-    if invite.receiver != request.user:
-        raise PermissionDenied
-    if request.method == 'POST':
-        action = request.POST.get('action')
-        if action == 'accept':
-            invite.respond(accepted=True)
-        elif action == 'reject':
-            invite.respond(accepted=False)
-        else:
-            raise Exception('Invalid action')
-    return redirect('friendInvitesReceived')
-
-
-def cancelFriendInvite(request, invite_id):
-    if request.method == 'POST':
-        invite = get_object_or_404(
-            models.FriendInvite,
-            pk=invite_id,
-        )
-        if invite.sender != request.user:
-            raise PermissionDenied
-        invite.delete()
-    return redirect('friendInvitesSent')

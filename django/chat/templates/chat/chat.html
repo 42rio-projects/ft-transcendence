@@ -1,0 +1,16 @@
+<div>
+  <div id="chat-messages">
+    {% for message in chat.messages.all %}
+    <div class="verticalDiv">
+      <p>{{ message.sender }}</p>
+      <p>{{ message.content }}</p>
+    </div>
+    {% endfor %}
+  </div>
+  <form method="post" onsubmit="messageSocket.sendMessage(event)">
+    {% csrf_token %}
+    <input type="text" name="content" id="content" required />
+    <input type="hidden" name="url" value="{% url 'chatRoom' id=chat.id %}" />
+    <button type="submit">Send</button>
+  </form>
+</div>

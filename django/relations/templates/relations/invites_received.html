@@ -1,0 +1,30 @@
+<h2>Invites Received</h2>
+<ul id="InvitesReceived">
+  {% for invite in user.friend_invites_received.all%}
+  <li>
+    {{ invite.sender }}
+    <div id="friend-invite-actions" class="verticalDiv">
+      <form method="POST" onsubmit="handleForm(event)">
+        {% csrf_token %}
+        <button type="submit">Accept request</button>
+        <input type="hidden" name="action" value="accept" />
+        <input
+          type="hidden"
+          name="url"
+          value="{% url 'respondFriendInvite' invite.id %}"
+        />
+      </form>
+      <form method="POST" onsubmit="handleForm(event)">
+        {% csrf_token %}
+        <button type="submit">Reject request</button>
+        <input type="hidden" name="action" value="reject" />
+        <input
+          type="hidden"
+          name="url"
+          value="{% url 'respondFriendInvite' invite.id %}"
+        />
+      </form>
+    </div>
+    {% endfor %}
+  </li>
+</ul>

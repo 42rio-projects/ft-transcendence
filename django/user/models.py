@@ -1,32 +1,39 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-from django.contrib.auth.models import User
-from django.db.models.signals import post_save
-from django.dispatch import receiver
 from django.db.models import Q
-from django.core.exceptions import ValidationError
 from phonenumber_field.modelfields import PhoneNumberField
+from relations.models import IsFriendsWith
+from relations.models import IsBlockedBy
+from relations.models import FriendInvite
+from chat.models import Chat
+
 
 class User(AbstractUser):
     email_verified = models.BooleanField(default=False)
-    mobile_number = PhoneNumberField(blank=True, region='BR', help_text='Número de celular')
+    mobile_number = PhoneNumberField(
+        blank=True, region='BR', help_text='Número de celular')
     friends = models.ManyToManyField(
         'self',
-        through="IsFriendsWith",
+        through="relations.IsFriendsWith",
         symmetrical=True
     )
     blocked_list = models.ManyToManyField(
         'self',
-        through="IsBlockedBy",
+        through="relations.IsBlockedBy",
         symmetrical=False
     )
     friend_invites = models.ManyToManyField(
         'self',
-        through='FriendInvite',
+        through='relations.FriendInvite',
         symmetrical=False,
         related_name='friend_invites_set'
     )
-    avatar = models.ImageField(upload_to='user/avatars/', null=True, blank=True, default='user/avatars/default.png')
+    avatar = models.ImageField(
+        upload_to='user/avatars/',
+        null=True,
+        blank=True,
+        default='user/avatars/default.png'
+    )
 
     def get_friends(self):
         friendships = IsFriendsWith.objects.filter(
@@ -40,6 +47,28 @@ class User(AbstractUser):
                 friends.append(friendship.user2)
         return friends
 
+    def get_blocks(self):
+        blocks = IsBlockedBy.objects.filter(
+            Q(blocker=self)
+        ).prefetch_related('blocked')
+        blocked_users = []
+        for block in blocks:
+            blocked_users.append(block.blocked)
+        return blocked_users
+
+    def get_chats(self):
+        blocked_users = self.get_blocks()
+        excluded_chats = Chat.objects.filter(
+            Q(starter__in=blocked_users) | Q(receiver__in=blocked_users)
+        )
+        self_chats = Chat.objects.filter(
+            Q(starter=self) | Q(receiver=self)
+        )
+        chats = self_chats.exclude(
+            pk__in=excluded_chats
+        ).prefetch_related('starter', 'receiver')
+        return chats
+
     def add_friend(self, user):
         FriendInvite(sender=self, receiver=user).save()
 
@@ -51,117 +80,10 @@ class User(AbstractUser):
         if friendship.exists():
             friendship[0].delete()
 
+    def block_user(self, user):
+        IsBlockedBy(blocker=self, blocked=user).save()
 
-class IsFriendsWith(models.Model):
-    user1 = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='user1'
-    )
-    user2 = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='user2'
-    )
-
-    def save(self, *args, **kwargs):
-        if IsFriendsWith.objects.filter(
-                user1=self.user2, user2=self.user1
-        ).exists():
-            # Friendship already exists, don't create a duplicate entry
-            pass
-        else:
-            super().save(*args, **kwargs)
-
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(
-                name="%(app_label)s_%(class)s_unique_relationships",
-                fields=["user1", "user2"]
-            ),
-            models.CheckConstraint(
-                name="%(app_label)s_%(class)s_prevent_self_add",
-                check=~models.Q(user1=models.F("user2")),
-            ),
-        ]
-
-
-class IsBlockedBy(models.Model):
-    blocker = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='blocks'
-    )
-    blocked = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='blocked_by'
-    )
-
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(
-                name="%(app_label)s_%(class)s_unique_relationships",
-                fields=["blocker", "blocked"]
-            ),
-            models.CheckConstraint(
-                name="%(app_label)s_%(class)s_prevent_self_block",
-                check=~models.Q(blocker=models.F("blocked")),
-            ),
-        ]
-
-
-class FriendInvite(models.Model):
-    sender = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='friend_invites_sent'
-    )
-    receiver = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='friend_invites_received'
-    )
-
-    def clean(self):
-        """
-        Custom validation to prevent sending invites to friends.
-        """
-        if IsFriendsWith.objects.filter(
-            Q(user1=self.sender, user2=self.receiver) |
-            Q(user1=self.receiver, user2=self.sender)
-        ).exists():
-            raise ValidationError(
-                'You cannot send a friend invite to a friend.'
-            )
-
-    def save(self, *args, **kwargs):
-        """
-        Overridden save method to enforce validation and superclass save.
-        """
-        self.clean()
-        invite = FriendInvite.objects.filter(
-            sender=self.receiver, receiver=self.sender
-        )
-        if invite.exists():
-            invite[0].accept()
-        else:
-            super().save(*args, **kwargs)
-
-    def respond(self, accepted):
-        if accepted is True:
-            friendship = IsFriendsWith(user1=self.sender, user2=self.receiver)
-            friendship.save()
-        self.delete()
-
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(
-                name="%(app_label)s_%(class)s_unique_relationships",
-                fields=["sender", "receiver"]
-            ),
-            models.CheckConstraint(
-                name="%(app_label)s_%(class)s_prevent_self_invite",
-                check=~models.Q(sender=models.F("receiver")),
-            ),
-        ]
+    def unblock_user(self, user):
+        block = IsBlockedBy.objects.filter(Q(blocker=self, blocked=user))
+        if block.exists():
+            block[0].delete()

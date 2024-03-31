@@ -1,0 +1,8 @@
+<h2>Start new chat</h2>
+<form method="post" action="{% url 'startChat' %}" onsubmit="handleForm(event)">
+  {% csrf_token %}
+  <label for="username">Username:</label>
+  <input type="text" name="username" id="username" required />
+  <input type="hidden" name="url" value="{% url 'startChat' %}" />
+  <button type="submit">Submit</button>
+</form>

@@ -1,0 +1,96 @@
+<!doctype html>
+<head>
+  <style>
+    .menuDiv {
+      display: flex;
+      justify-content: center;
+      gap: 5px;
+    }
+    .verticalDiv {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+  </style>
+</head>
+<body>
+  {% if user.is_authenticated %}
+  <div id="chats-menu" class="verticalDiv">
+    <button onclick="render('{% url 'startChat' %}')">start new chat</button>
+    <button onclick="render('{% url 'chatList' %}')">My chats</button>
+  </div>
+  <div id="chats-rendered-data"></div>
+  {% else %}
+  <p>Welcome, new user. Please <a href="/">Login</a></p>
+  {% endif %} {% load static %}
+  <script src="{% static 'user/js/statusWebSocket.js' %}"></script>
+  {% load static %}
+  <script src="{% static 'chat/js/messageWebSocket.js' %}"></script>
+  <script>
+    let messageSocket;
+    window.addEventListener("popstate", handlePopState);
+    history.replaceState(
+      { view: "{% url 'chatIndex' %}" },
+      "",
+      "{% url 'chatIndex' %}",
+    );
+
+    async function handlePopState(event) {
+      await render(event.state?.view, false, true);
+    }
+
+    function handleForm(event) {
+      event.preventDefault();
+      const form = event.target;
+      const data = new FormData(form);
+      const url = data.get("url");
+      fetch(url, {
+        method: form.method,
+        body: data,
+      })
+        .then((response) => response.text())
+        .then((data) => {
+          document.getElementById("chats-rendered-data").innerHTML = data;
+        });
+    }
+
+    async function render(url, setPushState = true, isPopState = false) {
+      if (url == window.location.pathname && !isPopState) return;
+      url = get_url(url);
+      const html = await get_html(url);
+      document.getElementById("chats-rendered-data").innerHTML = html;
+      if (setPushState) {
+        history.pushState({ view: url }, "", url);
+      }
+      handleSockets(url);
+    }
+
+    function handleSockets(url) {
+      if (url == "{% url 'friendList' %}") {
+        statusSocket.setInitialStatus();
+      } else if (url.includes("/chat/room")) {
+        const regex = /\/chat\/room\/(?<id>\d+)\//;
+        const match = url.match(regex);
+        messageSocket = new MessageWebSocket(match.groups.id);
+      }
+      if (messageSocket && messageSocket.socket.readyState === WebSocket.OPEN) {
+        messageSocket.socket.close();
+      }
+    }
+
+    async function get_html(url) {
+      response = await fetch(url);
+      html = await response.text();
+      return html;
+    }
+
+    function get_url(url) {
+      if (url == "{% url 'friendsIndex' %}") {
+        url = "{% url 'friendList' %}";
+      } else if (url == "{% url 'chatIndex' %}") {
+        url = "{% url 'chatList' %}";
+      }
+      return url;
+    }
+  </script>
+</body>

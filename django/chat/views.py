@@ -1,73 +1,68 @@
-import chat.serializers as serializers
-# import django.http as http
-# from django.template import loader
-from chat.models import Chat, Message, User
-from rest_framework.decorators import action
-from rest_framework.response import Response
-from rest_framework import viewsets
-from rest_framework.permissions import IsAuthenticated, AllowAny
-from django.shortcuts import render
-from django.db.models import Prefetch
+from django.template import loader
+from django.http import HttpResponse
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+from django.http import HttpResponseForbidden
+
+from user.models import User
+import chat.models as models
 
 
-def list(request):
-    return render(request, "chat/list.html")
-    # chats = Chat.objects.all()  # Should filter by chats the user is in
-    # template = loader.get_template("chat/list.html")
-    # context = {
-    #     "chats": chats,
-    # }
-    # return http.HttpResponse(template.render(context, request))
+def chatIndex(request):
+    template = loader.get_template('chat/index.html')
+    context = {}
+    return HttpResponse(template.render(context, request))
 
 
-def room(request, room_name):
-    return render(request, "chat/room.html", {"room_name": room_name})
-    # try:
-    #     chat = Chat.objects.get(id=chat_id)
-    # except Chat.DoesNotExist:
-    #     raise http.Http404("Chat does not exist")
-    # template = loader.get_template("chat/chat.html")
-    # context = {
-    #     "chat": chat,
-    # }
-    # return http.HttpResponse(template.render(context, request))
+def chatList(request):
+    template = loader.get_template('chat/chatlist.html')
+    context = {}
+    return HttpResponse(template.render(context, request))
 
 
-class ChatViewSet(viewsets.ModelViewSet):
-    queryset = Chat.objects.all()
-    serializer_class = serializers.ChatSerializer
-    permission_classes = [IsAuthenticated]
-
-    @action(detail=True, methods=['PUT'])
-    def add(self, request, pk=None):
-        chat = self.get_object()
-        serializer = serializers.UsernameSerializer(data=request.data)
-        if not serializer.is_valid():
-            raise Exception("Invalid json")  # Define better behavior here
-        user = User.objects.get(
-            username=serializer.validated_data["username"])
-        chat.add_user(user)
-        return Response({'status': 'user added'})
-
-    @action(detail=True, methods=['PUT'])
-    def remove(self, request, pk=None):
-        chat = self.get_object()
-        serializer = serializers.UsernameSerializer(data=request.data)
-        if not serializer.is_valid():
-            raise Exception("Invalid json")  # Define better behavior here
-        user = User.objects.get(
-            username=serializer.validated_data["username"])
-        chat.remove_user(user)
-        return Response({'status': 'user removed'})
+def chatRoom(request, id):
+    chat = get_object_or_404(models.Chat, pk=id)
+    if chat.starter != request.user and chat.receiver != request.user:
+        return HttpResponseForbidden('Not your chat')
+    other_user = chat.receiver if chat.starter == request.user else chat.starter
+    if other_user in request.user.get_blocks():
+        return HttpResponseForbidden('This user was blocked')
+    if request.method == 'POST':
+        if request.user in other_user.get_blocks():
+            return HttpResponseForbidden('This user blocked you')
+        content = request.POST.get('content')
+        try:
+            message = models.Message(
+                content=content, sender=request.user, chat=chat
+            )
+            message.save()
+            return JsonResponse({"id": message.id})
+        except Exception as e:
+            return HttpResponse(e)
+    template = loader.get_template('chat/chat.html')
+    context = {"chat": chat}
+    return HttpResponse(template.render(context, request))
 
 
-class MessageViewSet(viewsets.ModelViewSet):
-    serializer_class = serializers.MessageSerializer
-    permission_classes = [AllowAny]
+def startChat(request):
+    if request.method == 'POST':
+        name = request.POST.get('username')
+        user = get_object_or_404(
+            User,
+            username=name,
+        )
+        try:
+            models.Chat(starter=request.user, receiver=user).save()
+            # add 201 response that is not rendered on the front end
+        except Exception as e:
+            return HttpResponse(e)
+    template = loader.get_template("chat/start_chat.html")
+    context = {}
+    return HttpResponse(template.render(context, request))
 
-    def get_queryset(self):
-        queryset = Message.objects.all().order_by('-date')
-        chat_name = self.request.query_params.get('chat')
-        if chat_name is not None:
-            queryset = queryset.filter(chat=chat_name)
-        return queryset
+
+def message(request, id):
+    message = get_object_or_404(models.Message, pk=id)
+    template = loader.get_template('chat/message.html')
+    context = {"message": message}
+    return HttpResponse(template.render(context, request))

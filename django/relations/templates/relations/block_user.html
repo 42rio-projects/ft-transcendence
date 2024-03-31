@@ -1,0 +1,8 @@
+<h2>Block User</h2>
+<form method="post" action="{% url 'blockUser' %}" onsubmit="handleForm(event)">
+  {% csrf_token %}
+  <label for="username">Username:</label>
+  <input type="text" name="username" id="username" required />
+  <input type="hidden" name="url" value="{% url 'blockUser' %}" />
+  <button type="submit">Submit</button>
+</form>

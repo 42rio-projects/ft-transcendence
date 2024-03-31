@@ -1,0 +1,20 @@
+<div>
+  <h2>Friendlist</h2>
+  <ul id="Friendlist">
+    {% for user in user.get_friends %}
+    <li>{{ user.username }}</li>
+    <div class="verticalDiv">
+      <p id="{{ user.username }}">OFF</p>
+      <form method="POST" onsubmit="handleForm(event)">
+        {% csrf_token %}
+        <button type="submit">Exclude friend</button>
+        <input
+          type="hidden"
+          name="url"
+          value="{% url 'excludeFriend' user.id %}"
+        />
+      </form>
+    </div>
+    {% endfor %}
+  </ul>
+</div>
