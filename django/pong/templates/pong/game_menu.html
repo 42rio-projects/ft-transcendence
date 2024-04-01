@@ -24,7 +24,11 @@
   <p>Welcome, new user. Please <a href="/">Login</a></p>
   {% endif %} {% load static %}
   <script src="{% static 'relations/js/statusWebSocket.js' %}"></script>
+  {% load static %}
+  <script src="{% static 'pong/js/gameWebSocket.js' %}"></script>
   <script>
+    let gameSocket;
+    let messageSocket;
     window.addEventListener("popstate", handlePopState);
     history.replaceState(
       { view: "{% url 'gameMenu' %}" },
@@ -62,13 +66,29 @@
         .then((response) => response.text())
         .then((data) => {
           document.getElementById("game-data").innerHTML = data;
-          if (setPushState) {
-            history.pushState({ view: url }, "", url);
-          }
-          if (url == "{% url 'friendList' %}") {
-            statusSocket.setInitialStatus();
-          }
         });
+      if (setPushState) {
+        history.pushState({ view: url }, "", url);
+      }
+      handleSockets(url);
+    }
+
+    function handleSockets(url) {
+      if (url == "{% url 'friendList' %}") {
+        statusSocket.setInitialStatus();
+      } else if (url.includes("/chat/room")) {
+        const regex = /\/chat\/room\/(?<id>\d+)\//;
+        const match = url.match(regex);
+        messageSocket = new MessageWebSocket(match.groups.id);
+      } else if (url == "{% url 'localGame' %}") {
+        gameSocket = new GameWebSocket();
+      }
+      if (messageSocket && messageSocket.socket.readyState === WebSocket.OPEN) {
+        messageSocket.socket.close();
+      }
+      if (gameSocket && gameSocket.socket.readyState === WebSocket.OPEN) {
+        gameSocket.socket.close();
+      }
     }
   </script>
 </body>
