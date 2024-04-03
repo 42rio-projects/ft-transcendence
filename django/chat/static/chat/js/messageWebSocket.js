@@ -13,25 +13,31 @@ class MessageWebSocket {
     const message_id = data.id;
     const response = await fetch("/message/" + message_id + "/");
     const html = await response.text();
-    document.getElementById("chat-messages").innerHTML += html;
+    // modifiquei para renderizar na div direto do chat
+    const container = document.querySelector('.renderChat');
+    container.innerHTML += html;
   }
 
   async sendMessage(event) {
-    event.preventDefault();
+    try {
+      event.preventDefault();
 
-    const form = event.target;
-    const data = new FormData(form);
-    const url = data.get("url");
-    form.reset();
-    let response = await fetch(url, { method: form.method, body: data });
-    if (!response.ok) {
-      console.error("failed to send message");
-    } else {
-      const json = await response.json();
-      const json_string = JSON.stringify(json);
-      this.socket.send(json_string);
+      const form = event.target;
+      const data = new FormData(form);
+      const url = data.get("url");
+      form.reset();
+      let response = await fetch(url, { method: form.method, body: data });
+      if (!response.ok) {
+        console.error("failed to send message");
+      } else {
+        const json = await response.json();
+        const json_string = JSON.stringify(json);
+        this.socket.send(json_string);
+      }
+    }
+    catch (error) {
+      console.log(error);
     }
   }
-
-  onClose(event) {}
-}
+    onClose(event) { }
+  }
