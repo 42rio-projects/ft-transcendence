@@ -6,7 +6,7 @@ import asyncio
 class localGameCosumer(AsyncWebsocketConsumer):
     BAR_UNIT = 1
     BAR_UPPERBOUND = 80
-    BAR_LOWERBOUND = 20
+    BAR_LOWERBOUND = 0
 
     async def connect(self):
         await self.set_initial_values()
@@ -43,15 +43,15 @@ class localGameCosumer(AsyncWebsocketConsumer):
         while True:
             await asyncio.sleep(0.016)
             if self.p1_move:
-                if self.p1_move == 'u' and self.p1_pos < self.BAR_UPPERBOUND:
+                if self.p1_move == 'd' and self.p1_pos < self.BAR_UPPERBOUND:
                     self.p1_pos += self.BAR_UNIT
-                elif self.p1_move == 'd' and self.p1_pos > self.BAR_LOWERBOUND:
+                elif self.p1_move == 'u' and self.p1_pos > self.BAR_LOWERBOUND:
                     self.p1_pos -= self.BAR_UNIT
                 self.p1_move = None
             if self.p2_move:
-                if self.p2_move == 'u' and self.p2_pos < self.BAR_UPPERBOUND:
+                if self.p2_move == 'd' and self.p2_pos < self.BAR_UPPERBOUND:
                     self.p2_pos += self.BAR_UNIT
-                elif self.p2_move == 'd' and self.p2_pos > self.BAR_LOWERBOUND:
+                elif self.p2_move == 'u' and self.p2_pos > self.BAR_LOWERBOUND:
                     self.p2_pos -= self.BAR_UNIT
                 self.p2_move = None
             try:

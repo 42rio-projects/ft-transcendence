@@ -3,11 +3,10 @@ class GameWebSocket {
   P1_DOWN = "s";
   P2_UP = "ArrowUp";
   P2_DOWN = "ArrowDown";
-  keyDownListener = null;
-  keyUpListener = null;
   p1Direction = null;
   p2Direction = null;
   gameRunning = false;
+  pressedKeys = {};
 
   constructor() {
     this.socket = new WebSocket(
@@ -17,13 +16,17 @@ class GameWebSocket {
     this.socket.onclose = this.onClose.bind(this);
     this.handleKeyUp = this.handleKeyUp.bind(this);
     this.handleKeyDown = this.handleKeyDown.bind(this);
+    this.pressedKeys[this.P1_UP] = false;
+    this.pressedKeys[this.P2_UP] = false;
+    this.pressedKeys[this.P1_DOWN] = false;
+    this.pressedKeys[this.P2_DOWN] = false;
   }
 
   onMessage(event) {
     const data = JSON.parse(event.data);
     if (this.gameRunning && !("status" in data)) {
       this.movePlayer();
-      console.log(data);
+      this.gameScreen.draw(data);
     } else if (data["status"] == "invalid") {
       console.error(data["message"]);
     }
@@ -35,6 +38,7 @@ class GameWebSocket {
   }
 
   movePlayer() {
+    this.getDirections();
     if (!this.p1Direction && !this.p2Direction) {
       return;
     }
@@ -45,6 +49,23 @@ class GameWebSocket {
     this.socket.send(message);
   }
 
+  getDirections() {
+    if (this.pressedKeys[this.P1_UP]) {
+      this.p1Direction = "u";
+    } else if (this.pressedKeys[this.P1_DOWN]) {
+      this.p1Direction = "d";
+    } else {
+      this.p1Direction = null;
+    }
+    if (this.pressedKeys[this.P2_UP]) {
+      this.p2Direction = "u";
+    } else if (this.pressedKeys[this.P2_DOWN]) {
+      this.p2Direction = "d";
+    } else {
+      this.p2Direction = null;
+    }
+  }
+
   gameAction(action) {
     let message;
     if (action == "start") {
@@ -53,6 +74,7 @@ class GameWebSocket {
       });
       this.setKeyListeners();
       this.gameRunning = true;
+      this.gameScreen = new GameScreen();
     } else {
       message = JSON.stringify({
         stop: true,
@@ -65,35 +87,12 @@ class GameWebSocket {
 
   handleKeyDown(event) {
     let keyPressed = event.key;
-
-    if (!this.p1Direction) {
-      if (keyPressed === this.P1_UP) {
-        this.p1Direction = "u";
-        return;
-      } else if (keyPressed === this.P1_DOWN) {
-        this.p1Direction = "d";
-        return;
-      }
-    }
-    if (!this.p2Direction) {
-      if (keyPressed === this.P2_UP) {
-        this.p2Direction = "u";
-        return;
-      } else if (keyPressed === this.P2_DOWN) {
-        this.p2Direction = "d";
-        return;
-      }
-    }
+    this.pressedKeys[keyPressed] = true;
   }
 
   handleKeyUp(event) {
     let keyPressed = event.key;
-
-    if (keyPressed === this.P1_DOWN || keyPressed === this.P1_UP) {
-      this.p1Direction = null;
-    } else if (keyPressed === this.P2_DOWN || keyPressed === this.P2_UP) {
-      this.p2Direction = null;
-    }
+    this.pressedKeys[keyPressed] = false;
   }
 
   setKeyListeners() {
