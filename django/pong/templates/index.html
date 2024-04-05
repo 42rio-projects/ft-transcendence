@@ -8,19 +8,23 @@
 </head>
 
 <body>
-    <div id="app"></div>
+    <header>
+        <h1>ft_transcendence</h1>
+    </header>
+
+    <main id="main"></main>
 </body>
 
 <script>
-    function render(url) {
+    function fetchHTML(elementId, url) {
         fetch(url)
             .then(response => response.text())
             .then(data => {
-                document.getElementById("app").innerHTML = data;
+                document.getElementById(elementId).innerHTML = data;
             });
     }
 
-    function handleForm(event) {
+    function fetchHTMLForm(elementId, event) {
         event.preventDefault();
 
         const form = event.target;
@@ -32,12 +36,12 @@
         })
             .then(response => response.text())
             .then(data => {
-                document.getElementById("app").innerHTML = data;
+                document.getElementById(elementId).innerHTML = data;
             });
     }
 
     window.onload = function () {
-        render("{% url 'app' %}");
+        fetchHTML("main", "main/");
     };
 </script>
 

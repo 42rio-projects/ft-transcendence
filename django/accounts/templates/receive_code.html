@@ -1,7 +1,0 @@
-{% include 'messages.html' %}
-
-<form method="post" action="{% url 'receive_code' %}" onsubmit="handleForm(event)">
-    {% csrf_token %}
-    <input type="email" name="to" placeholder="email" />
-    <button type="submit">Receive code</button>
-</form>

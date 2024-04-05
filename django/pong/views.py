@@ -11,15 +11,13 @@ from rest_framework.decorators import permission_classes, action
 
 
 def index(request):
-    context = {
-        "username": request.user.username
-    }
-
-    return render(request, "index.html", context)
+    if request.method == "GET":
+        return render(request, "index.html")
 
 
-def app(request):
-    return render(request, "app.html")
+def main(request):
+    if request.method == "GET":
+        return render(request, "main.html")
 
 
 @permission_classes((permissions.AllowAny,))

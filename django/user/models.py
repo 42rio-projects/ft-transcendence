@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.db.models import Q
-
+from phonenumber_field.modelfields import PhoneNumberField
 from relations.models import IsFriendsWith
 from relations.models import IsBlockedBy
 from relations.models import FriendInvite
@@ -9,6 +9,9 @@ from chat.models import Chat
 
 
 class User(AbstractUser):
+    email_verified = models.BooleanField(default=False)
+    mobile_number = PhoneNumberField(
+        blank=True, region='BR', help_text='Número de celular')
     friends = models.ManyToManyField(
         'self',
         through="relations.IsFriendsWith",
@@ -24,6 +27,12 @@ class User(AbstractUser):
         through='relations.FriendInvite',
         symmetrical=False,
         related_name='friend_invites_set'
+    )
+    avatar = models.ImageField(
+        upload_to='user/avatars/',
+        null=True,
+        blank=True,
+        default='user/avatars/default.png'
     )
 
     def get_friends(self):
