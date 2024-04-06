@@ -27,4 +27,24 @@ urlpatterns = [
         views.email_change_check,
         name='email_change_check'
     ),
+	path(
+    'generate/totp/factor/',
+    views.generate_totp_factor,
+    name='generate_totp_factor'
+    ),
+	path(
+    'list/totp/factors/',
+    views.list_totp_factors,
+    name='list_totp_factors'
+    ),
+	path(
+    'verify/totp/factor/',
+    views.verify_totp_factor,
+    name='verify_totp_factor'
+    ),
+	path(
+    'validate/totp/token/',
+    views.validate_totp_token,
+    name='validate_totp_token'
+    ),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
