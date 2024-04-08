@@ -1,5 +1,5 @@
 from django.shortcuts import render as django_render
-from django.template.loader import render_to_string
+from django.template import loader
 
 
 def render(request, template_name, context={}, target="main", status=200):
@@ -8,7 +8,9 @@ def render(request, template_name, context={}, target="main", status=200):
         response["Target"] = target
         return response
 
+    template_html = loader.get_template(template_name).render(context, request)
+
     response = django_render(request, "index.html", {
-        "main": render_to_string(template_name, context)
+        "main": template_html
     }, status=status)
     return response
