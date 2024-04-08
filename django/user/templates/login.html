@@ -1,10 +1,9 @@
 {% include 'messages.html' %}
 
-<form method="post" action="login/" onsubmit="fetchHTMLForm('main', event)">
+<form id="auth-form" method="post" onsubmit="fetchForm(event)">
     {% csrf_token %}
-    <input type="text" name="username" placeholder="username" value="{{ username }}" />
-    <input type="password" name="password" placeholder="password" value="{{ password }}" />
+    {{ form }}
     <button type="submit">Login</button>
+    <p class="auth-switch">Don't have an account? <button type="button" onclick="fetchHTML('/register/')">Register</button></p>
+    <p class="auth-home">Go to <button class="button-home" type="button" onclick="fetchHTML('/')">Home</button></p>
 </form>
-
-<p>Don't have an account? <button onclick="fetchHTML('main', 'register/')">Register</button></p>

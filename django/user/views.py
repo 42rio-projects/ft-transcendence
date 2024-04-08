@@ -4,10 +4,11 @@ from django.contrib.auth import update_session_auth_hash
 from twilio.rest import Client
 from django.contrib.auth import authenticate, login as django_login, logout as django_logout
 from django.contrib import messages
-from django.shortcuts import render
+from pong.utils import render
 import os
 
 from user.models import User
+from user.forms import LoginForm, RegisterForm
 from user.forms import EmailChangeForm
 from user.forms import ChangePasswordForm
 from user.forms import UserProfileForm
@@ -24,56 +25,41 @@ def profile(request):
 
 def login(request):
     if request.method == "POST":
-        username = request.POST.get("username")
-        password = request.POST.get("password")
+        form = LoginForm(request.POST)
+        if form.is_valid():
+            username = form.cleaned_data.get("username")
+            password = form.cleaned_data.get("password")
 
-        user = authenticate(username=username, password=password)
-        if user is None:
-            messages.error(request, "Incorrect username or password")
-            return render(request, "login.html",
-                          {"username": username,
-                           "password": password})
+            user = authenticate(username=username, password=password)
+            if user is None:
+                messages.error(request, "Incorrect username or password")
+                return render(request, "login.html", {"form": form}, status=400)
 
-        django_login(request, user)
-        messages.success(request, "You are now logged in")
-        return redirect("main")
+            django_login(request, user)
+            messages.success(request, "You are now logged in")
+            return redirect("index")
+        
+        return render(request, "login.html", {"form": form}, status=400)
 
     if request.method == "GET":
-        return render(request, "login.html")
+        form = LoginForm()
+        return render(request, "login.html", {"form": form})
 
 
 def register(request):
     if request.method == "POST":
-        username = request.POST.get("username")
-        password = request.POST.get("password")
-        confirm_password = request.POST.get("confirm_password")
+        form = RegisterForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "You are now registered and can log in")
+            return redirect("login")
 
-        context = {
-            "username": username,
-            "password": password,
-            "confirm_password": confirm_password
-        }
-
-        if User.objects.filter(username=username).exists():
-            messages.error(request, "Username already in use")
-            return render(request, "register.html", context)
-
-        if password != confirm_password:
-            messages.error(request, "Passwords do not match")
-            return render(request, "register.html", context)
-
-        if len(password) < 8:
-            messages.error(request, "Password must be at least 8 characters")
-            return render(request, "register.html", context)
-
-        user = User.objects.create_user(username=username, password=password)
-        user.save()
-
-        messages.success(request, "You are now registered and can log in")
-        return redirect("login")
+        messages.error(request, "Error creating your account")
+        return render(request, "register.html", {"form": form}, status=400)
 
     if request.method == "GET":
-        return render(request, "register.html")
+        form = RegisterForm()
+        return render(request, "register.html", {"form": form})
 
 
 @login_required
