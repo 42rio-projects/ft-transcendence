@@ -39,9 +39,6 @@ class GameWebSocket {
 
   movePlayer() {
     this.getDirections();
-    if (!this.p1Direction && !this.p2Direction) {
-      return;
-    }
     let message = JSON.stringify({
       l: this.p1Direction,
       r: this.p2Direction,
