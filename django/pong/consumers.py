@@ -13,95 +13,19 @@ GAME_HEIGHT = 100
 GAME_WIDTH = 200
 
 
-class GameCosumer(AsyncWebsocketConsumer):
+class GameInfo:
     BAR_UPPERBOUND = GAME_HEIGHT - BAR_HEIGHT
     BAR_LOWERBOUND = 0
     BALL_UPPERBOUND = GAME_HEIGHT
     BALL_LOWERBOUND = 0
-    BALL_RIGHTBOUND = GAME_WIDTH
-    BALL_LEFTBOUND = 0
+    BALL_RIGHTBOUND = GAME_WIDTH - 2
+    BALL_LEFTBOUND = 2
 
-    async def update_game(self):
-        while True:
-            await asyncio.sleep(TICK_RATE)
-            await self.move_players()
-            await self.move_ball()
-            if (self.speed_countdown == 0 and
-                    abs(self.ball_x_speed) < X_SPEED_LIMIT):
-                self.ball_x_speed *= 2
-                self.speed_countdown = SPEED_COUNTER
-            try:
-                await self.send(text_data=json.dumps(
-                    {
-                        "p1": self.p1_pos,
-                        "p2": self.p2_pos,
-                        "bx": self.ball_x,
-                        "by": self.ball_y
-                    }
-                ))
-            except Exception:
-                break
+    def __init__(self):
+        self.set_initial_values()
+        pass
 
-    async def move_players(self):
-        if self.p1_move:
-            if self.p1_move == 'd' and self.p1_pos < self.BAR_UPPERBOUND:
-                self.p1_pos += BAR_SPEED
-            elif self.p1_move == 'u' and self.p1_pos > self.BAR_LOWERBOUND:
-                self.p1_pos -= BAR_SPEED
-        if self.p2_move:
-            if self.p2_move == 'd' and self.p2_pos < self.BAR_UPPERBOUND:
-                self.p2_pos += BAR_SPEED
-            elif self.p2_move == 'u' and self.p2_pos > self.BAR_LOWERBOUND:
-                self.p2_pos -= BAR_SPEED
-
-    async def move_ball(self):
-        new_x = self.ball_x + self.ball_x_speed
-        new_y = self.ball_y + self.ball_y_speed
-        scored = await self.check_horizontal_collision(new_x, new_y)
-        if scored:
-            await self.set_initial_values()
-            return
-        if new_y > self.BALL_UPPERBOUND or new_y < self.BALL_LOWERBOUND:
-            self.ball_y_speed = self.ball_y_speed * -1
-            new_y = self.ball_y + self.ball_y_speed
-        self.ball_y = new_y
-
-    async def check_horizontal_collision(self, new_x, new_y):
-        if new_x <= self.BALL_LEFTBOUND + 2:
-            if new_y >= self.p1_pos and new_y <= self.p1_pos + BAR_HEIGHT:
-                self.ball_x_speed *= -1
-                self.speed_countdown -= 1
-                new_x = self.ball_x + self.ball_x_speed
-                if self.p1_move:
-                    if self.p1_move == 'd':
-                        new_speed = self.ball_y_speed + BALL_SPEED
-                    elif self.p1_move == 'u':
-                        new_speed = self.ball_y_speed - BALL_SPEED
-                    if abs(new_speed) < Y_SPEED_LIMIT:
-                        self.ball_y_speed = new_speed
-            else:
-                # P2 Scores
-                return True
-        elif new_x >= self.BALL_RIGHTBOUND - 2:
-            if new_y >= self.p2_pos and new_y <= self.p2_pos + BAR_HEIGHT:
-                self.ball_x_speed *= -1
-                self.speed_countdown -= 1
-                new_x = self.ball_x + self.ball_x_speed
-                if self.p2_move:
-                    if self.p2_move == 'd':
-                        new_speed = self.ball_y_speed + BALL_SPEED
-                    elif self.p2_move == 'u':
-                        new_speed = self.ball_y_speed - BALL_SPEED
-                    if abs(new_speed) < Y_SPEED_LIMIT:
-                        self.ball_y_speed = new_speed
-            else:
-                # P1 Scores
-                return True
-        else:
-            self.ball_x = new_x
-            return False
-
-    async def set_initial_values(self):
+    def set_initial_values(self):
         self.p1_pos = 40
         self.p2_pos = 40
         self.ball_x = 100
@@ -111,13 +35,117 @@ class GameCosumer(AsyncWebsocketConsumer):
         self.p1_move = None
         self.p2_move = None
         self.speed_countdown = SPEED_COUNTER
-        self.interval_task = None
+
+    def info_to_json(self):
+        return json.dumps(
+            {
+                "p1": self.p1_pos,
+                "p2": self.p2_pos,
+                "bx": self.ball_x,
+                "by": self.ball_y
+            }
+        )
+
+    def p1_can_move_down(self):
+        return (self.p1_move == 'd' and self.p1_pos < self.BAR_UPPERBOUND)
+
+    def p1_can_move_up(self):
+        return (self.p1_move == 'u' and self.p1_pos > self.BAR_LOWERBOUND)
+
+    def p2_can_move_down(self):
+        return (self.p2_move == 'd' and self.p2_pos < self.BAR_UPPERBOUND)
+
+    def p2_can_move_up(self):
+        return (self.p2_move == 'u' and self.p2_pos > self.BAR_LOWERBOUND)
+
+    def pos_is_out_of_vertical_bounds(self, y):
+        return (y > self.BALL_UPPERBOUND or y < self.BALL_LOWERBOUND)
+
+    def ball_hits_p1(self, y):
+        return (y >= self.p1_pos and y <= self.p1_pos + BAR_HEIGHT)
+
+    def ball_hits_p2(self, y):
+        return (y >= self.p2_pos and y <= self.p2_pos + BAR_HEIGHT)
+
+    def ball_should_speed_up(self):
+        return (self.speed_countdown == 0 and
+                abs(self.ball_x_speed) < X_SPEED_LIMIT)
+
+
+class GameCosumer(AsyncWebsocketConsumer):
+
+    async def update_game(self):
+        while True:
+            await asyncio.sleep(TICK_RATE)
+            await self.move_players()
+            await self.move_ball()
+            if self.game.ball_should_speed_up():
+                self.game.ball_x_speed *= 2
+                self.game.speed_countdown = SPEED_COUNTER
+            try:
+                # Move this to specific consumer
+                await self.send(text_data=self.game.info_to_json())
+            except Exception:
+                break
+
+    async def move_players(self):
+        if self.game.p1_move:
+            if self.game.p1_can_move_down():
+                self.game.p1_pos += BAR_SPEED
+            elif self.game.p1_can_move_up():
+                self.game.p1_pos -= BAR_SPEED
+        if self.game.p2_move:
+            if self.game.p2_can_move_down():
+                self.game.p2_pos += BAR_SPEED
+            elif self.game.p2_can_move_up():
+                self.game.p2_pos -= BAR_SPEED
+
+    async def move_ball(self):
+        new_x = self.game.ball_x + self.game.ball_x_speed
+        new_y = self.game.ball_y + self.game.ball_y_speed
+        scored = await self.check_horizontal_collision(new_x, new_y)
+        if scored:
+            self.game.set_initial_values()
+            return
+        if self.game.pos_is_out_of_vertical_bounds(new_y):
+            self.game.ball_y_speed *= -1
+            new_y = self.game.ball_y + self.game.ball_y_speed
+        self.game.ball_y = new_y
+
+    async def check_horizontal_collision(self, new_x, new_y):
+        if new_x <= self.game.BALL_LEFTBOUND:
+            if self.game.ball_hits_p1(new_y):
+                await self.bounce_ball_off_player(1)
+            else:
+                return True
+        elif new_x >= self.game.BALL_RIGHTBOUND:
+            if self.game.ball_hits_p2(new_y):
+                await self.bounce_ball_off_player(2)
+            else:
+                # P1 Scores
+                return True
+        else:
+            self.game.ball_x = new_x
+            return False
+
+    async def bounce_ball_off_player(self, player):
+        self.game.ball_x_speed *= -1
+        self.game.speed_countdown -= 1
+        move = self.game.p1_move if player == 1 else self.game.p2_move
+        if move:
+            if move == 'd':
+                new_speed = self.game.ball_y_speed + BALL_SPEED
+            elif move == 'u':
+                new_speed = self.game.ball_y_speed - BALL_SPEED
+            if abs(new_speed) < Y_SPEED_LIMIT:
+                self.game.ball_y_speed = new_speed
 
 
 class LocalGameCosumer(GameCosumer):
 
     async def connect(self):
-        await self.set_initial_values()
+        self.game = GameInfo()
+        self.game.set_initial_values()
         await self.accept()
 
     async def disconnect(self, close_code):
@@ -132,7 +160,8 @@ class LocalGameCosumer(GameCosumer):
             return
         elif 'stop' in data_json and self.interval_task:
             self.interval_task.cancel()
-            await self.set_initial_values()
+            self.interval_task = None
+            self.game.set_initial_values()
             return
         try:
             p1_direction = data_json['l']
@@ -143,13 +172,13 @@ class LocalGameCosumer(GameCosumer):
             ))
             return
         if p1_direction == 'null':
-            self.p1_move = None
+            self.game.p1_move = None
         else:
-            self.p1_move = p1_direction
+            self.game.p1_move = p1_direction
         if p2_direction == 'null':
-            self.p2_move = None
+            self.game.p2_move = None
         else:
-            self.p2_move = p2_direction
+            self.game.p2_move = p2_direction
 
 
 class OnlineGameCosumer(AsyncWebsocketConsumer):

@@ -24,6 +24,7 @@ class GameWebSocket {
 
   onMessage(event) {
     const data = JSON.parse(event.data);
+    console.log(data);
     if (this.gameRunning && !("status" in data)) {
       this.movePlayer();
       this.gameScreen.draw(data);
