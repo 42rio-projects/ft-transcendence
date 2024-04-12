@@ -11,52 +11,15 @@ BAR_SPEED = 1
 BAR_HEIGHT = 20
 GAME_HEIGHT = 100
 GAME_WIDTH = 200
-BAR_UPPERBOUND = GAME_HEIGHT - BAR_HEIGHT
-BAR_LOWERBOUND = 0
-BALL_UPPERBOUND = GAME_HEIGHT
-BALL_LOWERBOUND = 0
-BALL_LEFTBOUND = 0
-BALL_RIGHTBOUND = GAME_WIDTH
 
 
-class localGameCosumer(AsyncWebsocketConsumer):
-
-    async def connect(self):
-        await self.set_initial_values()
-        await self.accept()
-
-    async def disconnect(self, close_code):
-        self.interval_task.cancel()
-        pass
-
-    async def receive(self, text_data):
-        data_json = json.loads(text_data)
-        if 'start' in data_json:
-            self.interval_task = asyncio.create_task(self.update_game())
-            return
-        elif 'stop' in data_json and self.interval_task:
-            self.interval_task.cancel()
-            await self.set_initial_values()
-            return
-        try:
-            p1_direction = data_json['l']
-            p2_direction = data_json['r']
-        except KeyError:
-            await self.send(text_data=json.dumps(
-                {"status": "invalid", "message": "Invalid JSON received"}
-            ))
-            return
-        if p1_direction == 'null':
-            self.p1_move = None
-        else:
-            self.p1_move = p1_direction
-        if p2_direction == 'null':
-            self.p2_move = None
-        else:
-            self.p2_move = p2_direction
-        await self.send(text_data=json.dumps(
-            {"status": "received"}
-        ))
+class GameCosumer(AsyncWebsocketConsumer):
+    BAR_UPPERBOUND = GAME_HEIGHT - BAR_HEIGHT
+    BAR_LOWERBOUND = 0
+    BALL_UPPERBOUND = GAME_HEIGHT
+    BALL_LOWERBOUND = 0
+    BALL_RIGHTBOUND = GAME_WIDTH
+    BALL_LEFTBOUND = 0
 
     async def update_game(self):
         while True:
@@ -81,14 +44,14 @@ class localGameCosumer(AsyncWebsocketConsumer):
 
     async def move_players(self):
         if self.p1_move:
-            if self.p1_move == 'd' and self.p1_pos < BAR_UPPERBOUND:
+            if self.p1_move == 'd' and self.p1_pos < self.BAR_UPPERBOUND:
                 self.p1_pos += BAR_SPEED
-            elif self.p1_move == 'u' and self.p1_pos > BAR_LOWERBOUND:
+            elif self.p1_move == 'u' and self.p1_pos > self.BAR_LOWERBOUND:
                 self.p1_pos -= BAR_SPEED
         if self.p2_move:
-            if self.p2_move == 'd' and self.p2_pos < BAR_UPPERBOUND:
+            if self.p2_move == 'd' and self.p2_pos < self.BAR_UPPERBOUND:
                 self.p2_pos += BAR_SPEED
-            elif self.p2_move == 'u' and self.p2_pos > BAR_LOWERBOUND:
+            elif self.p2_move == 'u' and self.p2_pos > self.BAR_LOWERBOUND:
                 self.p2_pos -= BAR_SPEED
 
     async def move_ball(self):
@@ -98,13 +61,13 @@ class localGameCosumer(AsyncWebsocketConsumer):
         if scored:
             await self.set_initial_values()
             return
-        if new_y > BALL_UPPERBOUND or new_y < BALL_LOWERBOUND:
+        if new_y > self.BALL_UPPERBOUND or new_y < self.BALL_LOWERBOUND:
             self.ball_y_speed = self.ball_y_speed * -1
             new_y = self.ball_y + self.ball_y_speed
         self.ball_y = new_y
 
     async def check_horizontal_collision(self, new_x, new_y):
-        if new_x <= BALL_LEFTBOUND + 2:
+        if new_x <= self.BALL_LEFTBOUND + 2:
             if new_y >= self.p1_pos and new_y <= self.p1_pos + BAR_HEIGHT:
                 self.ball_x_speed *= -1
                 self.speed_countdown -= 1
@@ -119,7 +82,7 @@ class localGameCosumer(AsyncWebsocketConsumer):
             else:
                 # P2 Scores
                 return True
-        elif new_x >= BALL_RIGHTBOUND - 2:
+        elif new_x >= self.BALL_RIGHTBOUND - 2:
             if new_y >= self.p2_pos and new_y <= self.p2_pos + BAR_HEIGHT:
                 self.ball_x_speed *= -1
                 self.speed_countdown -= 1
@@ -151,7 +114,45 @@ class localGameCosumer(AsyncWebsocketConsumer):
         self.interval_task = None
 
 
-class onlineGameCosumer(AsyncWebsocketConsumer):
+class LocalGameCosumer(GameCosumer):
+
+    async def connect(self):
+        await self.set_initial_values()
+        await self.accept()
+
+    async def disconnect(self, close_code):
+        if self.interval_task:
+            self.interval_task.cancel()
+        pass
+
+    async def receive(self, text_data):
+        data_json = json.loads(text_data)
+        if 'start' in data_json:
+            self.interval_task = asyncio.create_task(self.update_game())
+            return
+        elif 'stop' in data_json and self.interval_task:
+            self.interval_task.cancel()
+            await self.set_initial_values()
+            return
+        try:
+            p1_direction = data_json['l']
+            p2_direction = data_json['r']
+        except KeyError:
+            await self.send(text_data=json.dumps(
+                {"status": "invalid", "message": "Invalid JSON received"}
+            ))
+            return
+        if p1_direction == 'null':
+            self.p1_move = None
+        else:
+            self.p1_move = p1_direction
+        if p2_direction == 'null':
+            self.p2_move = None
+        else:
+            self.p2_move = p2_direction
+
+
+class OnlineGameCosumer(AsyncWebsocketConsumer):
 
     async def connect(self):
         # add to game group
