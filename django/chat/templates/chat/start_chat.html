@@ -1,4 +1,5 @@
-<h2>Start new chat</h2>
+<div class="newChat">
+<h2>Novo chat</h2>
 <form method="post" action="{% url 'startChat' %}" onsubmit="handleForm(event)">
   {% csrf_token %}
   <label for="username">Username:</label>
@@ -6,3 +7,4 @@
   <input type="hidden" name="url" value="{% url 'startChat' %}" />
   <button type="submit">Submit</button>
 </form>
+</div>

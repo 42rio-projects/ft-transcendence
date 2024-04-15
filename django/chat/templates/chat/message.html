@@ -1,4 +1,5 @@
-<div class="verticalDiv">
-  <p>{{ message.sender }}</p>
-  <p>{{ message.content }}</p>
-</div>
+  {% if user == message.sender %}
+  <p class="messageSelf">{{ message.content }}</p>
+  {% else %}
+  <p class="messageOthers">{{ message.content }}</p>
+  {% endif %}
