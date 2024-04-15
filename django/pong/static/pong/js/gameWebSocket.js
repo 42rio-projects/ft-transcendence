@@ -24,10 +24,11 @@ class GameWebSocket {
 
   onMessage(event) {
     const data = JSON.parse(event.data);
-    console.log(data);
     if (this.gameRunning && !("status" in data)) {
       this.movePlayer();
       this.gameScreen.draw(data);
+    } else if (data["status"] == "score") {
+      this.updateScoreboard(data);
     } else if (data["status"] == "invalid") {
       console.error(data["message"]);
     }
@@ -84,11 +85,13 @@ class GameWebSocket {
   }
 
   handleKeyDown(event) {
+    event.preventDefault();
     let keyPressed = event.key;
     this.pressedKeys[keyPressed] = true;
   }
 
   handleKeyUp(event) {
+    event.preventDefault();
     let keyPressed = event.key;
     this.pressedKeys[keyPressed] = false;
   }
@@ -101,5 +104,10 @@ class GameWebSocket {
   unsetKeyListeners() {
     document.removeEventListener("keydown", this.handleKeyDown);
     document.removeEventListener("keyup", this.handleKeyUp);
+  }
+
+  updateScoreboard(data) {
+    document.getElementById("p1-score").innerHTML = data["p1"];
+    document.getElementById("p2-score").innerHTML = data["p2"];
   }
 }
