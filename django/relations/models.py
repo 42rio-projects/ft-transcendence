@@ -95,7 +95,7 @@ class FriendInvite(models.Model):
 
     def clean(self):
         """
-        Custom validation to prevent sending invites to friends.
+        Custom validation to prevent sending invites to friends and blocked users.
         """
         if IsBlockedBy.objects.filter(
             Q(blocker=self.sender, blocked=self.receiver) |

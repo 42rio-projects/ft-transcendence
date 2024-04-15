@@ -6,4 +6,3 @@ import pong.models as models
 admin.site.register(models.Game)
 admin.site.register(models.Tournament)
 admin.site.register(models.Round)
-admin.site.register(models.Score)
