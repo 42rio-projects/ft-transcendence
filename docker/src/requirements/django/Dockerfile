@@ -8,6 +8,7 @@ RUN pip install --upgrade pip && \
     pip install django \
                 psycopg[binary] \
                 djangorestframework \
+                django-phonenumber-field phonenumbers \
                 djangorestframework_simplejwt \
 				channels[daphne] \
 				channels_redis \

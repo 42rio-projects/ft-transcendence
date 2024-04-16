@@ -1,0 +1,9 @@
+<div id="email_change_check_form">
+	{% include 'messages.html' %}
+
+	<form method="post" action="email_change_check/" onsubmit="fetchHTMLForm('email_change_check_form', event)">
+			{% csrf_token %}
+			<input type="text" name="code" placeholder="code" value="{{ code }}">
+			<button type="submit">Confirm code</button>
+	</form>
+</div>

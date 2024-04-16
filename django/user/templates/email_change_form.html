@@ -1,0 +1,11 @@
+<div id="email_change_form">
+{% include 'messages.html' %}
+
+<form method="post" action="email_change/" onsubmit="fetchHTMLForm('email_change_form', event)">
+    {% csrf_token %}
+		{{form}}
+    <button type="submit">Change email</button>
+</form>
+
+<button onclick="fetchHTML('main', 'profile/')">Back to profile</button>
+<div>

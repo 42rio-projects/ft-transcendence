@@ -1,8 +1,0 @@
-{% include 'messages.html' %}
-
-<form method="post" action="{% url 'confirm_code' %}" onsubmit="handleForm(event)">
-    {% csrf_token %}
-    <input type="email" name="to" placeholder="email" />
-    <input type="text" name="code" placeholder="code" />
-    <button type="submit">Confirm code</button>
-</form>
