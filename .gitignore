@@ -140,3 +140,7 @@ GitHub.sublime-settings
 !.vscode/launch.json 
 !.vscode/extensions.json 
 .history
+
+grafana.db
+prometheus_data*
+docker/src/.env.example

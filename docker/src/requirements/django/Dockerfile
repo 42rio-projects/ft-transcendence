@@ -11,7 +11,8 @@ RUN pip install --upgrade pip && \
                 djangorestframework_simplejwt \
 				channels[daphne] \
 				channels_redis \
-                twilio
+                twilio \
+                django-prometheus
 
 # Script to wait for a host:port to be available
 RUN curl -fsSLo /wait-for-it.sh \

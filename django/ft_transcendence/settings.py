@@ -27,7 +27,7 @@ SECRET_KEY = 'django-insecure-758$p3+f&ztnyve_m#647uc$x-&4$bb0*hrb^ve60br0cq)q$)
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['django', 'localhost', '127.0.0.1']
 
 
 # Application definition
@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+	'django_prometheus',
 ]
 
 AUTH_USER_MODEL = "user.User"
@@ -56,6 +57,7 @@ SIMPLE_JWT = {
 }
 
 MIDDLEWARE = [
+	'django_prometheus.middleware.PrometheusBeforeMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -63,6 +65,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+	'django_prometheus.middleware.PrometheusAfterMiddleware'
 ]
 
 REST_FRAMEWORK = {
@@ -95,7 +98,7 @@ WSGI_APPLICATION = 'ft_transcendence.wsgi.application'
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.postgresql",
+        "ENGINE": "django_prometheus.db.backends.postgresql",
         "NAME": "postgres",
         "HOST": "postgres",
         "OPTIONS": {
@@ -164,3 +167,6 @@ CHANNEL_LAYERS = {
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'menu'
 LOGOUT_REDIRECT_URL = '/'
+PROMETHEUS_EXPORT_MIGRATIONS = True
+PROMETHEUS_METRIC_EXPORT_DURATION_BUCKETS = True
+
