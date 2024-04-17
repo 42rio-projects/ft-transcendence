@@ -3,13 +3,13 @@ networks:
     name: ft_transcendence
 
 volumes:
-  django_src:
-    name: django_src
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: ../../django
+  # django_src:
+  #   name: django_src
+  #   driver: local
+  #   driver_opts:
+  #     type: none
+  #     o: bind
+  #     device: ../../django
 
   postgres_data:
     name: postgres_data
@@ -45,7 +45,7 @@ services:
 
   postgres:
     container_name: postgres
-    image: cgr.dev/chainguard/postgres
+    image: postgres
     env_file: .env
     restart: always
     volumes:
@@ -66,11 +66,9 @@ services:
 
   django:
     container_name: django
-    build: ./requirements/django
+    build: ../../django
     env_file: .env
     restart: always
-    volumes:
-      - django_src:/usr/src/app
     ports:
       - 8000:8000
     depends_on:

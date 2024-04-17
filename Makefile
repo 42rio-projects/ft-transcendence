@@ -1,4 +1,4 @@
-COMPOSE = cd src && docker-compose -f docker-compose.yml
+COMPOSE = cd compose && cd src && docker-compose -f docker-compose.yml
 
 VOLUMES = ../postgres_data
 

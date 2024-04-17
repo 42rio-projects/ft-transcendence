@@ -8,6 +8,9 @@ user=$POSTGRES_USER
 password=$POSTGRES_PASSWORD"
 
 pip install Pillow
+echo "MakeMigrations"
 python manage.py makemigrations
-python manage.py migrate
-python manage.py runserver 0.0.0.0:8000
+echo "Migrate"
+python manage.py migrate --run-syncdb
+echo "Runserver"
+gunicorn ft_transcendence.wsgi:application --bind 0.0.0.0:8000
