@@ -17,7 +17,7 @@
   {% if user.is_authenticated %}
   <div id="friends-menu" class="verticalDiv">
     <button onclick="render('{% url 'localGame' %}')">Local Game</button>
-    <button onclick="render('{% url 'onlineGame' %}')">Online Game</button>
+    <button onclick="render('{% url 'gameInvites' %}')">Online Game</button>
   </div>
   <div id="game-data"></div>
   {% else %}
