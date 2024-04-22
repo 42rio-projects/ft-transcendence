@@ -4,9 +4,11 @@
     <p>Enter your account:</p>
   </div>
 
-  {% if success %}
-  <span class="auth-success">{{ success }}</span>
+  {% for message in messages %}
+  {% if message.tags == 'success' %}
+  <span class="auth-success">{{ message }}</span>
   {% endif %}
+  {% endfor %}
 
   {% include 'login_form.html' %}
 
