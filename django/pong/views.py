@@ -3,6 +3,6 @@ from .utils import render_component
 # Create your views here.
 
 
-def index(request):
+def home(request):
     if request.method == "GET":
         return render_component(request, "home.html", "body")

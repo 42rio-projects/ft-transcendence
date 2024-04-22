@@ -10,12 +10,12 @@
   {% endif %}
   {% endfor %}
 
-  {% include 'login_form.html' %}
+  {% include 'auth/login_form.html' %}
 
   <div class="auth-footer">
     <p class="auth-switch">
       Don't have an account?
-      <span onclick="fetchHTML('/register/')">Register</span>
+      <span onclick="fetchHTML('/auth/register/')">Register</span>
     </p>
   </div>
 </div>

@@ -1,9 +1,13 @@
+from .models import User
+
 def validate_register(username, password, password2):
     errors = {}
     if not username:
         errors["username_error"] = "Username is required"
     elif len(username) < 2:
         errors["username_error"] = "Username must be at least 2 characters long"
+    elif User.objects.filter(username=username).exists():
+        errors["username_error"] = "Username is already in use"
 
     if not password:
         errors["password_error"] = "Password is required"

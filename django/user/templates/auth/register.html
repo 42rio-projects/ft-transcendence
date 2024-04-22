@@ -4,12 +4,12 @@
     <p>Create your account:</p>
   </div>
 
-  {% include 'register_form.html' %}
+  {% include 'auth/register_form.html' %}
 
   <div class="auth-footer">
     <p class="auth-switch">
       Already have an account?
-      <span onclick="fetchHTML('/login/')">Login</span>
+      <span onclick="fetchHTML('/auth/login/')">Login</span>
     </p>
   </div>
 </div>

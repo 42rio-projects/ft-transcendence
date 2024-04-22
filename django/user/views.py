@@ -34,7 +34,7 @@ def register(request):
             errors_context["password"] = password
             errors_context["password2"] = password2
 
-            return render_component(request, "register_form.html", "auth-form", errors_context, 400)
+            return render_component(request, "auth/register_form.html", "auth-form", errors_context, 400)
 
         User.objects.create_user(username=username, password=password)
 
@@ -42,7 +42,7 @@ def register(request):
         return redirect("login")
 
     if request.method == "GET":
-        return render_component(request, "register.html", "body")
+        return render_component(request, "auth/register.html", "body")
 
 
 def login(request):
@@ -58,13 +58,13 @@ def login(request):
                 "error": "Incorrect username or password"
             }
 
-            return render_component(request, "login_form.html", "auth-form", context, 400)
+            return render_component(request, "auth/login_form.html", "auth-form", context, 400)
 
         django_login(request, user)
-        return render_component(request, "home.html", "body")
+        return redirect("home")
 
     if request.method == "GET":
-        return render_component(request, "login.html", "body")
+        return render_component(request, "auth/login.html", "body")
 
 
 def profile(request):
