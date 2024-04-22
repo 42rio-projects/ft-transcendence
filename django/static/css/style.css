@@ -1,9 +1,108 @@
+@import url(https://fonts.googleapis.com/css?family=Roboto);
+
+:root {
+  --background-color: #050505;
+  --background-color-lighter: #1f1f1f;
+  --foreground-color: #f0f0f0;
+  --primary-color: #6111b8;
+  --primary-color-lighter: #6820b6;
+  --secondary-color: #944cf1;
+  --tertiary-color: #97cc04;
+  --error-color: #ee1b1b;
+}
+
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Roboto", sans-serif;
 }
 
 a {
-    text-decoration: none;
+  text-decoration: none;
+}
+
+.auth-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background-color: var(--background-color);
+  color: var(--foreground-color);
+  width: 350px;
+  padding: 25px;
+  border-radius: 15px;
+  gap: 10px;
+}
+
+.auth-header {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.auth-header p {
+  font-size: 1.3rem;
+}
+
+#auth-form {
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  gap: 10px;
+}
+
+.auth-form-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.auth-form-inputs div {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.auth-form-inputs span {
+  font-size: 0.8rem;
+  color: var(--error-color);
+}
+
+.auth-form-inputs input {
+  background-color: var(--background-color-lighter);
+  color: var(--foreground-color);
+  padding: 12px;
+  border-radius: 5px;
+  border: none;
+}
+
+#auth-form button {
+  margin-left: auto;
+  font-size: 0.9rem;
+  padding: 12px;
+  padding-left: 15px;
+  padding-right: 15px;
+  border-radius: 10px;
+  border: none;
+  background-color: var(--primary-color);
+  color: var(--foreground-color);
+  cursor: pointer;
+  width: fit-content;
+}
+
+#auth-form button:hover {
+  background-color: var(--primary-color-lighter);
+}
+
+.auth-footer {
+  display: flex;
+  flex-direction: column;
+  padding-top: 15px;
+  border-top: var(--foreground-color) 1px solid;
+  gap: 5px;
+}
+
+.auth-footer span {
+  cursor: pointer;
+  color: var(--secondary-color);
 }

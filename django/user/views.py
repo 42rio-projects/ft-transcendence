@@ -1,21 +1,47 @@
-from django.shortcuts import redirect
+from django.shortcuts import redirect, render
+from pong.utils import render_component
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import update_session_auth_hash
 from twilio.rest import Client
 from django.contrib.auth import authenticate, login as django_login, logout as django_logout
 from django.contrib import messages
-from pong.utils import render
 import os
 
 from user.models import User
-from user.forms import LoginForm, RegisterForm
+from user.forms import LoginForm
 from user.forms import EmailChangeForm
 from user.forms import ChangePasswordForm
 from user.forms import UserProfileForm
 
+from .utils import validate_register
+
 SERVICE_SID = os.environ["TWILIO_SERVICE_SID"]
 ACCOUNT_SID = os.environ["TWILIO_ACCOUNT_SID"]
 AUTH_TOKEN = os.environ["TWILIO_AUTH_TOKEN"]
+
+
+def register(request):
+    if request.method == "POST":
+        username = request.POST.get("username")
+        password = request.POST.get("password")
+        password2 = request.POST.get("password2")
+
+        errors_context = validate_register(username, password, password2)
+        if errors_context:
+            # Add the previous values to the context
+            # So the user doesn't have to retype everything
+            errors_context["username"] = username
+            errors_context["password"] = password
+            errors_context["password2"] = password2
+
+            return render_component(request, "register_form.html", "auth-form", errors_context, 400)
+
+        return render_component(request, "login.html", "body", {
+            "message": "User registered successfully, you can now login"
+        })
+
+    if request.method == "GET":
+        return render_component(request, "register.html", "body")
 
 
 def profile(request):
@@ -44,22 +70,6 @@ def login(request):
     if request.method == "GET":
         form = LoginForm()
         return render(request, "login.html", {"form": form})
-
-
-def register(request):
-    if request.method == "POST":
-        form = RegisterForm(request.POST)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "You are now registered and can log in")
-            return redirect("login")
-
-        messages.error(request, "Error creating your account")
-        return render(request, "register.html", {"form": form}, status=400)
-
-    if request.method == "GET":
-        form = RegisterForm()
-        return render(request, "register.html", {"form": form})
 
 
 @login_required

@@ -1,17 +1,15 @@
-{% include 'messages.html' %}
-
 {% if user.is_authenticated %}
 <h1 class="welcome">Welcome, {{ user.username }}</h1>
 <div class="home-actions">
-    <button type="button" onclick="fetchHTML('/pong/')">Pong</button>
-    <button type="button" onclick="fetchHTML('/friends/')">Friends</button>
-    <button type="button" onclick="fetchHTML('/profile/')">Profile</button>
-    <button type="button" onclick="fetchHTML('/logout/')">Logout</button>
+  <button type="button" onclick="fetchHTML('/pong/')">Pong</button>
+  <button type="button" onclick="fetchHTML('/friends/')">Friends</button>
+  <button type="button" onclick="fetchHTML('/profile/')">Profile</button>
+  <button type="button" onclick="fetchHTML('/logout/')">Logout</button>
 </div>
 {% else %}
 <h1 class="welcome">Welcome to transcendence</h1>
 <div class="home-actions">
-    <button type="button" onclick="fetchHTML('/login/')">Login</button>
-    <button type="button" onclick="fetchHTML('/register/')">Register</button>
+  <button type="button" onclick="fetchHTML('/login/')">Login</button>
+  <button type="button" onclick="fetchHTML('/register/')">Register</button>
 </div>
 {% endif %}
