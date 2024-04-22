@@ -7,5 +7,10 @@ urlpatterns = [
     path('game-menu/', views.gameMenu, name='gameMenu'),
     path('local-game/', views.localGame, name='localGame'),
     path('online-game/', views.onlineGame, name='onlineGame'),
-    path("/game-invites/", views.gameInvites, name="gameInvites"),
+    path("game-invites/", views.gameInvites, name="gameInvites"),
+    path(
+        "game-invites/respond-invite/<int:invite_id>/",
+        views.respondGameInvite,
+        name="respondGameInvite"
+    ),
 ]

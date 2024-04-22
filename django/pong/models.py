@@ -1,14 +1,13 @@
 from django.db import models
-from user.models import User
 from django.core.exceptions import ValidationError
 
 
 class Tournament(models.Model):
     name = models.CharField(max_length=100, unique=True)
     date = models.DateField(auto_now_add=True)
-    players = models.ManyToManyField(User, related_name='tournaments')
+    players = models.ManyToManyField('user.User', related_name='tournaments')
     winner = models.ForeignKey(
-        User,
+        'user.User',
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
@@ -74,13 +73,13 @@ class Round(models.Model):
 
 class Game(models.Model):
     player_1 = models.ForeignKey(
-        User,
+        'user.User',
         null=True,
         on_delete=models.SET_NULL,
         related_name='home_games'
     )
     player_2 = models.ForeignKey(
-        User,
+        'user.User',
         null=True,
         on_delete=models.SET_NULL,
         related_name='away_games'
@@ -88,7 +87,7 @@ class Game(models.Model):
     player1_points = models.PositiveSmallIntegerField(default=0)
     player2_points = models.PositiveSmallIntegerField(default=0)
     winner = models.ForeignKey(
-        User,
+        'user.User',
         null=True,
         on_delete=models.SET_NULL,
         related_name='wins'
@@ -146,11 +145,13 @@ class GameInvite(models.Model):
         super().save(*args, **kwargs)
 
     def respond(self, accepted):
-        pass
-        # if accepted is True:
-        #     friendship = IsFriendsWith(user1=self.sender, user2=self.receiver)
-        #     friendship.save()
-        # self.delete()
+        game = self.game
+        if accepted is True:
+            game.player_2 = self.receiver
+            game.save()
+        else:
+            game.delete()
+        self.delete()
 
     class Meta:
         constraints = [

@@ -23,7 +23,7 @@
         <input
           type="hidden"
           name="url"
-          value="{% url 'respondFriendInvite' invite.id %}"
+          value="{% url 'respondGameInvite' invite.id %}"
         />
       </form>
       <form method="POST" onsubmit="handleForm(event)">
@@ -33,7 +33,7 @@
         <input
           type="hidden"
           name="url"
-          value="{% url 'respondFriendInvite' invite.id %}"
+          value="{% url 'respondGameInvite' invite.id %}"
         />
       </form>
     </div>

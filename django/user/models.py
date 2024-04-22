@@ -6,6 +6,7 @@ from relations.models import IsFriendsWith
 from relations.models import IsBlockedBy
 from relations.models import FriendInvite
 from chat.models import Chat
+from pong.models import Game, GameInvite
 
 
 class User(AbstractUser):
@@ -87,3 +88,12 @@ class User(AbstractUser):
         block = IsBlockedBy.objects.filter(Q(blocker=self, blocked=user))
         if block.exists():
             block[0].delete()
+
+    def invite_to_game(self, user):
+        game = Game(player_1=self)
+        game.save()
+        try:
+            GameInvite(sender=self, receiver=user, game=game).save()
+        except Exception as e:
+            game.delete()
+            raise e

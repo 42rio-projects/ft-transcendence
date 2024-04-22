@@ -1,9 +1,11 @@
 from django.shortcuts import render
-from django.shortcuts import get_object_or_404
+from django.core.exceptions import PermissionDenied
+from django.shortcuts import get_object_or_404, redirect
 from django.http import HttpResponse
 from django.template import loader
 
 from user.models import User
+import pong.models as models
 
 
 def index(request):
@@ -47,6 +49,24 @@ def gameInvites(request):
     template = loader.get_template("pong/game_invites.html")
     context = {}
     return HttpResponse(template.render(context, request))
+
+
+def respondGameInvite(request, invite_id):
+    invite = get_object_or_404(
+        models.GameInvite,
+        pk=invite_id,
+    )
+    if invite.receiver != request.user:
+        raise PermissionDenied
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        if action == 'accept':
+            invite.respond(accepted=True)
+        elif action == 'reject':
+            invite.respond(accepted=False)
+        else:
+            raise Exception('Invalid action')
+    return redirect('gameInvites')
 
 # class TournamentViewSet(viewsets.ModelViewSet):
 #     queryset = models.Tournament.objects.all()
