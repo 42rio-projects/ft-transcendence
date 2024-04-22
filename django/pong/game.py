@@ -1,5 +1,6 @@
 import json
 import asyncio
+from channels.layers import get_channel_layer
 
 X_SPEED_LIMIT = 4
 Y_SPEED_LIMIT = 2
@@ -42,7 +43,7 @@ class GameInfo:
         self.speed_countdown = SPEED_COUNTER
 
     def pos_to_json(self):
-        return json.dumps(
+        return (
             {
                 "p1": self.p1_pos,
                 "p2": self.p2_pos,
@@ -52,7 +53,7 @@ class GameInfo:
         )
 
     def score_to_json(self):
-        return json.dumps(
+        return (
             {"status": "score", "p1": self.p1_score, "p2": self.p2_score}
         )
 
@@ -173,8 +174,11 @@ class LocalGame(Game):
         self.interval_task = None
         self.socket = socket
 
+    def is_running(self):
+        return (self.interval_task is not None)
+
     async def start(self):
-        if (self.interval_task):
+        if (self.is_running()):
             return
         self.info.set_initial_values()
         await self.send_pos()
@@ -182,14 +186,17 @@ class LocalGame(Game):
         self.interval_task = asyncio.create_task(self.update_game())
 
     def stop(self):
-        self.interval_task.cancel()
-        self.interval_task = None
+        if self.is_running():
+            self.interval_task.cancel()
+            self.interval_task = None
 
     async def send_pos(self):
-        await self.socket.send(text_data=self.info.pos_to_json())
+        data = json.dumps(self.info.pos_to_json())
+        await self.socket.send(text_data=data)
 
     async def send_score(self):
-        await self.socket.send(text_data=self.info.score_to_json())
+        data = json.dumps(self.info.score_to_json())
+        await self.socket.send(text_data=data)
 
     async def player_scored(self, player):
         if player == 1:
@@ -200,5 +207,52 @@ class LocalGame(Game):
         if self.info.finished():
             self.stop()
 
+
+class OnlineGame(Game):
+    interval_task = {}
+    channel_layer = get_channel_layer()
+
+    def __init__(self, socket):
+        super().__init__()
+        self.game_id = socket.game_id
+        self.room_group_name = socket.room_group_name
+
     def is_running(self):
-        return (self.interval_task is not None)
+        return (self.game_id in self.interval_task)
+
+    async def start(self):
+        if self.is_running():
+            return
+        self.info.set_initial_values()
+        await self.send_start_message()
+        await self.send_pos()
+        await self.send_score()
+        self.interval_task[self.game_id] = asyncio.create_task(
+            self.update_game()
+        )
+
+    def stop(self):
+        if self.is_running():
+            self.interval_task[self.game_id].cancel()
+            del self.interval_task[self.game_id]
+
+    async def send_pos(self):
+        await self.channel_layer.group_send(
+            self.room_group_name,
+            {"type": "game.update", "json": self.info.pos_to_json()},
+        )
+
+    async def send_score(self):
+        await self.channel_layer.group_send(
+            self.room_group_name,
+            {"type": "game.update", "json": self.info.score_to_json()},
+        )
+
+    async def send_start_message(self):
+        await self.channel_layer.group_send(
+            self.room_group_name,
+            {"type": "game.update", "json": {"status": "started"}},
+        )
+
+    async def player_scored(self, player):
+        pass

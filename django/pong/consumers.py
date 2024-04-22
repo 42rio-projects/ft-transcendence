@@ -5,7 +5,7 @@ import json
 import asyncio
 
 import pong.models as models
-from pong.game import LocalGame
+from pong.game import LocalGame, OnlineGame
 
 
 class LocalGameCosumer(AsyncWebsocketConsumer):
@@ -62,32 +62,41 @@ class OnlineGameCosumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.game_id = self.scope['url_route']['kwargs']['room_id']
         self.room_group_name = f'game_{self.game_id}'
-        if self.game_id not in self.interval_tasks:
-            self.interval_tasks[self.game_id] = asyncio.create_task(
-                testing_function(self.room_group_name)
-            )
-        # self.game_model = await get_game(game_id)
-        # self.user = self.scope['user']
+        self.game = OnlineGame(self)
         await self.channel_layer.group_add(
             self.room_group_name, self.channel_name
         )
         await self.accept()
 
     async def disconnect(self, close_code):
-        self.interval_tasks[self.game_id].cancel()
-        del self.interval_tasks[self.game_id]
+        self.game.stop()
         await self.channel_layer.group_discard(
             self.room_group_name, self.channel_name
         )
 
-    async def receive(self, text_data):
+    def update_player_input(self, data):
         pass
 
+    async def receive(self, text_data):
+        data_json = json.loads(text_data)
+        if 'start' in data_json:
+            await self.game.start()
+            return
+        elif 'stop' in data_json and self.game.is_running():
+            self.game.stop()
+            return
+        try:
+            self.update_player_input(data_json)
+        except KeyError:
+            await self.send(text_data=json.dumps(
+                {"status": "invalid", "message": "Invalid JSON received"}
+            ))
+
     async def game_update(self, event):
-        await self.send(text_data=json.dumps(event))
+        await self.send(text_data=json.dumps(event["json"]))
 
 
-@ database_sync_to_async
-def get_game(id):
-    game = models.Game.objects.get(pk=id)
-    return game
+# @ database_sync_to_async
+# def get_game(id):
+#     game = models.Game.objects.get(pk=id)
+#     return game

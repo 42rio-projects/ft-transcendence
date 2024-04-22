@@ -5,6 +5,7 @@ class OnlineGameWebSocket {
     );
     this.socket.onmessage = this.onMessage.bind(this);
     this.socket.onclose = this.onClose.bind(this);
+    this.gameRunning = false;
     //this.handleKeyUp = this.handleKeyUp.bind(this);
     //this.handleKeyDown = this.handleKeyDown.bind(this);
     //this.pressedKeys[this.P1_UP] = false;
@@ -13,17 +14,37 @@ class OnlineGameWebSocket {
     //this.pressedKeys[this.P2_DOWN] = false;
   }
 
+  gameAction(action) {
+    let message;
+    if (action == "start") {
+      message = JSON.stringify({
+        start: true,
+      });
+    } else {
+      message = JSON.stringify({
+        stop: true,
+      });
+    }
+    this.socket.send(message);
+  }
+
   onMessage(event) {
     const data = JSON.parse(event.data);
-    console.log(data);
-    //if (this.gameRunning && !("status" in data)) {
-    //  this.movePlayer();
-    //  this.gameScreen.draw(data);
-    //} else if (data["status"] == "score") {
-    //  this.updateScoreboard(data);
-    //} else if (data["status"] == "invalid") {
-    //  console.error(data["message"]);
-    //}
+    if (this.gameRunning && !("status" in data)) {
+      this.movePlayer();
+      this.gameScreen.draw(data);
+    } else if (data["status"] == "score") {
+      this.updateScoreboard(data);
+    } else if (data["status"] == "invalid") {
+      console.error(data["message"]);
+    } else if (data["status"] == "started") {
+      //this.setKeyListeners();
+      this.gameRunning = true;
+      this.gameScreen = new GameScreen();
+    } else if (data["status"] == "stoped") {
+      //this.unsetKeyListeners();
+      this.gameRunning = false;
+    }
   }
 
   onClose(event) {
@@ -31,14 +52,15 @@ class OnlineGameWebSocket {
     //this.gameRunning = false;
   }
 
-  //movePlayer() {
-  //  this.getDirections();
-  //  let message = JSON.stringify({
-  //    l: this.p1Direction,
-  //    r: this.p2Direction,
-  //  });
-  //  this.socket.send(message);
-  //}
+  movePlayer() {
+    return;
+    //this.getDirections();
+    //let message = JSON.stringify({
+    //  l: this.p1Direction,
+    //  r: this.p2Direction,
+    //});
+    //this.socket.send(message);
+  }
 
   //getDirections() {
   //  if (this.pressedKeys[this.P1_UP]) {
@@ -55,25 +77,6 @@ class OnlineGameWebSocket {
   //  } else {
   //    this.p2Direction = null;
   //  }
-  //}
-
-  //gameAction(action) {
-  //  let message;
-  //  if (action == "start") {
-  //    message = JSON.stringify({
-  //      start: true,
-  //    });
-  //    this.setKeyListeners();
-  //    this.gameRunning = true;
-  //    this.gameScreen = new GameScreen();
-  //  } else {
-  //    message = JSON.stringify({
-  //      stop: true,
-  //    });
-  //    this.unsetKeyListeners();
-  //    this.gameRunning = false;
-  //  }
-  //  this.socket.send(message);
   //}
 
   //handleKeyDown(event) {

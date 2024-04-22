@@ -1,4 +1,4 @@
-class GameWebSocket {
+class LocalGameWebSocket {
   P1_UP = "w";
   P1_DOWN = "s";
   P2_UP = "ArrowUp";
@@ -20,6 +20,25 @@ class GameWebSocket {
     this.pressedKeys[this.P2_UP] = false;
     this.pressedKeys[this.P1_DOWN] = false;
     this.pressedKeys[this.P2_DOWN] = false;
+  }
+
+  gameAction(action) {
+    let message;
+    if (action == "start") {
+      message = JSON.stringify({
+        start: true,
+      });
+      this.setKeyListeners();
+      this.gameRunning = true;
+      this.gameScreen = new GameScreen();
+    } else {
+      message = JSON.stringify({
+        stop: true,
+      });
+      this.unsetKeyListeners();
+      this.gameRunning = false;
+    }
+    this.socket.send(message);
   }
 
   onMessage(event) {
@@ -63,25 +82,6 @@ class GameWebSocket {
     } else {
       this.p2Direction = null;
     }
-  }
-
-  gameAction(action) {
-    let message;
-    if (action == "start") {
-      message = JSON.stringify({
-        start: true,
-      });
-      this.setKeyListeners();
-      this.gameRunning = true;
-      this.gameScreen = new GameScreen();
-    } else {
-      message = JSON.stringify({
-        stop: true,
-      });
-      this.unsetKeyListeners();
-      this.gameRunning = false;
-    }
-    this.socket.send(message);
   }
 
   handleKeyDown(event) {
