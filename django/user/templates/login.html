@@ -1,9 +1,15 @@
-{% include 'messages.html' %}
+<div class="auth-container">
+  <div class="auth-header">
+    <h1>Login</h1>
+    <p>Enter your account:</p>
+  </div>
 
-<form id="auth-form" method="post" onsubmit="fetchForm(event)">
-    {% csrf_token %}
-    {{ form }}
-    <button type="submit">Login</button>
-    <p class="auth-switch">Don't have an account? <button type="button" onclick="fetchHTML('/register/')">Register</button></p>
-    <p class="auth-home">Go to <button class="button-home" type="button" onclick="fetchHTML('/')">Home</button></p>
-</form>
+  {% include 'login_form.html' %}
+
+  <div class="auth-footer">
+    <p class="auth-switch">
+      Don't have an account?
+      <span onclick="fetchHTML('/register/')">Register</span>
+    </p>
+  </div>
+</div>

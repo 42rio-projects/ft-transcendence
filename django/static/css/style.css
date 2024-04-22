@@ -57,6 +57,11 @@ a {
   gap: 12px;
 }
 
+.auth-error {
+  font-size: 1rem;
+  color: var(--error-color);
+}
+
 .auth-form-inputs div {
   display: flex;
   flex-direction: column;

@@ -46,32 +46,31 @@ def register(request):
         return render_component(request, "register.html", "body")
 
 
+def login(request):
+    if request.method == "POST":
+        username = request.POST.get("username")
+        password = request.POST.get("password")
+
+        user = authenticate(username=username, password=password)
+        if not user:
+            context = {
+                "username": username,
+                "password": password,
+                "error": "Incorrect username or password"
+            }
+
+            return render_component(request, "login_form.html", "auth-form", context, 400)
+
+        django_login(request, user)
+        return render_component(request, "home.html", "body")
+
+    if request.method == "GET":
+        return render_component(request, "login.html", "body")
+
+
 def profile(request):
     if request.method == "GET":
         return render(request, "profile.html")
-
-
-def login(request):
-    if request.method == "POST":
-        form = LoginForm(request.POST)
-        if form.is_valid():
-            username = form.cleaned_data.get("username")
-            password = form.cleaned_data.get("password")
-
-            user = authenticate(username=username, password=password)
-            if user is None:
-                messages.error(request, "Incorrect username or password")
-                return render(request, "login.html", {"form": form}, status=400)
-
-            django_login(request, user)
-            messages.success(request, "You are now logged in")
-            return redirect("index")
-        
-        return render(request, "login.html", {"form": form}, status=400)
-
-    if request.method == "GET":
-        form = LoginForm()
-        return render(request, "login.html", {"form": form})
 
 
 @login_required

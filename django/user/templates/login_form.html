@@ -1,0 +1,29 @@
+<form id="auth-form" method="post" onsubmit="fetchForm(event, '/login/')">
+  {% csrf_token %}
+
+  {% if error %}
+  <span class="auth-error">{{ error }}</span>
+  {% endif %}
+
+  <div class="auth-form-inputs">
+    <div>
+      <input
+        type="text"
+        name="username"
+        placeholder="Username"
+        value="{{ username }}"
+      />
+    </div>
+
+    <div>
+      <input
+        type="password"
+        name="password"
+        placeholder="Password"
+        value="{{ password }}"
+      />
+    </div>
+  </div>
+
+  <button type="submit">Sign in</button>
+</form>
