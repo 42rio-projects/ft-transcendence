@@ -36,6 +36,8 @@ def register(request):
 
             return render_component(request, "register_form.html", "auth-form", errors_context, 400)
 
+        User.objects.create_user(username=username, password=password)
+
         return render_component(request, "login.html", "body", {
             "message": "User registered successfully, you can now login"
         })
