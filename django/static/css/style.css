@@ -57,6 +57,11 @@ a {
   gap: 12px;
 }
 
+.auth-success {
+  font-size: 1rem;
+  color: var(--tertiary-color);
+}
+
 .auth-error {
   font-size: 1rem;
   color: var(--error-color);

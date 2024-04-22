@@ -39,7 +39,7 @@ def register(request):
         User.objects.create_user(username=username, password=password)
 
         return render_component(request, "login.html", "body", {
-            "message": "User registered successfully, you can now login"
+            "success": "Registered! You can now login"
         })
 
     if request.method == "GET":

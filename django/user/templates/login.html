@@ -4,6 +4,10 @@
     <p>Enter your account:</p>
   </div>
 
+  {% if success %}
+  <span class="auth-success">{{ success }}</span>
+  {% endif %}
+
   {% include 'login_form.html' %}
 
   <div class="auth-footer">
