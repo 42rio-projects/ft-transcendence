@@ -18,6 +18,7 @@
   <div id="friends-menu" class="verticalDiv">
     <button onclick="render('{% url 'localGame' %}')">Local Game</button>
     <button onclick="render('{% url 'gameInvites' %}')">Online Game</button>
+    <button onclick="render('{% url 'onlineGame' game_id=1 %}')">test</button>
   </div>
   <div id="game-data"></div>
   {% else %}
@@ -28,8 +29,11 @@
   <script src="{% static 'pong/js/gameScreen.js' %}"></script>
   {% load static %}
   <script src="{% static 'pong/js/gameWebSocket.js' %}"></script>
+  {% load static %}
+  <script src="{% static 'pong/js/onlineGameWebSocket.js' %}"></script>
   <script>
     let gameSocket;
+    let onlineGameSocket;
     let messageSocket;
     window.addEventListener("popstate", handlePopState);
     history.replaceState(
@@ -76,6 +80,20 @@
     }
 
     function handleSockets(url) {
+      if (messageSocket && messageSocket.socket.readyState === WebSocket.OPEN) {
+        messageSocket.socket.close();
+      } else if (
+        gameSocket &&
+        gameSocket.socket.readyState === WebSocket.OPEN
+      ) {
+        gameSocket.socket.close();
+      } else if (
+        onlineGameSocket &&
+        onlineGameSocket.socket.readyState === WebSocket.OPEN
+      ) {
+        onlineGameSocket.socket.close();
+      }
+
       if (url == "{% url 'friendList' %}") {
         statusSocket.setInitialStatus();
       } else if (url.includes("/chat/room")) {
@@ -84,12 +102,10 @@
         messageSocket = new MessageWebSocket(match.groups.id);
       } else if (url == "{% url 'localGame' %}") {
         gameSocket = new GameWebSocket();
-      }
-      if (messageSocket && messageSocket.socket.readyState === WebSocket.OPEN) {
-        messageSocket.socket.close();
-      }
-      if (gameSocket && gameSocket.socket.readyState === WebSocket.OPEN) {
-        gameSocket.socket.close();
+      } else if (url.includes("/online-game/")) {
+        const regex = /\/online-game\/(?<id>\d+)\//;
+        const match = url.match(regex);
+        onlineGameSocket = new OnlineGameWebSocket(match.groups.id);
       }
     }
   </script>

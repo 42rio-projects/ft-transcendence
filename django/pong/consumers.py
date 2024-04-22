@@ -1,6 +1,10 @@
 from channels.generic.websocket import AsyncWebsocketConsumer
+from channels.db import database_sync_to_async
+from channels.layers import get_channel_layer
 import json
 import asyncio
+
+import pong.models as models
 
 X_SPEED_LIMIT = 4
 Y_SPEED_LIMIT = 2
@@ -220,14 +224,49 @@ class LocalGameCosumer(GameCosumer):
         self.game.set_initial_game_pos()
 
 
+async def testing_function(group_name):
+    channel_layer = get_channel_layer()
+    counter = 0
+    while True:
+        await asyncio.sleep(1)
+        await channel_layer.group_send(
+            group_name, {"type": "game.update", "counter": counter},
+        )
+        counter += 1
+
+
 class OnlineGameCosumer(AsyncWebsocketConsumer):
+    interval_tasks = {}
 
     async def connect(self):
-        # add to game group
+        self.game_id = self.scope['url_route']['kwargs']['room_id']
+        self.room_group_name = f'game_{self.game_id}'
+        if self.game_id not in self.interval_tasks:
+            self.interval_tasks[self.game_id] = asyncio.create_task(
+                testing_function(self.room_group_name)
+            )
+        # self.game_model = await get_game(game_id)
+        # self.user = self.scope['user']
+        await self.channel_layer.group_add(
+            self.room_group_name, self.channel_name
+        )
         await self.accept()
 
     async def disconnect(self, close_code):
-        pass
+        self.interval_tasks[self.game_id].cancel()
+        del self.interval_tasks[self.game_id]
+        await self.channel_layer.group_discard(
+            self.room_group_name, self.channel_name
+        )
 
     async def receive(self, text_data):
         pass
+
+    async def game_update(self, event):
+        await self.send(text_data=json.dumps(event))
+
+
+@ database_sync_to_async
+def get_game(id):
+    game = models.Game.objects.get(pk=id)
+    return game

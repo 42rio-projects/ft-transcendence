@@ -28,7 +28,7 @@ def localGame(request):
         return render(request, "pong/local_game.html")
 
 
-def onlineGame(request):
+def onlineGame(request, game_id):
     if request.method == "GET":
         return render(request, "pong/online_game.html")
 
