@@ -45,17 +45,6 @@ class LocalGameCosumer(AsyncWebsocketConsumer):
             ))
 
 
-async def testing_function(group_name):
-    channel_layer = get_channel_layer()
-    counter = 0
-    while True:
-        await asyncio.sleep(1)
-        await channel_layer.group_send(
-            group_name, {"type": "game.update", "counter": counter},
-        )
-        counter += 1
-
-
 class OnlineGameCosumer(AsyncWebsocketConsumer):
     interval_tasks = {}
 

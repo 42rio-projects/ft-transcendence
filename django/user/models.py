@@ -94,6 +94,7 @@ class User(AbstractUser):
         game.save()
         try:
             GameInvite(sender=self, receiver=user, game=game).save()
+            return game
         except Exception as e:
             game.delete()
             raise e

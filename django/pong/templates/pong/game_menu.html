@@ -46,24 +46,27 @@
       await render(event.state?.view, false, true);
     }
 
-    function handleForm(event) {
+    async function handleForm(event) {
       event.preventDefault();
 
       const form = event.target;
       const data = new FormData(form);
       const url = data.get("url");
-      fetch(url, {
-        method: form.method,
-        body: data,
-      })
-        .then((response) => response.text())
-        .then((data) => {
-          document.getElementById("game-data").innerHTML = data;
-        });
+      let response = await fetch(url, { method: form.method, body: data });
+      if (!response.ok) {
+        console.error("Failed to send form");
+      } else {
+        const new_url = response.url;
+        const data = await response.text();
+        document.getElementById("game-data").innerHTML = data;
+        if (new_url != window.location) {
+          history.pushState({ view: new_url }, "", new_url);
+          handleSockets(window.location.pathname);
+        }
+      }
     }
 
     async function render(url, setPushState = true, isPopState = false) {
-      console.log(url + " == " + window.location.pathname);
       if (url == window.location.pathname && !isPopState) return;
       if (url == "{% url 'friendsIndex' %}") {
         url = "{% url 'friendList' %}";
