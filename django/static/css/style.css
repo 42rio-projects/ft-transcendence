@@ -34,14 +34,22 @@
   font-family: "Roboto", sans-serif;
 }
 
+body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: var(--background-color);
+  color: var(--foreground-color);
+}
+
 main {
   display: flex;
   flex-direction: column;
-  background-color: var(--background-color);
-  color: var(--foreground-color);
   padding: 20px;
   gap: 5px;
   border-radius: 10px;
+  border: var(--foreground-color) 1px solid;
   width: fit-content;
 }
 
@@ -125,6 +133,7 @@ form input {
   border-radius: 5px;
   padding: 10px;
   background-color: var(--background-color-lighter);
+  color: var(--foreground-color);
 }
 
 form button {
