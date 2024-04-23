@@ -104,6 +104,7 @@ footer button:hover {
 form {
   display: flex;
   flex-direction: column;
+  width: 225px;
   padding: 5px 7px;
   gap: 10px;
 }
