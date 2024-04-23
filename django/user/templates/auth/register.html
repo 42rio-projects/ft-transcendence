@@ -1,15 +1,23 @@
-<div class="auth-container">
-  <div class="auth-header">
-    <h1>Register</h1>
-    <p>Create your account:</p>
-  </div>
+<main>
+  <header>
+    <div>
+      <h1>Register</h1>
+      <h2>Create your account:</h2>
+    </div>
+    <div>
+      <button type="submit" onclick="fetchHTML('/')">
+        <!-- TODO: Home icon -->
+        Home
+      </button>
+    </div>
+  </header>
 
   {% include 'auth/register_form.html' %}
 
-  <div class="auth-footer">
-    <p class="auth-switch">
-      Already have an account?
-      <span onclick="fetchHTML('/auth/login/')">Login</span>
-    </p>
-  </div>
-</div>
+  <hr />
+
+  <footer>
+    <span> Already have an account?</span>
+    <button type="submit" onclick="fetchHTML('/auth/login/')">Login</button>
+  </footer>
+</main>

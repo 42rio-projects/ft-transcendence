@@ -67,6 +67,13 @@ def login(request):
         return render_component(request, "auth/login.html", "body")
 
 
+def logout(request):
+    if request.method == "GET":
+        django_logout(request)
+        messages.success(request, "Logged out.")
+        return redirect("home")
+
+
 def profile(request):
     if request.method == "GET":
         return render(request, "profile.html")
@@ -158,13 +165,6 @@ def email_change_check(request):
 
     messages.error(request, 'Código de verificação inválido.')
     return render(request, "email_change_check_form.html")
-
-
-def logout(request):
-    if request.method == "GET":
-        django_logout(request)
-        messages.success(request, "You are now logged out")
-        return render(request, "logout.html")
 
 
 def edit_profile(request):

@@ -1,21 +1,29 @@
-<div class="auth-container">
-  <div class="auth-header">
-    <h1>Login</h1>
-    <p>Enter your account:</p>
-  </div>
+<main>
+  <header>
+    <div>
+      <h1>Login</h1>
+      <h2>Enter your account:</h2>
+    </div>
+    <div>
+      <button type="submit" onclick="fetchHTML('/')">
+        <!-- TODO: Home icon -->
+        Home
+      </button>
+    </div>
+  </header>
 
   {% for message in messages %}
-  {% if message.tags == 'success' %}
-  <span class="auth-success">{{ message }}</span>
-  {% endif %}
+  <span class="{{ message.tags }}">{{ message }}</span>
   {% endfor %}
-
+  
   {% include 'auth/login_form.html' %}
 
-  <div class="auth-footer">
-    <p class="auth-switch">
-      Don't have an account?
-      <span onclick="fetchHTML('/auth/register/')">Register</span>
-    </p>
-  </div>
-</div>
+  <hr />
+
+  <footer>
+    <span> Don't have an account?</span>
+    <button type="submit" onclick="fetchHTML('/auth/register/')">
+      Register
+    </button>
+  </footer>
+</main>

@@ -6,8 +6,8 @@ from user import views
 urlpatterns = [
     path('auth/register/', views.register, name='register'),
     path('auth/login/', views.login, name='login'),
+    path('auth/logout/', views.logout, name='logout'),
     path('profile/', views.profile, name='profile'),
-    path('logout/', views.logout, name='logout'),
     path('upload_avatar', views.upload_avatar, name='upload_avatar'),
     path('change_password', views.change_password, name='change_password'),
     path('edit_profile/', views.edit_profile, name='edit_profile'),
