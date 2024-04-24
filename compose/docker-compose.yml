@@ -1,0 +1,280 @@
+networks:
+  ft_transcendence:
+    name: ft_transcendence
+
+volumes:
+
+  filebeatdata01:
+    driver: local
+
+  certs:
+    driver: local
+
+  esdata01:
+    driver: local
+
+  kibanadata:
+    driver: local
+
+  logstashdata01:
+    driver: local
+
+  postgres_data:
+    driver: local
+
+  prometheus_data:
+    driver: local
+
+  grafana_data:
+    driver: local
+
+services:
+  redis:
+    container_name: redis
+    image: cgr.dev/chainguard/redis
+    restart: always
+    networks:
+      - ft_transcendence
+
+  postgres:
+    container_name: postgres
+    image: postgres
+    env_file: .env
+    restart: always
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - ft_transcendence
+
+  adminer:
+    container_name: adminer
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+    depends_on:
+      - postgres
+    networks:
+      - ft_transcendence
+
+  django:
+    container_name: django
+    build: ../django
+    env_file: .env
+    restart: always
+    ports:
+      - 8000:8000
+    depends_on:
+      - postgres
+    networks:
+      - ft_transcendence
+
+  prometheus:
+    container_name: prometheus
+    image: cgr.dev/chainguard/prometheus
+    restart: always
+    volumes:
+      - ./prometheus:/etc/prometheus
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yaml'
+    ports:
+      - '9090:9090'
+    networks:
+      - ft_transcendence
+
+  grafana:
+    container_name: grafana
+    image: cgr.dev/chainguard/grafana
+    restart: always
+    env_file:
+      - .env
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/datasource/datasource.yaml:/etc/grafana/provisioning/datasources/datasource.yaml
+      - ./grafana/dashboard/dashboard.yaml:/etc/grafana/provisioning/dashboards/dashboard.yaml
+      - ./grafana/dashboard/dashboard-transcendence.json:/var/lib/grafana/dashboards/dashboard-transcendence.json
+      - ./grafana/dashboard/dashboard-cadvisor.json:/var/lib/grafana/dashboards/dashboard-cadvisor.json
+    ports:
+      - '3000:3000'
+    networks:
+      - ft_transcendence
+
+  cadvisor:
+    container_name: cadvisor
+    image: cgr.dev/chainguard/cadvisor
+    ports:
+      - '8081:8080'
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    networks:
+      - ft_transcendence
+
+  setup:
+    container_name: elk_setup
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.7.1
+    volumes:
+      - certs:/usr/share/elasticsearch/config/certs
+      - ./elk/elksetup.sh:/usr/local/bin/elksetup.sh
+    user: root
+    env_file:
+      - .env
+    command: >
+      sh -c "/usr/local/bin/elksetup.sh"
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+           "[ -f config/certs/elasticsearch/elasticsearch.crt ]"
+        ]
+      interval: 1s
+      timeout: 5s
+      retries: 120
+    networks:
+      - ft_transcendence
+
+  elasticsearch:
+    container_name: elasticsearch
+    depends_on:
+      setup:
+        condition: service_healthy
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.7.1
+    labels:
+      co.elastic.logs/module: elasticsearch
+    volumes:
+      - certs:/usr/share/elasticsearch/config/certs
+      - esdata01:/usr/share/elasticsearch/data
+    ports:
+      - 9200:9200
+    environment:
+      - node.name=elasticsearch
+      - cluster.name=${CLUSTER_NAME}
+      - discovery.type=single-node
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+      - bootstrap.memory_lock=true
+      - xpack.security.enabled=true
+      - xpack.security.http.ssl.enabled=true
+      - xpack.security.http.ssl.key=certs/elasticsearch/elasticsearch.key
+      - xpack.security.http.ssl.certificate=certs/elasticsearch/elasticsearch.crt
+      - xpack.security.http.ssl.certificate_authorities=certs/ca/ca.crt
+      - xpack.security.transport.ssl.enabled=true
+      - xpack.security.transport.ssl.key=certs/elasticsearch/elasticsearch.key
+      - xpack.security.transport.ssl.certificate=certs/elasticsearch/elasticsearch.crt
+      - xpack.security.transport.ssl.certificate_authorities=certs/ca/ca.crt
+      - xpack.security.transport.ssl.verification_mode=certificate
+      - xpack.license.self_generated.type=${LICENSE}
+    mem_limit: ${ES_MEM_LIMIT}
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -s --cacert config/certs/ca/ca.crt https://localhost:9200 | grep -q 'missing authentication credentials'",
+        ]
+      interval: 10s
+      timeout: 10s
+      retries: 120
+    networks:
+      - ft_transcendence
+
+  kibana:
+    container_name: kibana
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    image: docker.elastic.co/kibana/kibana:${STACK_VERSION}
+    labels:
+      co.elastic.logs/module: kibana
+    volumes:
+      - certs:/usr/share/kibana/config/certs
+      - kibanadata:/usr/share/kibana/data
+    ports:
+      - 5601:5601
+    environment:
+      - SERVERNAME=kibana
+      - ELASTICSEARCH_HOSTS=https://elasticsearch:9200
+      - ELASTICSEARCH_USERNAME=kibana_system
+      - ELASTICSEARCH_PASSWORD=${KIBANA_PASSWORD}
+      - ELASTICSEARCH_SSL_CERTIFICATEAUTHORITIES=config/certs/ca/ca.crt
+      - XPACK_SECURITY_ENCRYPTIONKEY=${ENCRYPTION_KEY}
+      - XPACK_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY=${ENCRYPTION_KEY}
+      - XPACK_REPORTING_ENCRYPTIONKEY=${ENCRYPTION_KEY}
+    mem_limit: ${KB_MEM_LIMIT}
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -s -I http://localhost:5601 | grep -q 'HTTP/1.1 302 Found'",
+        ]
+      interval: 10s
+      timeout: 10s
+      retries: 120
+    networks:
+      - ft_transcendence
+
+  filebeat:
+    container_name: filebeat
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    image: docker.elastic.co/beats/filebeat:${STACK_VERSION}
+    user: root
+    volumes:
+      - certs:/usr/share/filebeat/certs
+      - filebeatdata01:/usr/share/filebeat/data
+      - "./elk/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro"
+      - "/var/lib/docker/containers:/var/lib/docker/containers:ro"
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    environment:
+      - ELASTIC_USER=elastic
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+      - ELASTIC_HOSTS=https://elasticsearch:9200
+      - KIBANA_HOSTS=http://kibana:5601
+      - LOGSTASH_HOSTS=http://logstash:9600
+    networks:
+      - ft_transcendence
+
+  logstash:
+    container_name: logstash
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+      kibana:
+        condition: service_healthy
+    image: docker.elastic.co/logstash/logstash:${STACK_VERSION}
+    labels:
+      co.elastic.logs/module: logstash
+    user: root
+    ports:
+      - 5044:5044
+      - 9600:9600
+    volumes:
+      - certs:/usr/share/logstash/certs
+      - logstashdata01:/usr/share/logstash/data
+      - "./elk/logstash.conf:/usr/share/logstash/pipeline/logstash.conf:ro"
+    environment:
+      - xpack.monitoring.enabled=false
+      - ELASTIC_USER=elastic
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+      - ELASTIC_HOSTS=https://elasticsearch:9200
+    networks:
+      - ft_transcendence
+
+  initializer:
+    image: docker.elastic.co/kibana/kibana:${STACK_VERSION}
+    restart: on-failure
+    depends_on:
+      - logstash
+    networks:
+      - ft_transcendence
+    volumes:
+      - certs:/usr/share/kibana/config/certs
+      - ./elk/kibanasetup.sh:/usr/local/bin/kibanasetup.sh
+    command: >
+      sh -c "/usr/local/bin/kibanasetup.sh"
