@@ -267,6 +267,7 @@ services:
       - ft_transcendence
 
   initializer:
+    container_name: dataview_init
     image: docker.elastic.co/kibana/kibana:${STACK_VERSION}
     restart: on-failure
     depends_on:
