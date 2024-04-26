@@ -1,5 +1,9 @@
 {% csrf_token %}
 
+{% for message in messages %}
+<span class="success text-sm">{{ message }}</span>
+{% endfor %}
+
 {% if error %}
 <span class="error text-sm">{{ error }}</span>
 {% endif %}
