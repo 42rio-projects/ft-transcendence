@@ -7,12 +7,11 @@ COPY ./tools/script.sh /
 RUN pip install --upgrade pip && \
     pip install django \
                 psycopg[binary] \
-                djangorestframework \
                 django-phonenumber-field phonenumbers \
-                djangorestframework_simplejwt \
-				channels[daphne] \
-				channels_redis \
-                twilio
+                channels[daphne] \
+                channels_redis \
+                twilio \
+                Pillow
 
 # Script to wait for a host:port to be available
 RUN curl -fsSLo /wait-for-it.sh \
