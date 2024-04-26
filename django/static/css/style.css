@@ -142,12 +142,6 @@ hr {
   gap: 8px;
 }
 
-.container div {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
 .container form {
   display: flex;
   flex-direction: column;
@@ -169,6 +163,24 @@ hr {
 .container footer div {
   display: flex;
   align-items: baseline;
+  gap: 5px;
+}
+
+.profile-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.profile-fields div {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+}
+
+.profile-fields div div {
+  display: flex;
   gap: 5px;
 }
 

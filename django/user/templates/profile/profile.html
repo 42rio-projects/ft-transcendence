@@ -13,7 +13,7 @@
 
   <hr />
 
-  <div>
+  <div class="profile-fields">
     <div>
       <img class="avatar" src="{{ user.avatar.url}}" alt="Avatar" />
       <button type="submit" onclick="fetchHTML('/profile/edit_avatar/')">
@@ -22,39 +22,53 @@
     </div>
 
     <div>
-      <label>Username:</label>
-      <p>{{ user.username }}</p>
+      <div>
+        <label>Username:</label>
+        <p>{{ user.username }}</p>
+      </div>
       <button type="submit" onclick="fetchHTML('/profile/edit_username/')">
         Edit username
       </button>
     </div>
 
     <div>
-      <label>Email:</label>
+      <div>
+        <label>Email:</label>
+        {% if user.email %}
+        <p>{{ user.email }}</p>
+        {% if user.email_verified %}
+        <p>Verified</p>
+        {% else %}
+        <p>Not verified</p>
+        {% endif %}
+        {% else %}
+        <p>No email</p>
+        {% endif %}
+      </div>
+
       {% if user.email %}
-      <p>{{ user.email }}</p>
       <button type="submit" onclick="fetchHTML('/profile/edit_email/')">
         Edit email
       </button>
       {% if user.email_verified %}
-      <p>Verified</p>
-      {% else %}
-      <p>Not verified</p>
       <button type="submit" onclick="fetchHTML('/profile/verify_email/')">
         Verify email
       </button>
       {% endif %}
       {% else %}
-      <p>No email</p>
       <button type="submit" onclick="fetchHTML('/profile/edit_email/')">
         Add email
       </button>
       {% endif %}
     </div>
-  
+
+  <div>
     <div>
-      <button type="submit" onclick="fetchHTML('/profile/edit_password/')">
-        Change password
-      </button>
+      <label>Password:</label>
+      <p>********</p>
+    </div>
+    <button type="submit" onclick="fetchHTML('/profile/edit_password/')">
+      Change password
+    </button>
   </div>
 </main>
