@@ -13,9 +13,7 @@
   </header>
 
   <form method="post" onsubmit="fetchForm(event)">
-    <div id="form-fields">
-      {% include 'auth/register_form_fields.html' %}
-    </div>
+    <div id="form-fields">{% include 'auth/register_form_fields.html' %}</div>
 
     <button type="submit">Sign up</button>
   </form>
@@ -25,7 +23,13 @@
   <footer>
     <div>
       <p>Already have an account?</p>
-      <button class="link text-base" type="submit" onclick="fetchHTML('/auth/login/')">Login</button>
+      <button
+        class="link text-base"
+        type="submit"
+        onclick="fetchHTML('/auth/login/')"
+      >
+        Login
+      </button>
     </div>
   </footer>
 </main>

@@ -1,0 +1,60 @@
+<main class="container">
+  <header>
+    <div>
+      <h1 class="neon">Profile</h1>
+    </div>
+    <div>
+      <button class="link" type="submit" onclick="fetchHTML('/')">
+        <!-- TODO: Home icon -->
+        Home
+      </button>
+    </div>
+  </header>
+
+  <hr />
+
+  <div>
+    <div>
+      <img class="avatar" src="{{ user.avatar.url}}" alt="Avatar" />
+      <button type="submit" onclick="fetchHTML('/profile/edit_avatar/')">
+        Edit avatar
+      </button>
+    </div>
+
+    <div>
+      <label>Username:</label>
+      <p>{{ user.username }}</p>
+      <button type="submit" onclick="fetchHTML('/profile/edit_username/')">
+        Edit username
+      </button>
+    </div>
+
+    <div>
+      <label>Email:</label>
+      {% if user.email %}
+      <p>{{ user.email }}</p>
+      <button type="submit" onclick="fetchHTML('/profile/edit_email/')">
+        Edit email
+      </button>
+      {% if user.email_verified %}
+      <p>Verified</p>
+      {% else %}
+      <p>Not verified</p>
+      <button type="submit" onclick="fetchHTML('/profile/verify_email/')">
+        Verify email
+      </button>
+      {% endif %}
+      {% else %}
+      <p>No email</p>
+      <button type="submit" onclick="fetchHTML('/profile/edit_email/')">
+        Add email
+      </button>
+      {% endif %}
+    </div>
+  
+    <div>
+      <button type="submit" onclick="fetchHTML('/profile/edit_password/')">
+        Change password
+      </button>
+  </div>
+</main>

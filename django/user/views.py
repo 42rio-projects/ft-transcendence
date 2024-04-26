@@ -75,7 +75,7 @@ def logout(request):
 
 def profile(request):
     if request.method == "GET":
-        return render(request, "profile.html")
+        return render_component(request, "profile/profile.html", "body")
 
 
 @login_required
@@ -164,53 +164,6 @@ def email_change_check(request):
 
     messages.error(request, 'Código de verificação inválido.')
     return render(request, "email_change_check_form.html")
-
-
-def edit_profile(request):
-    if request.method == "POST":
-        user = request.user
-        username = request.POST.get("username")
-
-        if username != user.username:
-            if User.objects.filter(username=username).exists():
-                messages.error(request, "Username already in use")
-            elif len(username) < 3:
-                messages.error(
-                    request, "Username must be at least 3 characters")
-            else:
-                user.username = username
-
-                messages.success(request, "Username changed successfully")
-
-        if not user.email_verified:
-            email = request.POST.get("email")
-
-            if email != user.email:
-                if User.objects.filter(email=email).exists():
-                    messages.error(request, "Email already in use")
-                elif len(email) < 3:
-                    messages.error(
-                        request, "Email must be at least 3 characters")
-                else:
-                    user.email = email
-                    user.email_verified = False
-
-                    messages.success(request, "Email changed successfully")
-
-        user.save()
-
-        return render(
-            request,
-            "edit_profile.html",
-            {"username": user.username, "email": user.email}
-        )
-
-    if request.method == "GET":
-        return render(
-            request,
-            "edit_profile.html",
-            {"username": request.user.username, "email": request.user.email}
-        )
 
 
 def email_verify_code(request):
