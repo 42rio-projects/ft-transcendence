@@ -8,7 +8,6 @@ from django.contrib import messages
 import os
 
 from user.models import User
-from user.forms import LoginForm
 from user.forms import EmailChangeForm
 from user.forms import ChangePasswordForm
 from user.forms import UserProfileForm
@@ -34,7 +33,7 @@ def register(request):
             errors_context["password"] = password
             errors_context["password2"] = password2
 
-            return render_component(request, "auth/register_form.html", "auth-form", errors_context, 400)
+            return render_component(request, "auth/register_form_fields.html", "form-fields", errors_context, 400)
 
         User.objects.create_user(username=username, password=password)
 
@@ -58,7 +57,7 @@ def login(request):
                 "error": "Incorrect username or password"
             }
 
-            return render_component(request, "auth/login_form.html", "auth-form", context, 400)
+            return render_component(request, "auth/login_form_fields.html", "form-fields", context, 400)
 
         django_login(request, user)
         return redirect("home")

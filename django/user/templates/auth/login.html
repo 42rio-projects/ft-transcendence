@@ -1,29 +1,31 @@
-<main>
+<main class="container">
   <header>
     <div>
-      <h1>Login</h1>
-      <h2>Enter your account:</h2>
+      <h1 class="neon">Login</h1>
+      <h2 class="text-xl font-normal">Enter your account:</h2>
     </div>
     <div>
-      <button type="submit" onclick="fetchHTML('/')">
+      <button class="link" type="submit" onclick="fetchHTML('/')">
         <!-- TODO: Home icon -->
         Home
       </button>
     </div>
   </header>
 
-  {% for message in messages %}
-  <span class="{{ message.tags }}">{{ message }}</span>
-  {% endfor %}
-  
-  {% include 'auth/login_form.html' %}
+  <form method="post" onsubmit="fetchForm(event)">
+    <div id="form-fields">
+      {% include 'auth/login_form_fields.html' %}
+    </div>
+
+    <button type="submit">Sign in</button>
+  </form>
 
   <hr />
 
   <footer>
-    <span> Don't have an account?</span>
-    <button type="submit" onclick="fetchHTML('/auth/register/')">
-      Register
-    </button>
+    <div>
+      <p>Don't have an account?</p>
+      <button class="link text-base" type="submit" onclick="fetchHTML('/auth/register/')">Register</button>
+    </div>
   </footer>
 </main>

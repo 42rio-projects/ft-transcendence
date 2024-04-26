@@ -1,23 +1,31 @@
-<main>
+<main class="container">
   <header>
     <div>
-      <h1>Register</h1>
-      <h2>Create your account:</h2>
+      <h1 class="neon">Register</h1>
+      <h2 class="text-xl font-normal">Create your account:</h2>
     </div>
     <div>
-      <button type="submit" onclick="fetchHTML('/')">
+      <button class="link" type="submit" onclick="fetchHTML('/')">
         <!-- TODO: Home icon -->
         Home
       </button>
     </div>
   </header>
 
-  {% include 'auth/register_form.html' %}
+  <form method="post" onsubmit="fetchForm(event)">
+    <div id="form-fields">
+      {% include 'auth/register_form_fields.html' %}
+    </div>
+
+    <button type="submit">Sign up</button>
+  </form>
 
   <hr />
 
   <footer>
-    <span> Already have an account?</span>
-    <button type="submit" onclick="fetchHTML('/auth/login/')">Login</button>
+    <div>
+      <p>Already have an account?</p>
+      <button class="link text-base" type="submit" onclick="fetchHTML('/auth/login/')">Login</button>
+    </div>
   </footer>
 </main>
