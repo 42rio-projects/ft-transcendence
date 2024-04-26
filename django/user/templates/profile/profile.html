@@ -62,13 +62,14 @@
       {% endif %}
     </div>
 
-  <div>
     <div>
-      <label>Password:</label>
-      <p>********</p>
+      <div>
+        <label>Password:</label>
+        <p>********</p>
+      </div>
+      <button type="submit" onclick="fetchHTML('/profile/edit_password/')">
+        Change password
+      </button>
     </div>
-    <button type="submit" onclick="fetchHTML('/profile/edit_password/')">
-      Change password
-    </button>
   </div>
 </main>
