@@ -1,0 +1,27 @@
+<div>
+  <img class="avatar" src="{{ user.avatar.url}}" alt="Avatar" />
+  <button type="submit" onclick="fetchHTML('/profile/edit_avatar/')">
+    Edit avatar
+  </button>
+</div>
+
+<div>
+  <label>Username:</label>
+  <input type="text" value="{{ user.username }}" />
+</div>
+
+<div>
+  <label>Email:</label>
+  <input type="email" value="{{ user.email }}" placeholder="No email" />
+  {% if user.email and not user.email_verified %}
+  <button type="submit" onclick="fetchHTML('/profile/verify_email/')">
+    Verify email
+  </button>
+  {% endif %}
+</div>
+
+<div>
+  <button type="submit" onclick="fetchHTML('/profile/change_password/')">
+    Change password
+  </button>
+</div>

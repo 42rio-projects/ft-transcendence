@@ -13,63 +13,11 @@
 
   <hr />
 
-  <div class="profile-fields">
-    <div>
-      <img class="avatar" src="{{ user.avatar.url}}" alt="Avatar" />
-      <button type="submit" onclick="fetchHTML('/profile/edit_avatar/')">
-        Edit avatar
-      </button>
+  <form method="post" onsubmit="fetchForm(event)">
+    <div class="profile-form" id="form">
+      {% include 'profile/profile_form_fields.html' %}
     </div>
 
-    <div>
-      <div>
-        <label>Username:</label>
-        <p>{{ user.username }}</p>
-      </div>
-      <button type="submit" onclick="fetchHTML('/profile/edit_username/')">
-        Edit username
-      </button>
-    </div>
-
-    <div>
-      <div>
-        <label>Email:</label>
-        {% if user.email %}
-        <p>{{ user.email }}</p>
-        {% if user.email_verified %}
-        <p>Verified</p>
-        {% else %}
-        <p>Not verified</p>
-        {% endif %}
-        {% else %}
-        <p>No email</p>
-        {% endif %}
-      </div>
-
-      {% if user.email %}
-      <button type="submit" onclick="fetchHTML('/profile/edit_email/')">
-        Edit email
-      </button>
-      {% if user.email_verified %}
-      <button type="submit" onclick="fetchHTML('/profile/verify_email/')">
-        Verify email
-      </button>
-      {% endif %}
-      {% else %}
-      <button type="submit" onclick="fetchHTML('/profile/edit_email/')">
-        Add email
-      </button>
-      {% endif %}
-    </div>
-
-    <div>
-      <div>
-        <label>Password:</label>
-        <p>********</p>
-      </div>
-      <button type="submit" onclick="fetchHTML('/profile/edit_password/')">
-        Change password
-      </button>
-    </div>
-  </div>
+    <button type="submit">Save</button>
+  </form>
 </main>
