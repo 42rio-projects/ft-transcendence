@@ -19,17 +19,33 @@ volumes:
       o: bind
       device: ../../postgres_data
 
+  prometheus_data:
+    name: prometheus_data
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ../../prometheus_data
+
+  grafana_data:
+    name: grafana_data
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ../../grafana_data
+
 services:
   redis:
     container_name: redis
-    image: redis:7
+    image: cgr.dev/chainguard/redis
     restart: always
     networks:
       - ft_transcendence
 
   postgres:
     container_name: postgres
-    image: postgres
+    image: cgr.dev/chainguard/postgres
     env_file: .env
     restart: always
     volumes:
@@ -59,5 +75,49 @@ services:
       - 8000:8000
     depends_on:
       - postgres
+    networks:
+      - ft_transcendence
+
+  prometheus:
+    container_name: prometheus
+    image: cgr.dev/chainguard/prometheus
+    restart: always
+    volumes:
+      - ./prometheus:/etc/prometheus
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yaml'
+    ports:
+      - '9090:9090'
+    networks:
+      - ft_transcendence
+
+  grafana:
+    container_name: grafana
+    image: cgr.dev/chainguard/grafana
+    restart: always
+    env_file:
+      - .env
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/datasource/datasource.yaml:/etc/grafana/provisioning/datasources/datasource.yaml
+      - ./grafana/dashboard/dashboard.yaml:/etc/grafana/provisioning/dashboards/dashboard.yaml
+      - ./grafana/dashboard/dashboard-transcendence.json:/var/lib/grafana/dashboards/dashboard-transcendence.json
+      - ./grafana/dashboard/dashboard-cadvisor.json:/var/lib/grafana/dashboards/dashboard-cadvisor.json
+    ports:
+      - '3000:3000'
+    networks:
+      - ft_transcendence
+
+  cadvisor:
+    container_name: cadvisor
+    image: cgr.dev/chainguard/cadvisor
+    ports:
+      - '8081:8080'
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
     networks:
       - ft_transcendence
