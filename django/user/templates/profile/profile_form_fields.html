@@ -1,27 +1,35 @@
+{% csrf_token %}
+
+{% if success %}
+<span class="success text-sm">{{ success }}</span>
+{% endif %}
+
 <div>
-  <img class="avatar" src="{{ user.avatar.url}}" alt="Avatar" />
-  <button type="submit" onclick="fetchHTML('/profile/edit_avatar/')">
-    Edit avatar
-  </button>
+  {% if username_error %}
+  <span class="error">{{ username_error }}</span>
+  {% endif %}
+  <label for="username">Username:</label>
+  <input
+    type="text"
+    name="username"
+    value="{{ username }}"
+  />
 </div>
 
 <div>
-  <label>Username:</label>
-  <input type="text" value="{{ user.username }}" />
-</div>
-
-<div>
-  <label>Email:</label>
-  <input type="email" value="{{ user.email }}" placeholder="No email" />
-  {% if user.email and not user.email_verified %}
-  <button type="submit" onclick="fetchHTML('/profile/verify_email/')">
+  {% if email_error %}
+  <span class="error">{{ email_error }}</span>
+  {% endif %}
+  <label for="email">Email:</label>
+  <input
+    type="email"
+    name="email"
+    placeholder="No email"
+    value="{{ email }}"
+  />
+  {% if email and not user.email_verified %}
+  <button type="button" onclick="fetchHTML('/profile/verify_email/')">
     Verify email
   </button>
   {% endif %}
-</div>
-
-<div>
-  <button type="submit" onclick="fetchHTML('/profile/change_password/')">
-    Change password
-  </button>
 </div>

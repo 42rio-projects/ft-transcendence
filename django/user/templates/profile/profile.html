@@ -14,9 +14,7 @@
   <hr />
 
   <form method="post" onsubmit="fetchForm(event)">
-    <div class="profile-form" id="form">
-      {% include 'profile/profile_form_fields.html' %}
-    </div>
+    <div id="form-fields">{% include 'profile/profile_form_fields.html' %}</div>
 
     <button type="submit">Save</button>
   </form>

@@ -19,6 +19,7 @@
       0 0 20px var(--primary-color-darker), 0 0 20px var(--primary-color-darker),
       0 0 50px var(--primary-color-darker), 0 0 50px var(--primary-color-darker);
   }
+
   to {
     text-shadow: 0 0 5px var(--foreground-color),
       0 0 15px var(--foreground-color), 0 0 20px var(--primary-color-darker),
@@ -163,23 +164,6 @@ hr {
 .container footer div {
   display: flex;
   align-items: baseline;
-  gap: 5px;
-}
-
-.profile-fields {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.profile-fields div {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-
-.profile-fields div div {
-  display: flex;
   gap: 5px;
 }
 
