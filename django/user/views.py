@@ -6,6 +6,7 @@ from django.contrib.auth import authenticate, login as django_login, logout as d
 from django.contrib import messages
 from django.shortcuts import render
 import os
+from django.core.paginator import Paginator
 
 from user.models import User
 from user.forms import EmailChangeForm
@@ -41,6 +42,15 @@ def login(request):
     if request.method == "GET":
         return render(request, "login.html")
 
+def match_history(request):
+    if request.method == "GET":
+        games_list = request.user.get_games()
+        paginator = Paginator(games_list, 10)
+
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+
+        return render(request, 'match_history/index.html', {'page_obj': page_obj})
 
 def register(request):
     if request.method == "POST":
