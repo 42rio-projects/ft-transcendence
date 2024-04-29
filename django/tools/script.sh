@@ -7,7 +7,6 @@ dbname=$POSTGRES_NAME
 user=$POSTGRES_USER
 password=$POSTGRES_PASSWORD"
 
-pip install Pillow
 echo "MakeMigrations"
 python manage.py makemigrations
 echo "Migrate"
