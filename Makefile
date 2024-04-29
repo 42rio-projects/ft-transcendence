@@ -48,7 +48,7 @@ clean:
 	$(COMPOSE) down -v
 	@printf "\n$(GREEN)🧹 Limpeza concluída 🧹$(RESET)\n\n"
 
-nuke: clear
+nuke: clean
 	-docker rm -f $$(docker ps -aq)
 	-docker rmi -f $$(docker images -aq)
 	-docker volume rm -f $$(docker volume ls -q)

@@ -13,4 +13,4 @@ python manage.py makemigrations
 echo "Migrate"
 python manage.py migrate --run-syncdb
 echo "Runserver"
-gunicorn ft_transcendence.wsgi:application --bind 0.0.0.0:8000
+gunicorn ft_transcendence.wsgi:application --bind 0.0.0.0:8000 --access-logfile '-' --error-logfile '-' --log-level INFO

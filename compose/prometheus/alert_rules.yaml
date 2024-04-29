@@ -27,7 +27,7 @@ groups:
       description: '{{ $labels.view }} ta com request p kct.'
 
   - alert: 4xxResponses
-    expr: sum by(job) (rate(django_http_responses_total_by_status_view_method_total{status=~"4.*"}[5m]))/sum by(job) (rate(django_http_responses_total_by_status_view_method_total[5m])) > bool 0.4
+    expr: sum by(job) (rate(django_http_responses_total_by_status_view_method_total{status=~"4.*"}[5m]))/sum by(job) (rate(django_http_responses_total_by_status_view_method_total[5m])) > 0.4
     for: 1m
     labels:
       severity: critical
@@ -36,7 +36,7 @@ groups:
       description: '{{ $labels.job }} ta torando de resposta 4xx {{ humanize $value }}.'
 
   - alert: 5xxResponses
-    expr: sum by(job) (rate(django_http_responses_total_by_status_view_method_total{status=~"5.*"}[5m]))/sum by(job) (rate(django_http_responses_total_by_status_view_method_total[5m])) > bool 0.4
+    expr: sum by(job) (rate(django_http_responses_total_by_status_view_method_total{status=~"5.*"}[5m]))/sum by(job) (rate(django_http_responses_total_by_status_view_method_total[5m])) > 0.4
     for: 1m
     labels:
       severity: critical
