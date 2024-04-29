@@ -1,6 +1,8 @@
 import json
 import asyncio
 from channels.layers import get_channel_layer
+from django.db import models
+from channels.db import database_sync_to_async
 
 X_SPEED_LIMIT = 4
 Y_SPEED_LIMIT = 2
@@ -52,10 +54,13 @@ class GameInfo:
             }
         )
 
-    def score_to_json(self):
-        return (
-            {"status": "score", "p1": self.p1_score, "p2": self.p2_score}
-        )
+    def score_to_json(self, nbr=None):
+        if nbr is None:
+            return (
+                {"status": "score", "p1": self.p1_score, "p2": self.p2_score}
+            )
+        else:
+            return ({"status": "score", "p1": nbr, "p2": nbr})
 
     def p1_can_move_down(self):
         return (self.p1_move == 'd' and self.p1_pos < self.BAR_UPPERBOUND)
@@ -94,12 +99,21 @@ class GameInfo:
 class Game:
     def __init__(self):
         self.info = GameInfo()
+        self.interval_task = None
 
     async def send_pos(self):
         pass
 
     async def player_scored(self, player):
         pass
+
+    def is_running(self):
+        return (self.interval_task is not None)
+
+    def stop(self):
+        if self.is_running():
+            self.interval_task.cancel()
+            self.interval_task = None
 
     async def update_game(self):
         while True:
@@ -171,11 +185,7 @@ class Game:
 class LocalGame(Game):
     def __init__(self, socket):
         super().__init__()
-        self.interval_task = None
         self.socket = socket
-
-    def is_running(self):
-        return (self.interval_task is not None)
 
     async def start(self):
         if (self.is_running()):
@@ -184,11 +194,6 @@ class LocalGame(Game):
         await self.send_pos()
         await self.send_score()
         self.interval_task = asyncio.create_task(self.update_game())
-
-    def stop(self):
-        if self.is_running():
-            self.interval_task.cancel()
-            self.interval_task = None
 
     async def send_pos(self):
         data = json.dumps(self.info.pos_to_json())
@@ -209,16 +214,22 @@ class LocalGame(Game):
 
 
 class OnlineGame(Game):
-    interval_task = {}
     channel_layer = get_channel_layer()
 
     def __init__(self, socket):
         super().__init__()
         self.game_id = socket.game_id
         self.room_group_name = socket.room_group_name
+        self.game_model = get_game(self.game_id)
 
-    def is_running(self):
-        return (self.game_id in self.interval_task)
+    async def countdown(self, secs):
+        while secs > 0:
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {"type": "game.update", "json": self.info.score_to_json(secs)},
+            )
+            secs -= 1
+            await asyncio.sleep(1)
 
     async def start(self):
         if self.is_running():
@@ -226,15 +237,9 @@ class OnlineGame(Game):
         self.info.set_initial_values()
         await self.send_start_message()
         await self.send_pos()
+        await self.countdown(5)
         await self.send_score()
-        self.interval_task[self.game_id] = asyncio.create_task(
-            self.update_game()
-        )
-
-    def stop(self):
-        if self.is_running():
-            self.interval_task[self.game_id].cancel()
-            del self.interval_task[self.game_id]
+        self.interval_task = asyncio.create_task(self.update_game())
 
     async def send_pos(self):
         await self.channel_layer.group_send(
@@ -256,3 +261,14 @@ class OnlineGame(Game):
 
     async def player_scored(self, player):
         pass
+
+    async def second_player_connected(self):
+        self.game_model = get_game(self.game_id)
+        await self.start()
+
+
+@database_sync_to_async
+def get_game(id):
+    game = models.Game.objects.get(
+        pk=id).prefecth_related('player_1', 'player_2')
+    return game

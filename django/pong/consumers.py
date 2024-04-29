@@ -1,10 +1,7 @@
 from channels.generic.websocket import AsyncWebsocketConsumer
-from channels.db import database_sync_to_async
-from channels.layers import get_channel_layer
 import json
 import asyncio
 
-import pong.models as models
 from pong.game import LocalGame, OnlineGame
 
 
@@ -46,19 +43,26 @@ class LocalGameCosumer(AsyncWebsocketConsumer):
 
 
 class OnlineGameCosumer(AsyncWebsocketConsumer):
-    interval_tasks = {}
+    online_games = {}
 
     async def connect(self):
         self.game_id = self.scope['url_route']['kwargs']['room_id']
         self.room_group_name = f'game_{self.game_id}'
-        self.game = OnlineGame(self)
         await self.channel_layer.group_add(
             self.room_group_name, self.channel_name
         )
         await self.accept()
+        if self.game_id in self.online_games:
+            self.game = self.online_games[self.game_id]
+            asyncio.create_task(self.game.second_player_connected())
+        else:
+            self.online_games[self.game_id] = OnlineGame(self)
+            self.game = self.online_games[self.game_id]
 
     async def disconnect(self, close_code):
-        self.game.stop()
+        if self.game_id in self.online_games:
+            self.game.stop()
+            del self.online_games[self.game_id]
         await self.channel_layer.group_discard(
             self.room_group_name, self.channel_name
         )
@@ -83,9 +87,3 @@ class OnlineGameCosumer(AsyncWebsocketConsumer):
 
     async def game_update(self, event):
         await self.send(text_data=json.dumps(event["json"]))
-
-
-# @ database_sync_to_async
-# def get_game(id):
-#     game = models.Game.objects.get(pk=id)
-#     return game

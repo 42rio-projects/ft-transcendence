@@ -104,8 +104,8 @@ class OnlineGameWebSocket {
   //  document.removeEventListener("keyup", this.handleKeyUp);
   //}
 
-  //updateScoreboard(data) {
-  //  document.getElementById("p1-score").innerHTML = data["p1"];
-  //  document.getElementById("p2-score").innerHTML = data["p2"];
-  //}
+  updateScoreboard(data) {
+    document.getElementById("p1-score").innerHTML = data["p1"];
+    document.getElementById("p2-score").innerHTML = data["p2"];
+  }
 }
