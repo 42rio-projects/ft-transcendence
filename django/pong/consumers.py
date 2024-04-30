@@ -48,16 +48,17 @@ class OnlineGameCosumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.game_id = self.scope['url_route']['kwargs']['room_id']
         self.room_group_name = f'game_{self.game_id}'
+        if self.game_id in self.online_games:
+            self.game = self.online_games[self.game_id]
+        else:
+            self.online_games[self.game_id] = OnlineGame(self)
+            self.game = self.online_games[self.game_id]
+        await self.game.get_game()
+        self.player = self.game.get_player(self.scope['user'])
         await self.channel_layer.group_add(
             self.room_group_name, self.channel_name
         )
         await self.accept()
-        if self.game_id in self.online_games:
-            self.game = self.online_games[self.game_id]
-            asyncio.create_task(self.game.second_player_connected())
-        else:
-            self.online_games[self.game_id] = OnlineGame(self)
-            self.game = self.online_games[self.game_id]
 
     async def disconnect(self, close_code):
         if self.game_id in self.online_games:
@@ -68,7 +69,17 @@ class OnlineGameCosumer(AsyncWebsocketConsumer):
         )
 
     def update_player_input(self, data):
-        pass
+        direction = data['d']
+        if direction == 'null':
+            if self.player == 1:
+                self.game.info.p1_move = None
+            elif self.player == 2:
+                self.game.info.p2_move = None
+        else:
+            if self.player == 1:
+                self.game.info.p1_move = direction
+            elif self.player == 2:
+                self.game.info.p2_move = direction
 
     async def receive(self, text_data):
         data_json = json.loads(text_data)

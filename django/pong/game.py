@@ -1,8 +1,13 @@
 import json
 import asyncio
 from channels.layers import get_channel_layer
-from django.db import models
 from channels.db import database_sync_to_async
+import logging
+
+from pong.models import Game as GameModel
+
+logging.basicConfig(level='INFO')
+
 
 X_SPEED_LIMIT = 4
 Y_SPEED_LIMIT = 2
@@ -22,7 +27,7 @@ class GameInfo:
     BALL_LOWERBOUND = 0
     BALL_RIGHTBOUND = GAME_WIDTH - 2
     BALL_LEFTBOUND = 2
-    SCORE_LIMIT = 7
+    SCORE_LIMIT = 2
 
     def __init__(self):
         self.set_initial_values()
@@ -91,8 +96,8 @@ class GameInfo:
 
     def finished(self):
         return (
-            self.p1_score == self.SCORE_LIMIT or
-            self.p2_score == self.SCORE_LIMIT
+            self.p1_score >= self.SCORE_LIMIT or
+            self.p2_score >= self.SCORE_LIMIT
         )
 
 
@@ -116,7 +121,7 @@ class Game:
             self.interval_task = None
 
     async def update_game(self):
-        while True:
+        while self.info.finished() is False:
             await asyncio.sleep(TICK_RATE)
             await self.move_players()
             await self.move_ball()
@@ -220,7 +225,6 @@ class OnlineGame(Game):
         super().__init__()
         self.game_id = socket.game_id
         self.room_group_name = socket.room_group_name
-        self.game_model = get_game(self.game_id)
 
     async def countdown(self, secs):
         while secs > 0:
@@ -260,15 +264,35 @@ class OnlineGame(Game):
         )
 
     async def player_scored(self, player):
-        pass
+        if player == 1:
+            self.info.p1_score += 1
+        elif player == 2:
+            self.info.p2_score += 1
+        await self.send_score()
+        await self.update_table()
+        logging.info(f'finished = {self.info.finished()}')
+        if self.info.finished():
+            self.stop()
 
-    async def second_player_connected(self):
-        self.game_model = get_game(self.game_id)
-        await self.start()
+    @database_sync_to_async
+    def get_game(self):
+        self.game_model = GameModel.objects.prefetch_related(
+            'player_1', 'player_2').get(pk=self.game_id)
 
+    @database_sync_to_async
+    def update_table(self):
+        self.game_model.player1_points = self.info.p1_score
+        self.game_model.player2_points = self.info.p2_score
+        if self.info.p1_score == self.info.SCORE_LIMIT:
+            self.game_model.winner = self.game_model.player_1
+        elif self.info.p2_score == self.info.SCORE_LIMIT:
+            self.game_model.winner = self.game_model.player_2
+        self.game_model.save()
 
-@database_sync_to_async
-def get_game(id):
-    game = models.Game.objects.get(
-        pk=id).prefecth_related('player_1', 'player_2')
-    return game
+    def get_player(self, player):
+        if player == self.game_model.player_1:
+            return 1
+        elif player == self.game_model.player_2:
+            return 2
+        else:
+            raise Exception("Unauthorized")
