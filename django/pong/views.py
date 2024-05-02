@@ -31,11 +31,20 @@ def localGame(request):
 
 def onlineGame(request, game_id):
     game = get_object_or_404(models.Game, pk=game_id)
-    context = {"game": game}
     if game.finished:
         template = loader.get_template('pong/game_result.html')
-        return HttpResponse(template.render(context, request))
-    return render(request, "pong/online_game.html")
+        context = {"game": game}
+    else:
+        template = loader.get_template('pong/online_game.html')
+        try:
+            game_invite = models.GameInvite.objects.get(game=game)
+            context = {
+                "player1": game_invite.sender,
+                "player2": game_invite.receiver
+            }
+        except Exception:
+            context = {"player1": game.player1, "player2": game.player2}
+    return HttpResponse(template.render(context, request))
 
 
 def gameInvites(request):
