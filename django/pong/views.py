@@ -31,8 +31,10 @@ def localGame(request):
 
 def onlineGame(request, game_id):
     game = get_object_or_404(models.Game, pk=game_id)
+    context = {"game": game}
     if game.finished:
-        return redirect('gameInvites')
+        template = loader.get_template('pong/game_result.html')
+        return HttpResponse(template.render(context, request))
     return render(request, "pong/online_game.html")
 
 
