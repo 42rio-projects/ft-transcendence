@@ -28,7 +28,7 @@ class LocalGameCosumer(AsyncWebsocketConsumer):
     async def receive(self, text_data):
         data_json = json.loads(text_data)
         if 'start' in data_json:
-            await self.game.start()
+            self.game.start()
             return
         elif 'stop' in data_json and self.game.is_running():
             self.game.stop()

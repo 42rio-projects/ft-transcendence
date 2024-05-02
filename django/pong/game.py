@@ -120,6 +120,24 @@ class Game:
     def is_running(self):
         return (self.interval_task is not None)
 
+    async def countdown(self, secs):
+        while secs > 0:
+            await self.send_message(self.info.score_to_json(secs))
+            secs -= 1
+            await asyncio.sleep(1)
+
+    async def countdown_and_update(self):
+        await self.send_pos()
+        await self.countdown(5)
+        await self.send_score()
+        await self.update_game()
+
+    def start(self):
+        if (self.is_running()):
+            return
+        self.info.set_initial_values()
+        self.interval_task = asyncio.create_task(self.countdown_and_update())
+
     def stop(self):
         if self.is_running():
             self.interval_task.cancel()
@@ -200,14 +218,6 @@ class LocalGame(Game):
     async def send_message(self, data):
         await self.socket.send(text_data=json.dumps(data))
 
-    async def start(self):
-        if (self.is_running()):
-            return
-        self.info.set_initial_values()
-        await self.send_pos()
-        await self.send_score()
-        self.interval_task = asyncio.create_task(self.update_game())
-
     async def player_scored(self, player):
         if player == 1:
             self.info.p1_score += 1
@@ -230,25 +240,6 @@ class OnlineGame(Game):
         await self.channel_layer.group_send(
             self.room_group_name, {"type": "game.update", "json": json}
         )
-
-    async def countdown(self, secs):
-        while secs > 0:
-            await self.send_message(self.info.score_to_json(secs))
-            secs -= 1
-            await asyncio.sleep(1)
-
-    async def countdown_and_start(self):
-        await self.send_start_message()
-        await self.send_pos()
-        await self.countdown(5)
-        await self.send_score()
-        await self.update_game()
-
-    def start(self):  # Abstract this function
-        if self.is_running():
-            return
-        self.info.set_initial_values()
-        self.interval_task = asyncio.create_task(self.countdown_and_start())
 
     async def send_start_message(self):
         await self.send_message({"status": "started"})
@@ -317,5 +308,6 @@ class OnlineGame(Game):
             raise Exception("Unauthorized")
         if (self.game_model.player_1 is not None and
                 self.game_model.player_2 is not None):
+            asyncio.create_task(self.send_start_message())
             self.start()
         return p
