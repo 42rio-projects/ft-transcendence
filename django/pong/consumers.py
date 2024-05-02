@@ -1,6 +1,5 @@
 from channels.generic.websocket import AsyncWebsocketConsumer
 import json
-import asyncio
 
 from pong.game import LocalGame, OnlineGame
 

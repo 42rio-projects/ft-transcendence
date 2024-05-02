@@ -106,11 +106,19 @@ class Game:
         self.info = GameInfo()
         self.interval_task = None
 
-    async def send_pos(self):
+    async def send_message(self, data):
         pass
 
     async def player_scored(self, player):
         pass
+
+    async def send_pos(self):
+        data = self.info.pos_to_json()
+        await self.send_message(data)
+
+    async def send_score(self):
+        data = self.info.score_to_json()
+        await self.send_message(data)
 
     def is_running(self):
         return (self.interval_task is not None)
@@ -192,6 +200,9 @@ class LocalGame(Game):
         super().__init__()
         self.socket = socket
 
+    async def send_message(self, data):
+        await self.socket.send(text_data=json.dumps(data))
+
     async def start(self):
         if (self.is_running()):
             return
@@ -199,14 +210,6 @@ class LocalGame(Game):
         await self.send_pos()
         await self.send_score()
         self.interval_task = asyncio.create_task(self.update_game())
-
-    async def send_pos(self):
-        data = json.dumps(self.info.pos_to_json())
-        await self.socket.send(text_data=data)
-
-    async def send_score(self):
-        data = json.dumps(self.info.score_to_json())
-        await self.socket.send(text_data=data)
 
     async def player_scored(self, player):
         if player == 1:
@@ -226,12 +229,14 @@ class OnlineGame(Game):
         self.game_id = socket.game_id
         self.room_group_name = socket.room_group_name
 
+    async def send_message(self, json):
+        await self.channel_layer.group_send(
+            self.room_group_name, {"type": "game.update", "json": json}
+        )
+
     async def countdown(self, secs):
         while secs > 0:
-            await self.channel_layer.group_send(
-                self.room_group_name,
-                {"type": "game.update", "json": self.info.score_to_json(secs)},
-            )
+            await self.send_message(self.info.score_to_json(secs))
             secs -= 1
             await asyncio.sleep(1)
 
@@ -248,23 +253,8 @@ class OnlineGame(Game):
         self.info.set_initial_values()
         self.interval_task = asyncio.create_task(self.countdown_and_start())
 
-    async def send_pos(self):
-        await self.channel_layer.group_send(
-            self.room_group_name,
-            {"type": "game.update", "json": self.info.pos_to_json()},
-        )
-
-    async def send_score(self):
-        await self.channel_layer.group_send(
-            self.room_group_name,
-            {"type": "game.update", "json": self.info.score_to_json()},
-        )
-
     async def send_start_message(self):
-        await self.channel_layer.group_send(
-            self.room_group_name,
-            {"type": "game.update", "json": {"status": "started"}},
-        )
+        await self.send_message({"status": "started"})
 
     async def player_scored(self, player):
         if player == 1:
