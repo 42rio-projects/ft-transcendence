@@ -1,82 +1,99 @@
-from django.shortcuts import render
-import pong.serializers as serializers
 import pong.models as models
-from rest_framework import viewsets, permissions
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.decorators import permission_classes, action
-
-# Create your views here.
+from user.models import User
+from django.template import loader
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404, redirect
+from django.core.exceptions import PermissionDenied
+from channels.layers import get_channel_layer
+from django.shortcuts import render
+from asgiref.sync import async_to_sync
 
 
 def index(request):
     if request.method == "GET":
-        return render(request, "index.html")
+        return render(request, "pong/index.html")
 
 
 def main(request):
     if request.method == "GET":
-        return render(request, "main.html")
+        return render(request, "pong/main.html")
 
 
-@permission_classes((permissions.AllowAny,))
-class GameView(APIView):
-    def get(self, request, format=None):
-        return render(request, "game.html")
+def gameMenu(request):
+    if request.method == "GET":
+        return render(request, "pong/game_menu.html")
 
 
-@permission_classes((permissions.AllowAny,))
-class Menu(APIView):
-    def get(self, request, format=None):
-        return render(request, "menu.html")
+def localGame(request):
+    if request.method == "GET":
+        return render(request, "pong/local_game.html")
 
 
-@permission_classes((permissions.AllowAny,))
-class Game(APIView):
-    def get(self, request, format=None):
-        return render(request, "game.html")
+def onlineGame(request, game_id):
+    if request.method == "GET":
+        return render(request, "pong/online_game.html")
 
 
-@permission_classes((permissions.AllowAny,))
-class Loadscreen(APIView):
-    def get(self, request, format=None):
-        return render(request, "loadscreen.html")
+def gameInvites(request):
+    if request.method == 'POST':
+        name = request.POST.get('username')
+        user = get_object_or_404(
+            User,
+            username=name,
+        )
+        try:
+            game = request.user.invite_to_game(user)
+            return redirect('onlineGame', game_id=game.pk)
+        except Exception as e:
+            # add 40x response that is not rendered on the front end
+            return HttpResponse(e)
+    template = loader.get_template("pong/game_invites.html")
+    context = {}
+    return HttpResponse(template.render(context, request))
 
 
-@permission_classes((permissions.AllowAny,))
-class Leaderboard(APIView):
-    def get(self, request, format=None):
-        return render(request, "leaderboard.html")
+@async_to_sync
+async def send_channel_message(group, message):
+    channel_layer = get_channel_layer()
+    await channel_layer.group_send(
+        group,
+        message,
+    )
 
 
-@permission_classes((permissions.AllowAny,))
-class Cadastro(APIView):
-    def get(self, request, format=None):
-        return render(request, "cadastro.html")
+def respondGameInvite(request, invite_id):
+    invite = get_object_or_404(
+        models.GameInvite,
+        pk=invite_id,
+    )
+    if invite.receiver != request.user:
+        raise PermissionDenied
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        if action == 'accept':
+            invite.respond(accepted=True)
+            return redirect('onlineGame', game_id=invite.game.pk)
+        elif action == 'reject':
+            invite.game.pk
+            send_channel_message(
+                f'game_{invite.game.pk}',
+                {"type": "game.update", "json": {"status": "canceled"}},
+            )
+            invite.respond(accepted=False)
+        else:
+            raise Exception('Invalid action')
+    return redirect('gameInvites')
 
 
-class UserViewSet(viewsets.ModelViewSet):
-    queryset = models.User.objects.all()
-    serializer_class = serializers.UserSerializer
-    permission_classes = [IsAuthenticated]
-
-
-class GameViewSet(viewsets.ModelViewSet):
-    queryset = models.Game.objects.all()
-    serializer_class = serializers.GameSerializer
-    permission_classes = [IsAuthenticated]
-
-
-class TournamentViewSet(viewsets.ModelViewSet):
-    queryset = models.Tournament.objects.all()
-    lookup_field = 'name'
-    serializer_class = serializers.TournamentSerializer
-    permission_classes = [IsAuthenticated]
-
-    # temporary API endpoint to advance tournament
-    @action(detail=True, methods=['GET'])
-    def advance(self, request, name=None):
-        tournament = self.get_object()
-        tournament.new_round()
-        return Response({'status': 'tournament round advanced'})
+# class TournamentViewSet(viewsets.ModelViewSet):
+#     queryset = models.Tournament.objects.all()
+#     lookup_field = 'name'
+#     serializer_class = serializers.TournamentSerializer
+#     permission_classes = [IsAuthenticated]
+#
+#     # temporary API endpoint to advance tournament
+#     @action(detail=True, methods=['GET'])
+#     def advance(self, request, name=None):
+#         tournament = self.get_object()
+#         tournament.new_round()
+#         return Response({'status': 'tournament round advanced'})
