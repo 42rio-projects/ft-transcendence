@@ -64,7 +64,7 @@ class OnlineGameCosumer(AsyncWebsocketConsumer):
 
     async def disconnect(self, close_code):
         if self.game_id in self.online_games:
-            self.game.stop()
+            await self.game.player_disconnected(self.player)
             del self.online_games[self.game_id]
         await self.channel_layer.group_discard(
             self.room_group_name, self.channel_name

@@ -259,20 +259,45 @@ class OnlineGame(Game):
         elif player == 2:
             self.info.p2_score += 1
         await self.send_score()
-        await self.update_table()
+        await self.update_score()
         if self.info.finished():
             self.stop()
             await self.channel_layer.group_send(
                 self.room_group_name, {"type": "game.stopped"}
             )
 
+    def second_player_has_not_connected(self):
+        return (
+            self.game_model.player_2 is None and
+            self.game_model.finished is False
+        )
+
+    async def player_disconnected(self, player):
+        if self.second_player_has_not_connected():
+            await self.delete_game()
+            return
+        if player == 1:
+            self.game_model.winner = self.game_model.player_2
+        elif player == 2:
+            self.game_model.winner = self.game_model.player_1
+        self.game_model.finished = True
+        await self.save_game()
+        self.stop()
+
+    @database_sync_to_async
+    def delete_game(self):
+        self.game_model.delete()
+
+    @database_sync_to_async
+    def save_game(self):
+        self.game_model.save()
+
     @database_sync_to_async
     def get_game(self):
         self.game_model = GameModel.objects.prefetch_related(
             'player_1', 'player_2').get(pk=self.game_id)
 
-    @database_sync_to_async
-    def update_table(self):
+    async def update_score(self):
         self.game_model.player1_points = self.info.p1_score
         self.game_model.player2_points = self.info.p2_score
         if self.info.p1_score == self.info.SCORE_LIMIT:
@@ -281,7 +306,7 @@ class OnlineGame(Game):
         elif self.info.p2_score == self.info.SCORE_LIMIT:
             self.game_model.winner = self.game_model.player_2
             self.game_model.finished = True
-        self.game_model.save()
+        await self.save_game()
 
     def get_player(self, player):
         if player == self.game_model.player_1:
