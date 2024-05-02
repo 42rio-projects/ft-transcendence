@@ -72,13 +72,13 @@ class Round(models.Model):
 
 
 class Game(models.Model):
-    player_1 = models.ForeignKey(
+    player1 = models.ForeignKey(
         'user.User',
         null=True,
         on_delete=models.SET_NULL,
         related_name='home_games'
     )
-    player_2 = models.ForeignKey(
+    player2 = models.ForeignKey(
         'user.User',
         null=True,
         on_delete=models.SET_NULL,
@@ -104,10 +104,14 @@ class Game(models.Model):
     finished = models.BooleanField(default=False)
 
     def __str__(self):
-        try:
-            return (f'{self.player_1.username} vs {self.player_2.username}')
-        except Exception:
-            return (f'{self.player_1.username} vs NULL')
+        if self.player1 is not None and self.player2 is not None:
+            return (f'{self.player1.username} vs {self.player2.username}')
+        elif self.player1 is not None and self.player2 is None:
+            return (f'{self.player1.username} vs "Deleted User"')
+        elif self.player1 is None and self.player2 is not None:
+            return (f'"Deleted User" vs {self.player2.username}')
+        else:
+            return ('"Deleted User" vs "Deleted User"')
 
 
 class GameInvite(models.Model):
@@ -148,7 +152,7 @@ class GameInvite(models.Model):
     def respond(self, accepted):
         game = self.game
         if accepted is True:
-            game.player_2 = self.receiver
+            game.player2 = self.receiver
             game.save()
         else:
             game.delete()

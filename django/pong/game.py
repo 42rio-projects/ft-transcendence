@@ -259,7 +259,7 @@ class OnlineGame(Game):
 
     def second_player_has_not_connected(self):
         return (
-            self.game_model.player_2 is None and
+            self.game_model.player2 is None and
             self.game_model.finished is False
         )
 
@@ -268,9 +268,9 @@ class OnlineGame(Game):
             await self.delete_game()
             return
         if player == 1:
-            self.game_model.winner = self.game_model.player_2
+            self.game_model.winner = self.game_model.player2
         elif player == 2:
-            self.game_model.winner = self.game_model.player_1
+            self.game_model.winner = self.game_model.player1
         self.game_model.finished = True
         await self.save_game()
         self.stop()
@@ -286,28 +286,28 @@ class OnlineGame(Game):
     @database_sync_to_async
     def get_game(self):
         self.game_model = GameModel.objects.prefetch_related(
-            'player_1', 'player_2').get(pk=self.game_id)
+            'player1', 'player2').get(pk=self.game_id)
 
     async def update_score(self):
         self.game_model.player1_points = self.info.p1_score
         self.game_model.player2_points = self.info.p2_score
         if self.info.p1_score == self.info.SCORE_LIMIT:
-            self.game_model.winner = self.game_model.player_1
+            self.game_model.winner = self.game_model.player1
             self.game_model.finished = True
         elif self.info.p2_score == self.info.SCORE_LIMIT:
-            self.game_model.winner = self.game_model.player_2
+            self.game_model.winner = self.game_model.player2
             self.game_model.finished = True
         await self.save_game()
 
     def get_player(self, player):
-        if player == self.game_model.player_1:
+        if player == self.game_model.player1:
             p = 1
-        elif player == self.game_model.player_2:
+        elif player == self.game_model.player2:
             p = 2
         else:
             raise Exception("Unauthorized")
-        if (self.game_model.player_1 is not None and
-                self.game_model.player_2 is not None):
+        if (self.game_model.player1 is not None and
+                self.game_model.player2 is not None):
             asyncio.create_task(self.send_start_message())
             self.start()
         return p
