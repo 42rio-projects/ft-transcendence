@@ -94,3 +94,7 @@ class OnlineGameCosumer(AsyncWebsocketConsumer):
 
     async def game_update(self, event):
         await self.send(text_data=json.dumps(event["json"]))
+
+    async def game_stopped(self, event):
+        if self.game_id in self.online_games:
+            del self.online_games[self.game_id]

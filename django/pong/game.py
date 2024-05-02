@@ -2,11 +2,8 @@ import json
 import asyncio
 from channels.layers import get_channel_layer
 from channels.db import database_sync_to_async
-import logging
 
 from pong.models import Game as GameModel
-
-logging.basicConfig(level='INFO')
 
 
 X_SPEED_LIMIT = 4
@@ -265,6 +262,9 @@ class OnlineGame(Game):
         await self.update_table()
         if self.info.finished():
             self.stop()
+            await self.channel_layer.group_send(
+                self.room_group_name, {"type": "game.stopped"}
+            )
 
     @database_sync_to_async
     def get_game(self):
