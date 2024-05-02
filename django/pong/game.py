@@ -235,15 +235,18 @@ class OnlineGame(Game):
             secs -= 1
             await asyncio.sleep(1)
 
-    async def start(self):
-        if self.is_running():
-            return
-        self.info.set_initial_values()
+    async def countdown_and_start(self):
         await self.send_start_message()
         await self.send_pos()
         await self.countdown(5)
         await self.send_score()
-        self.interval_task = asyncio.create_task(self.update_game())
+        await self.update_game()
+
+    async def start(self):
+        if self.is_running():
+            return
+        self.info.set_initial_values()
+        self.interval_task = asyncio.create_task(self.countdown_and_start())
 
     async def send_pos(self):
         await self.channel_layer.group_send(
