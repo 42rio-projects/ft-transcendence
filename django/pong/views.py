@@ -30,8 +30,10 @@ def localGame(request):
 
 
 def onlineGame(request, game_id):
-    if request.method == "GET":
-        return render(request, "pong/online_game.html")
+    game = get_object_or_404(models.Game, pk=game_id)
+    if game.finished:
+        return redirect('gameInvites')
+    return render(request, "pong/online_game.html")
 
 
 def gameInvites(request):

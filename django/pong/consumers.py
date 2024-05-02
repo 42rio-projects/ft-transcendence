@@ -53,6 +53,9 @@ class OnlineGameCosumer(AsyncWebsocketConsumer):
             self.online_games[self.game_id] = OnlineGame(self)
             self.game = self.online_games[self.game_id]
         await self.game.get_game()
+        if self.game.game_model.finished:
+            del self.online_games[self.game_id]
+            return
         self.player = self.game.get_player(self.scope['user'])
         await self.channel_layer.group_add(
             self.room_group_name, self.channel_name

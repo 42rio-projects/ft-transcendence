@@ -247,7 +247,7 @@ class OnlineGame(Game):
         await self.send_score()
         await self.update_game()
 
-    def start(self):
+    def start(self):  # Abstract this function
         if self.is_running():
             return
         self.info.set_initial_values()
@@ -263,7 +263,6 @@ class OnlineGame(Game):
             self.info.p2_score += 1
         await self.send_score()
         await self.update_table()
-        logging.info(f'finished = {self.info.finished()}')
         if self.info.finished():
             self.stop()
 
@@ -278,8 +277,10 @@ class OnlineGame(Game):
         self.game_model.player2_points = self.info.p2_score
         if self.info.p1_score == self.info.SCORE_LIMIT:
             self.game_model.winner = self.game_model.player_1
+            self.game_model.finished = True
         elif self.info.p2_score == self.info.SCORE_LIMIT:
             self.game_model.winner = self.game_model.player_2
+            self.game_model.finished = True
         self.game_model.save()
 
     def get_player(self, player):

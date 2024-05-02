@@ -101,6 +101,7 @@ class Game(models.Model):
         related_name='games'
     )
     date = models.DateField(auto_now_add=True)
+    finished = models.BooleanField(default=False)
 
     def __str__(self):
         try:
