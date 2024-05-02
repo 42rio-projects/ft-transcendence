@@ -242,7 +242,7 @@ class OnlineGame(Game):
         await self.send_score()
         await self.update_game()
 
-    async def start(self):
+    def start(self):
         if self.is_running():
             return
         self.info.set_initial_values()
@@ -294,8 +294,12 @@ class OnlineGame(Game):
 
     def get_player(self, player):
         if player == self.game_model.player_1:
-            return 1
+            p = 1
         elif player == self.game_model.player_2:
-            return 2
+            p = 2
         else:
             raise Exception("Unauthorized")
+        if (self.game_model.player_1 is not None and
+                self.game_model.player_2 is not None):
+            self.start()
+        return p
