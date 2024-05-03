@@ -11,10 +11,10 @@
   </header>
 
   <div class="home-actions">
-    <button type="button" onclick="fetchHTML('/pong/')">Pong</button>
-    <button type="button" onclick="fetchHTML('/friends/')">Friends</button>
-    <button type="button" onclick="fetchHTML('/profile/')">Profile</button>
-    <button type="button" onclick="fetchHTML('/auth/logout/')">Logout</button>
+    <a href="/pong/">Pong</a>
+    <a href="/friends/">Friends</a>
+    <a href="/profile/">Profile</a>
+    <a href="/auth/logout/">Logout</a>
   </div>
   {% else %}
   <header>
@@ -22,8 +22,8 @@
   </header>
 
   <div class="home-actions">
-    <button type="button" onclick="fetchHTML('/auth/login/')">Login</button>
-    <button type="button" onclick="fetchHTML('/auth/register/')">Register</button>
+    <a href="/auth/login/">Login</a>
+    <a href="/auth/register/">Register</a>
   </div>
   {% endif %}
 </main>

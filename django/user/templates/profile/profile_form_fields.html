@@ -28,8 +28,8 @@
     value="{{ email }}"
   />
   {% if email and not user.email_verified %}
-  <button type="button" onclick="fetchHTML('/profile/verify_email/')">
+  <a href="/profile/verify_email/">
     Verify email
-  </button>
+  </a>
   {% endif %}
 </div>

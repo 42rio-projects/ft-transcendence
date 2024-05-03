@@ -1,30 +1,63 @@
-function handleResponse(response) {
-  target = response.headers.get("Target");
-
-  response.text().then((htmlContent) => {
-    history.pushState(null, "", response.url);
-    document.getElementById(target).innerHTML = htmlContent;
-  });
-}
-
-function fetchHTML(url) {
-  fetch(url, {
+// Fetches with X-Transcendence header
+// inserts response HTML into target element
+// returns response URL for history navigation
+async function fetchData(url, { method, body } = { method: 'GET', body: null }) {
+  const response = await fetch(url, {
     headers: {
-      Transcendence: "true",
+      'X-Transcendence': 'true',
     },
-  }).then((response) => handleResponse(response));
+    method,
+    body,
+  });
+
+  const target_id = response.headers.get('X-Target-Id');
+  const html = await response.text();
+
+  document.getElementById(target_id).innerHTML = html;
+
+  return response.url;
 }
 
-function fetchForm(event) {
+function handleFormSubmit(event) {
   event.preventDefault();
 
   const form = event.target;
 
-  fetch(form.action, {
+  fetchData(form.action, {
     method: form.method,
-    headers: {
-      Transcendence: "true",
-    },
     body: new FormData(form),
-  }).then((response) => handleResponse(response));
+  })
+    .then((response_url) => {
+      history.pushState({ url: response_url }, null, response_url);
+    })
+    .catch(error => console.error(error));
 }
+
+// Navigation with history (forward and back buttons)
+function handleNavigation(event) {
+  const url = event.state ? event.state.url : window.location.href;
+
+  fetchData(url)
+    .catch(error => console.error(error));
+}
+
+window.addEventListener('popstate', handleNavigation);
+
+// Navigation with links (anchor tags)
+function handleLinkClick(event) {
+  event.preventDefault();
+
+  const url = event.target.href;
+
+  fetchData(url)
+    .then((response_url) => {
+      history.pushState({ url: response_url }, null, response_url);
+    })
+    .catch(error => console.error(error));
+}
+
+document.addEventListener('click', event => {
+  if (event.target.tagName === 'A') {
+    handleLinkClick(event);
+  }
+});

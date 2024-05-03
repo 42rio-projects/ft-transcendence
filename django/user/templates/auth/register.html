@@ -5,14 +5,14 @@
       <h2 class="text-xl font-normal">Create your account:</h2>
     </div>
     <div>
-      <button class="link" type="submit" onclick="fetchHTML('/')">
+      <a class="link" href="/">
         <!-- TODO: Home icon -->
         Home
-      </button>
+      </a>
     </div>
   </header>
 
-  <form method="post" onsubmit="fetchForm(event)">
+  <form method="post" onsubmit="handleFormSubmit(event)">
     <div id="form-fields">{% include 'auth/register_form_fields.html' %}</div>
 
     <button type="submit">Sign up</button>
@@ -23,13 +23,9 @@
   <footer>
     <div>
       <p>Already have an account?</p>
-      <button
-        class="link text-base"
-        type="submit"
-        onclick="fetchHTML('/auth/login/')"
-      >
+      <a class="link text-base" href="/auth/login/">
         Login
-      </button>
+      </a>
     </div>
   </footer>
 </main>

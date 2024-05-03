@@ -4,16 +4,16 @@
       <h1 class="neon">Profile</h1>
     </div>
     <div>
-      <button class="link" type="submit" onclick="fetchHTML('/')">
+      <a class="link" href="/">
         <!-- TODO: Home icon -->
         Home
-      </button>
+      </a>
     </div>
   </header>
 
   <hr />
 
-  <form method="post" onsubmit="fetchForm(event)">
+  <form method="post" onsubmit="handleFormSubmit(event)">
     <div id="form-fields">{% include 'profile/profile_form_fields.html' %}</div>
 
     <button type="submit">Save</button>
