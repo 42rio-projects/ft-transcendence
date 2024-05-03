@@ -98,3 +98,18 @@ class OnlineGameCosumer(AsyncWebsocketConsumer):
     async def game_stopped(self, event):
         if self.game_id in self.online_games:
             del self.online_games[self.game_id]
+
+
+class LocalTournamentCosumer(AsyncWebsocketConsumer):
+
+    async def connect(self):
+        await self.accept()
+
+    async def disconnect(self, close_code):
+        pass
+
+    async def receive(self, text_data):
+        data_json = json.loads(text_data)
+        await self.send(text_data=json.dumps(
+            {"status": "received", "message": data_json}
+        ))
