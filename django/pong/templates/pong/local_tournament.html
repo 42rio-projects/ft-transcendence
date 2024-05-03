@@ -1,5 +1,16 @@
 <h1>Local Tournament</h1>
 
-<div class="verticalDiv">
-  <button onclick="localTournamentSocket.testMessage()">Test Button</button>
-</div>
+<form onsubmit="localTournamentSocket.playerAction(event)">
+  {% csrf_token %}
+  <input
+    type="text"
+    name="alias"
+    class="chat-input"
+    placeholder="Player Alias"
+    required
+  />
+  <input type="hidden" name="action" value="add_player" />
+  <button type="submit" class="input-button">Add</button>
+</form>
+<h2>Players</h2>
+<ul id="tournament-players"></ul>

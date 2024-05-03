@@ -2,6 +2,11 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 import json
 
 from pong.game import LocalGame, OnlineGame
+from pong.tournament import LocalTournament
+
+import logging
+logging.basicConfig(level='INFO')
+# logging.info('Example')
 
 
 class LocalGameCosumer(AsyncWebsocketConsumer):
@@ -104,12 +109,20 @@ class LocalTournamentCosumer(AsyncWebsocketConsumer):
 
     async def connect(self):
         await self.accept()
+        self.tournament = LocalTournament(self)
 
     async def disconnect(self, close_code):
         pass
 
     async def receive(self, text_data):
-        data_json = json.loads(text_data)
-        await self.send(text_data=json.dumps(
-            {"status": "received", "message": data_json}
-        ))
+        data = json.loads(text_data)
+        try:
+            action = data['action']
+            if action == 'add_player':
+                await self.tournament.add_player(data['alias'])
+            elif action == 'remove_player':
+                await self.tournament.remove_player(data['alias'])
+        except Exception:
+            await self.send(text_data=json.dumps(
+                {"status": "excepted", "data_received": data}
+            ))
