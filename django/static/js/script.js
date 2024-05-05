@@ -27,9 +27,6 @@ function handleFormSubmit(event) {
     method: form.method,
     body: new FormData(form),
   })
-    .then((response_url) => {
-      history.pushState({ url: response_url }, null, response_url);
-    })
     .catch(error => console.error(error));
 }
 

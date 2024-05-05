@@ -155,6 +155,13 @@ hr {
   margin-left: auto;
 }
 
+.container > div {
+  display: flex;
+  flex-direction: column;
+  padding: 5px 7px;
+  gap: 10px;
+}
+
 .container footer {
   display: flex;
   flex-direction: column;

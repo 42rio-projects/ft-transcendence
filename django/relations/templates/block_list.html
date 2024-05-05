@@ -1,0 +1,17 @@
+<main class="container">
+  <header>
+    <h1 class="neon">Block list</h1>
+  </header>
+
+  <ul>
+    {% for user in user.get_blocks %}
+    <li>
+      <span>{{ user.username }}</span>
+      <form method="post" action="/friends/unblock/{{ user.id }}/" onsubmit="handleFormSubmit(event)">
+        {% csrf_token %}
+        <button type="submit">Unblock</button>
+      </form>
+    </li>
+    {% endfor %}
+  </ul>
+</main>

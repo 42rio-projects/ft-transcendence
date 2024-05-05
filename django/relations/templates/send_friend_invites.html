@@ -1,0 +1,19 @@
+<main class="container">
+  <header>
+    <h1 class="neon">Send invite</h1>
+  </header>
+
+  {% if success %}
+  <span class="success">{{ success }}</span>
+  {% endif %}
+
+  {% if error %}
+  <span class="error">{{ error }}</span>
+  {% endif %}
+
+  <form method="post" onsubmit="handleFormSubmit(event)">
+    {% csrf_token %}
+    <input type="text" name="username" placeholder="Username" value="{{ username }}" required />
+    <button type="submit">Submit</button>
+  </form>
+</main>

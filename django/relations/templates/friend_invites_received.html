@@ -1,0 +1,23 @@
+<main class="container">
+  <header>
+    <h1 class="neon">Invites received</h1>
+  </header>
+
+  <ul>
+    {% for invite in user.friend_invites_received.all %}
+    <li>
+      <span>{{ invite.sender }}</span>
+      <form method="post" action="/friends/respond-invite/{{ invite.id }}/" onsubmit="handleFormSubmit(event)">
+        {% csrf_token %}
+        <input type="hidden" name="user-action" value="accept" />
+        <button type="submit">Accept request</button>
+      </form>
+      <form method="post" action="/friends/respond-invite/{{ invite.id }}/" onsubmit="handleFormSubmit(event)">
+        {% csrf_token %}
+        <input type="hidden" name="user-action" value="reject" />
+        <button type="submit">Reject request</button>
+      </form>
+    </li>
+    {% endfor %}
+  </ul>
+</main>

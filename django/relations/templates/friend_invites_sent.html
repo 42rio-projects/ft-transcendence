@@ -1,0 +1,17 @@
+<main class="container">
+  <header>
+    <h1 class="neon">Invites sent</h1>
+  </header>
+
+  <ul>
+    {% for invite in user.friend_invites_sent.all %}
+    <li>
+      <span>{{ invite.receiver }}</span>
+      <form method="post" action="/friends/cancel-invite/{{ invite.id }}/" onsubmit="handleFormSubmit(event)">
+        {% csrf_token %}
+        <button type="submit">Cancel request</button>
+      </form>
+    </li>
+    {% endfor %}
+  </ul>
+</main>

@@ -1,129 +1,108 @@
-from django.http import HttpResponse
-from django.template import loader
-from django.shortcuts import get_object_or_404, redirect
+from django.http import Http404
+from django.shortcuts import get_object_or_404
 from django.core.exceptions import PermissionDenied
-
-import relations.models as models
-from user.models import User
-
-
-def friends(request):
-    template = loader.get_template('relations/index.html')
-    context = {}
-    return HttpResponse(template.render(context, request))
+from pong.utils import render_component
+from user.models import User, FriendInvite
 
 
-def friendlist(request):
-    template = loader.get_template("relations/friendlist.html")
-    context = {}
-    return HttpResponse(template.render(context, request))
+def friends_index(request):
+    return render_component(request, 'friends_index.html', 'body')
 
 
-def friendInvitesSent(request):
-    template = loader.get_template("relations/invites_sent.html")
-    context = {}
-    return HttpResponse(template.render(context, request))
+def friend_list(request):
+    return render_component(request, 'friend_list.html', 'body')
 
 
-def friendInvitesReceived(request):
-    template = loader.get_template("relations/invites_received.html")
-    context = {}
-    return HttpResponse(template.render(context, request))
+def remove_friend(request, user_id):
+    user = get_object_or_404(User, pk=user_id)
+    request.user.del_friend(user)
+    return render_component(request, 'friend_list.html', 'body')
 
 
-def blocklist(request):
-    template = loader.get_template("relations/blocklist.html")
-    context = {}
-    return HttpResponse(template.render(context, request))
+def friend_invites_sent(request):
+    return render_component(request, 'friend_invites_sent.html', 'body')
 
 
-def sendFriendInvites(request):
+def send_friend_invites(request):
     if request.method == 'POST':
-        name = request.POST.get('username')
-        user = get_object_or_404(
-            User,
-            username=name,
-        )
         try:
+            name = request.POST.get('username')
+            user = get_object_or_404(User, username=name)
             request.user.add_friend(user)
-            # add 201 response that is not rendered on the front end
+
+            return render_component(request, 'send_friend_invites.html', 'body', {
+                'success': 'Friend invite sent!'
+            })
         except Exception as e:
-            # add 40x response that is not rendered on the front end
-            return HttpResponse(e)
-    template = loader.get_template("relations/send_invites.html")
-    context = {}
-    return HttpResponse(template.render(context, request))
+            if type(e) == Http404:
+                error = 'User not found'
+            else:
+                error = e.message
+
+            return render_component(request, 'send_friend_invites.html', 'body', {
+                'username': name, # So user doesn't have to re-type the username
+                'error': error
+            })
+
+    return render_component(request, 'send_friend_invites.html', 'body')
 
 
-def blockUser(request):
-    if request.method == 'POST':
-        name = request.POST.get('username')
-        user = get_object_or_404(
-            User,
-            username=name,
-        )
-        try:
-            request.user.block_user(user)
-            # add 201 response that is not rendered on the front end
-        except Exception as e:
-            # add 40x response that is not rendered on the front end
-            return HttpResponse(e)
-    template = loader.get_template("relations/block_user.html")
-    context = {}
-    return HttpResponse(template.render(context, request))
+def cancel_friend_invite(request, invite_id):
+    invite = get_object_or_404(FriendInvite, pk=invite_id)
+    if invite.sender != request.user:
+        raise PermissionDenied
+    invite.delete()
+    return render_component(request, 'friend_invites_sent.html', 'body')
 
 
-def excludeFriend(request, user_id):
-    if request.method == 'POST':
-        user = get_object_or_404(
-            User,
-            pk=user_id,
-        )
-        try:
-            request.user.del_friend(user)
-        except Exception as e:
-            return HttpResponse(e)
-    return redirect('friendList')
+def friend_invites_received(request):
+    return render_component(request, 'friend_invites_received.html', 'body')
 
 
-def unblockUser(request, user_id):
-    if request.method == 'POST':
-        user = get_object_or_404(
-            User,
-            pk=user_id,
-        )
-        try:
-            request.user.unblock_user(user)
-        except Exception as e:
-            return HttpResponse(e)
-    return redirect('blockList')
-
-
-def respondFriendInvite(request, invite_id):
-    invite = get_object_or_404(
-        models.FriendInvite,
-        pk=invite_id,
-    )
+def respond_friend_invite(request, invite_id):
+    invite = get_object_or_404(FriendInvite, pk=invite_id)
     if invite.receiver != request.user:
         raise PermissionDenied
     if request.method == 'POST':
-        action = request.POST.get('action')
-        if action == 'accept':
+        user_action = request.POST.get('user-action')
+        if user_action == 'accept':
             invite.respond(accepted=True)
-        elif action == 'reject':
+        elif user_action == 'reject':
             invite.respond(accepted=False)
-        else:
-            raise Exception('Invalid action')
-    return redirect('friendInvitesReceived')
+
+    return render_component(request, 'friend_invites_received.html', 'body')
 
 
-def cancelFriendInvite(request, invite_id):
+def block_list(request):
+    return render_component(request, 'block_list.html', 'body')
+
+
+def block_user(request):
     if request.method == 'POST':
-        invite = get_object_or_404(
-            models.FriendInvite,
-            pk=invite_id,
-        )
-        if invite.sender != request.user:
-            raise PermissionDenied
-        invite.delete()
-    return redirect('friendInvitesSent')
+        try:
+            name = request.POST.get('username')
+            user = get_object_or_404(User, username=name)
+            request.user.block_user(user)
+            return render_component(request, 'block_user.html', 'body', {
+                'success': 'User blocked!'
+            })
+        except Exception as e:
+            if type(e) == Http404:
+                error = 'User not found'
+            else:
+                error = e.message
+
+            return render_component(request, 'block_user.html', 'body', {
+                'username': name, # So user doesn't have to re-type the username
+                'error': error
+            })
+
+    return render_component(request, 'block_user.html', 'body')
+
+
+def unblock_user(request, user_id):
+    if request.method == 'POST':
+        user = get_object_or_404(User, pk=user_id)
+        request.user.unblock_user(user)
+
+    return render_component(request, 'block_list.html', 'body')

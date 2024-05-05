@@ -3,43 +3,19 @@ from django.urls import path
 from relations import views
 
 urlpatterns = [
-    path("friends/", views.friends, name="friendsIndex"),
-    path("friends/friendlist/", views.friendlist, name="friendList"),
-    path("friends/blocklist/", views.blocklist, name="blockList"),
-    path(
-        "friends/exclude/<int:user_id>/",
-        views.excludeFriend,
-        name="excludeFriend"
-    ),
-    path(
-        "friends/invites-sent/",
-        views.friendInvitesSent,
-        name="friendInvitesSent"
-    ),
-    path(
-        "friends/invites-received/",
-        views.friendInvitesReceived,
-        name="friendInvitesReceived"
-    ),
-    path(
-        "friends/respond-invite/<int:invite_id>/",
-        views.respondFriendInvite,
-        name="respondFriendInvite"
-    ),
-    path(
-        "friends/cancel-invite/<int:invite_id>/",
-        views.cancelFriendInvite,
-        name="cancelFriendInvite"
-    ),
-    path(
-        "friends/send-invites/",
-        views.sendFriendInvites,
-        name="sendFriendInvites"
-    ),
-    path("friends/block-user/", views.blockUser, name="blockUser"),
-    path(
-        "friends/unblock/<int:user_id>/",
-        views.unblockUser,
-        name="unblockUser"
-    ),
+    path("friends/", views.friends_index),
+
+    path("friends/friend-list/", views.friend_list),
+    path("friends/remove/<int:user_id>/", views.remove_friend),
+
+    path("friends/invites-sent/", views.friend_invites_sent),
+    path("friends/send-invite/", views.send_friend_invites),
+    path("friends/cancel-invite/<int:invite_id>/", views.cancel_friend_invite),
+
+    path("friends/invites-received/", views.friend_invites_received),
+    path("friends/respond-invite/<int:invite_id>/", views.respond_friend_invite),
+
+    path("friends/block-list/", views.block_list),
+    path("friends/block/", views.block_user),
+    path("friends/unblock/<int:user_id>/", views.unblock_user),
 ]
