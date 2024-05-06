@@ -124,6 +124,8 @@ class LocalTournamentCosumer(AsyncWebsocketConsumer):
                 await self.tournament.remove_player(data['alias'])
             elif action == 'start_tournament':
                 await self.tournament.start()
+            elif action == 'start_game':
+                await self.tournament.render_next_game('player1')
         except Exception:
             await self.send(text_data=json.dumps(
                 {"status": "excepted", "data_received": data}

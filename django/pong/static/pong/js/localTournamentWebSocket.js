@@ -16,6 +16,8 @@ class LocalTournamentWebSocket {
       this.removePlayer(data["alias"]);
     } else if (status == "started") {
       this.removeFormationMenu();
+    } else if (status == "next_game") {
+      this.renderGame(data["html"]);
     } else if (status == "warning") {
       console.log(data["content"]);
     }
@@ -63,5 +65,15 @@ class LocalTournamentWebSocket {
   removeFormationMenu() {
     let menu = document.getElementById("formation-menu");
     menu.remove();
+  }
+
+  renderGame(html) {
+    const game = document.getElementById("game-section");
+    game.innerHTML = html;
+  }
+
+  startGame() {
+    const message = { action: "start_game" };
+    this.socket.send(JSON.stringify(message));
   }
 }

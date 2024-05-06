@@ -1,4 +1,5 @@
 import json
+import random
 from django.template.loader import render_to_string
 
 import logging
@@ -14,6 +15,10 @@ class LocalTournament():
         super().__init__()
         self.socket = socket
         self.players = set()
+        self.games = []
+        self.currentGame = None
+        self.losers = set()
+        self.winner = None
 
     async def send_message(self, data):
         await self.socket.send(text_data=json.dumps(data))
@@ -39,6 +44,48 @@ class LocalTournament():
         except Exception:
             return
 
+    def get_game_html(self):
+        self.currentGame = self.games.pop()
+        html = render_to_string(
+            'pong/local_game.html',
+            {
+                'player1': self.currentGame[0],
+                'player2': self.currentGame[1],
+                'tournament': True
+            }
+        )
+        return html
+
+    def get_result_html(self):
+        html = render_to_string(
+            'pong/tournament_result.html', {'winner': self.winner}
+        )
+        return html
+
+    def form_round(self):
+        self.players -= self.losers
+        self.losers.clear()
+        if len(self.players) == 1:
+            self.winner = self.players.pop()
+            return
+        players = list(self.players)
+        random.shuffle(players)
+        self.games = list(zip(players[::2], players[1::2]))
+
+    async def render_next_game(self, loser=None):
+        if loser:
+            if loser == "player1":
+                self.losers.add(self.currentGame[0])
+            elif loser == "player2":
+                self.losers.add(self.currentGame[1])
+        if len(self.games) == 0:
+            self.form_round()
+        if self.winner is not None:
+            html = self.get_result_html()
+        else:
+            html = self.get_game_html()
+        await self.send_message({"status": "next_game", "html": html})
+
     async def start(self):
         if len(self.players) < LOWER_PLAYER_LIMIT:
             await self.send_message(
@@ -46,3 +93,4 @@ class LocalTournament():
             )
         else:
             await self.send_message({"status": "started"})
+            await self.render_next_game()
