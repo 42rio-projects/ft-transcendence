@@ -5,7 +5,8 @@ import logging
 logging.basicConfig(level='INFO')
 # logging.info('Example')
 
-PLAYER_LIMIT = 16
+UPPER_PLAYER_LIMIT = 16
+LOWER_PLAYER_LIMIT = 4
 
 
 class LocalTournament():
@@ -19,7 +20,7 @@ class LocalTournament():
 
     async def add_player(self, player):
         previous_size = len(self.players)
-        if previous_size >= PLAYER_LIMIT:
+        if previous_size >= UPPER_PLAYER_LIMIT:
             await self.send_message(
                 {"status": "warning", "content": "Player limit reached"}
             )
@@ -37,3 +38,11 @@ class LocalTournament():
             )
         except Exception:
             return
+
+    async def start(self):
+        if len(self.players) < LOWER_PLAYER_LIMIT:
+            await self.send_message(
+                {"status": "warning", "content": "Not enough players to start"}
+            )
+        else:
+            await self.send_message({"status": "started"})

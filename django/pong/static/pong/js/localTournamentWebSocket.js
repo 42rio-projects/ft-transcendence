@@ -14,6 +14,8 @@ class LocalTournamentWebSocket {
       this.addPlayer(data["html"]);
     } else if (status == "removed_player") {
       this.removePlayer(data["alias"]);
+    } else if (status == "started") {
+      this.removeFormationMenu();
     } else if (status == "warning") {
       console.log(data["content"]);
     }
@@ -35,6 +37,19 @@ class LocalTournamentWebSocket {
     }
   }
 
+  tournamentAction(event) {
+    try {
+      event.preventDefault();
+
+      const form = event.target;
+      const data = new FormData(form);
+      const message = { action: data.get("action") };
+      this.socket.send(JSON.stringify(message));
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
   addPlayer(html) {
     const player_list = document.getElementById("tournament-players");
     player_list.innerHTML += html;
@@ -45,10 +60,8 @@ class LocalTournamentWebSocket {
     player.remove();
   }
 
-  testMessage() {
-    let message = JSON.stringify({
-      test: "Hello World",
-    });
-    this.socket.send(message);
+  removeFormationMenu() {
+    let menu = document.getElementById("formation-menu");
+    menu.remove();
   }
 }

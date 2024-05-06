@@ -1,16 +1,26 @@
 <h1>Local Tournament</h1>
 
-<form onsubmit="localTournamentSocket.playerAction(event)">
-  {% csrf_token %}
-  <input
-    type="text"
-    name="alias"
-    class="chat-input"
-    placeholder="Player Alias"
-    required
-  />
-  <input type="hidden" name="action" value="add_player" />
-  <button type="submit" class="input-button">Add</button>
-</form>
-<h2>Players</h2>
-<ul id="tournament-players"></ul>
+<div id="formation-menu">
+  <div class="verticalDiv">
+    <form onsubmit="localTournamentSocket.playerAction(event)">
+      {% csrf_token %}
+      <input
+        type="text"
+        name="alias"
+        class="chat-input"
+        placeholder="Player Alias"
+        required
+      />
+      <input type="hidden" name="action" value="add_player" />
+      <button type="submit" class="input-button">Add</button>
+    </form>
+    <form onsubmit="localTournamentSocket.tournamentAction(event)">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="start_tournament" />
+      <button type="submit" class="input-button">Start Tournament</button>
+    </form>
+  </div>
+  <h2>Players</h2>
+  <ul id="tournament-players"></ul>
+</div>
+<div id="tournament-section"></div>
