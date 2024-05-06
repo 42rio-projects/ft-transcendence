@@ -48,6 +48,8 @@ class LocalGameWebSocket {
       this.gameScreen.draw(data);
     } else if (data["status"] == "score") {
       this.updateScoreboard(data);
+    } else if (data["status"] == "finished") {
+      console.log("Game Over");
     } else if (data["status"] == "invalid") {
       console.error(data["message"]);
     }

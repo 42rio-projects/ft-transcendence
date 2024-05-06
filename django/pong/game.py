@@ -138,10 +138,11 @@ class Game:
         self.info.set_initial_values()
         self.interval_task = asyncio.create_task(self.countdown_and_update())
 
-    def stop(self):
+    async def stop(self):
         if self.is_running():
             self.interval_task.cancel()
             self.interval_task = None
+            await self.send_message({"status": "finished"})
 
     async def update_game(self):
         while self.info.finished() is False:
@@ -225,7 +226,7 @@ class LocalGame(Game):
             self.info.p2_score += 1
         await self.send_score()
         if self.info.finished():
-            self.stop()
+            await self.stop()
 
 
 class OnlineGame(Game):
@@ -252,7 +253,7 @@ class OnlineGame(Game):
         await self.send_score()
         await self.update_score()
         if self.info.finished():
-            self.stop()
+            await self.stop()
             await self.channel_layer.group_send(
                 self.room_group_name, {"type": "game.stopped"}
             )
@@ -273,7 +274,7 @@ class OnlineGame(Game):
             self.game_model.winner = self.game_model.player1
         self.game_model.finished = True
         await self.save_game()
-        self.stop()
+        await self.stop()
 
     @database_sync_to_async
     def delete_game(self):
