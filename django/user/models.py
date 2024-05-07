@@ -98,7 +98,7 @@ class User(AbstractUser):
             block[0].delete()
 
     def invite_to_game(self, user):
-        game = Game(player_1=self)
+        game = Game(player1=self)
         game.save()
         try:
             GameInvite(sender=self, receiver=user, game=game).save()
