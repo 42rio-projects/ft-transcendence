@@ -38,7 +38,7 @@ class OnlineGameWebSocket {
       console.log("Game canceled");
       this.gameRunning = false;
     } else if (data["status"] == "finished") {
-      console.log("Game over");
+      console.log("Game Over");
       this.gameRunning = false;
     }
   }

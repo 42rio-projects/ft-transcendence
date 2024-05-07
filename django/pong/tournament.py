@@ -2,10 +2,6 @@ import json
 import random
 from django.template.loader import render_to_string
 
-import logging
-logging.basicConfig(level='INFO')
-# logging.info('Example')
-
 UPPER_PLAYER_LIMIT = 16
 LOWER_PLAYER_LIMIT = 4
 
@@ -45,13 +41,15 @@ class LocalTournament():
             return
 
     def get_game_html(self):
+        final = True if len(self.players) == 2 else False
         self.currentGame = self.games.pop()
         html = render_to_string(
             'pong/local_game.html',
             {
                 'player1': self.currentGame[0],
                 'player2': self.currentGame[1],
-                'tournament': True
+                'tournament': True,
+                'final': final
             }
         )
         return html

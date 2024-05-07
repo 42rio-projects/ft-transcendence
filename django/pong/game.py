@@ -139,10 +139,11 @@ class Game:
         self.interval_task = asyncio.create_task(self.countdown_and_update())
 
     async def stop(self):
-        if self.is_running():
-            self.interval_task.cancel()
-            self.interval_task = None
-            await self.send_message({"status": "finished"})
+        if not self.is_running():
+            return
+        self.interval_task.cancel()
+        self.interval_task = None
+        await self.send_message({"status": "finished"})
 
     async def update_game(self):
         while self.info.finished() is False:

@@ -4,10 +4,6 @@ import json
 from pong.game import LocalGame, OnlineGame
 from pong.tournament import LocalTournament
 
-import logging
-logging.basicConfig(level='INFO')
-# logging.info('Example')
-
 
 class LocalGameCosumer(AsyncWebsocketConsumer):
 
@@ -16,7 +12,7 @@ class LocalGameCosumer(AsyncWebsocketConsumer):
         await self.accept()
 
     async def disconnect(self, close_code):
-        self.game.stop()
+        await self.game.stop()
 
     def update_player_input(self, data):
         p1_direction = data['l']
@@ -35,14 +31,14 @@ class LocalGameCosumer(AsyncWebsocketConsumer):
         if 'start' in data_json:
             self.game.start()
             return
-        elif 'stop' in data_json and self.game.is_running():
-            self.game.stop()
+        elif 'stop' in data_json:
+            await self.game.stop()
             return
         try:
             self.update_player_input(data_json)
         except KeyError:
             await self.send(text_data=json.dumps(
-                {"status": "invalid", "message": "Invalid JSON received"}
+                {"status": "invalid", "message": data_json}
             ))
 
 
@@ -124,7 +120,7 @@ class LocalTournamentCosumer(AsyncWebsocketConsumer):
                 await self.tournament.remove_player(data['alias'])
             elif action == 'start_tournament':
                 await self.tournament.start()
-            elif action == 'start_game':
+            elif action == 'next_game':
                 await self.tournament.render_next_game('player1')
         except Exception:
             await self.send(text_data=json.dumps(

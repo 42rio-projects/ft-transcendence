@@ -5,6 +5,7 @@ class LocalTournamentWebSocket {
     );
     this.socket.onmessage = this.onMessage.bind(this);
     this.socket.onclose = this.onClose.bind(this);
+    this.gameSocket = null;
   }
 
   onMessage(event) {
@@ -18,12 +19,18 @@ class LocalTournamentWebSocket {
       this.removeFormationMenu();
     } else if (status == "next_game") {
       this.renderGame(data["html"]);
+    } else if (status == "start_game") {
+      this.startGame();
     } else if (status == "warning") {
       console.log(data["content"]);
     }
   }
 
-  onClose(event) {}
+  onClose(event) {
+    if (this.gameSocket) {
+      this.gameSocket.socket.close();
+    }
+  }
 
   playerAction(event) {
     try {
@@ -68,12 +75,21 @@ class LocalTournamentWebSocket {
   }
 
   renderGame(html) {
+    if (!this.gameSocket) {
+      this.gameSocket = new LocalGameWebSocket(this);
+    }
     const game = document.getElementById("game-section");
     game.innerHTML = html;
   }
 
   startGame() {
-    const message = { action: "start_game" };
+    if (this.gameSocket) {
+      this.gameSocket.start();
+    }
+  }
+
+  nextGame() {
+    const message = { action: "next_game" };
     this.socket.send(JSON.stringify(message));
   }
 }

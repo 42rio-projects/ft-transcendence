@@ -8,7 +8,8 @@ class LocalGameWebSocket {
   gameRunning = false;
   pressedKeys = {};
 
-  constructor() {
+  constructor(tournament = null) {
+    this.tournament = tournament;
     this.socket = new WebSocket(
       "ws://" + window.location.host + "/ws/local-game/",
     );
@@ -23,22 +24,11 @@ class LocalGameWebSocket {
   }
 
   gameAction(action) {
-    let message;
     if (action == "start") {
-      message = JSON.stringify({
-        start: true,
-      });
-      this.setKeyListeners();
-      this.gameRunning = true;
-      this.gameScreen = new GameScreen();
-    } else {
-      message = JSON.stringify({
-        stop: true,
-      });
-      this.unsetKeyListeners();
-      this.gameRunning = false;
+      this.start();
+    } else if (action == "stop") {
+      this.stop();
     }
-    this.socket.send(message);
   }
 
   onMessage(event) {
@@ -49,15 +39,36 @@ class LocalGameWebSocket {
     } else if (data["status"] == "score") {
       this.updateScoreboard(data);
     } else if (data["status"] == "finished") {
-      console.log("Game Over");
+      this.stop();
     } else if (data["status"] == "invalid") {
       console.error(data["message"]);
     }
   }
 
   onClose(event) {
+    this.stop();
+  }
+
+  start() {
+    this.setKeyListeners();
+    this.gameRunning = true;
+    this.gameScreen = new GameScreen();
+    let message = JSON.stringify({
+      start: true,
+    });
+    this.socket.send(message);
+  }
+
+  stop() {
     this.unsetKeyListeners();
     this.gameRunning = false;
+    let message = JSON.stringify({
+      stop: true,
+    });
+    this.socket.send(message);
+    if (this.tournament) {
+      this.tournament.nextGame();
+    }
   }
 
   movePlayer() {
