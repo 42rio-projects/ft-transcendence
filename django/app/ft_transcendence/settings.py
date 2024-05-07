@@ -30,7 +30,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['django', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['django', 'localhost', '127.0.0.1', 'endgame.42.rio']
 
 # Logging definition
 LOGGING = {
@@ -87,6 +87,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.middleware.security.SecurityMiddleware',
 	'django_prometheus.middleware.PrometheusAfterMiddleware'
 ]
 
@@ -189,6 +190,14 @@ CHANNEL_LAYERS = {
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'menu'
 LOGOUT_REDIRECT_URL = '/'
-# PROMETHEUS_EXPORT_MIGRATIONS = True
+SECURE_SSL_REDIRECT = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+SECURE_HSTS_SECONDS = 31536000
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+
 PROMETHEUS_METRIC_EXPORT_DURATION_BUCKETS = True
 

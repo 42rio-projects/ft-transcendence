@@ -7,9 +7,24 @@ dbname=$POSTGRES_NAME
 user=$POSTGRES_USER
 password=$POSTGRES_PASSWORD"
 
+# Check if the Gunicorn config file exists
+if [ ! -f gunicorn_config.py ]; then
+    # Create Gunicorn config file with default settings
+    cat << EOF > gunicorn_config.py
+bind = '0.0.0.0:8000'
+workers = 3
+accesslog = '-'
+errorlog = '-'
+loglevel = 'info'
+EOF
+fi
+
+echo "Gunicorn config updated!"
+
+
 echo "MakeMigrations"
 python manage.py makemigrations
 echo "Migrate"
 python manage.py migrate --run-syncdb
 echo "Runserver"
-gunicorn ft_transcendence.wsgi:application --bind 0.0.0.0:8000 --access-logfile '-' --error-logfile '-' --log-level INFO
+gunicorn -c gunicorn_config.py ft_transcendence.wsgi:application

@@ -46,14 +46,15 @@ services:
     networks:
       - ft_transcendence
 
-  adminer:
-    container_name: adminer
-    image: adminer
+  pgadmin:
+    container_name: pgadmin
+    image: dpage/pgadmin4
     restart: always
-    ports:
-      - 8080:8080
     depends_on:
       - postgres
+    environment:
+      PGADMIN_DEFAULT_EMAIL: daniel@42.com
+      PGADMIN_DEFAULT_PASSWORD: memude
     networks:
       - ft_transcendence
 
@@ -62,10 +63,21 @@ services:
     build: ../django
     env_file: .env
     restart: always
-    ports:
-      - 8000:8000
     depends_on:
       - postgres
+    networks:
+      - ft_transcendence
+
+  nginx:
+    container_name: nginx
+    build: ./nginx
+    env_file: .env
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - django
     networks:
       - ft_transcendence
 
@@ -78,8 +90,6 @@ services:
       - prometheus_data:/prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yaml'
-    ports:
-      - '9090:9090'
     networks:
       - ft_transcendence
 
@@ -95,16 +105,12 @@ services:
       - ./grafana/dashboard/dashboard.yaml:/etc/grafana/provisioning/dashboards/dashboard.yaml
       - ./grafana/dashboard/dashboard-transcendence.json:/var/lib/grafana/dashboards/dashboard-transcendence.json
       - ./grafana/dashboard/dashboard-cadvisor.json:/var/lib/grafana/dashboards/dashboard-cadvisor.json
-    ports:
-      - '3000:3000'
     networks:
       - ft_transcendence
 
   cadvisor:
     container_name: cadvisor
     image: cgr.dev/chainguard/cadvisor
-    ports:
-      - '8081:8080'
     volumes:
       - /:/rootfs:ro
       - /var/run:/var/run:rw
@@ -147,8 +153,6 @@ services:
     volumes:
       - certs:/usr/share/elasticsearch/config/certs
       - esdata01:/usr/share/elasticsearch/data
-    ports:
-      - 9200:9200
     environment:
       - node.name=elasticsearch
       - cluster.name=${CLUSTER_NAME}
@@ -194,8 +198,6 @@ services:
     volumes:
       - certs:/usr/share/kibana/config/certs
       - kibanadata:/usr/share/kibana/data
-    ports:
-      - 5601:5601
     environment:
       - SERVERNAME=kibana
       - ELASTICSEARCH_HOSTS=https://elasticsearch:9200
