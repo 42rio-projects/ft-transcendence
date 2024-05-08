@@ -6,7 +6,7 @@ from user.models import User, FriendInvite
 
 
 def friends_index(request):
-    return render_component(request, 'friends_index.html', 'body')
+    return render_component(request, 'friends_index.html', 'content')
 
 
 def friend_list(request):

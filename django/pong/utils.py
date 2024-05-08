@@ -8,5 +8,5 @@ def render_component(request, template_name, target, context={}, status=200):
         response["X-Target-Id"] = target
         return response
 
-    template_html = loader.get_template(template_name).render(context, request)
-    return render(request, "base.html", { "body": template_html }, status=status)
+    component_html = loader.get_template(template_name).render(context, request)
+    return render(request, "base.html", { "content": component_html }, status=status)

@@ -29,19 +29,21 @@ def register(request):
         if errors_context:
             # Add the previous values to the context
             # So the user doesn't have to retype everything
-            errors_context["username"] = username
-            errors_context["password"] = password
-            errors_context["password2"] = password2
+            errors_context.update({
+                "username": username,
+                "password": password,
+                "password2": password2
+            })
 
-            return render_component(request, "auth/register_form_fields.html", "form-fields", errors_context, 400)
+            return render_component(request, "register_form.html", "form", errors_context, 400)
 
         User.objects.create_user(username=username, password=password)
-
-        messages.success(request, "Registered! You can now login.")
-        return redirect("login")
+        return render_component(request, "register_form.html", "form", {
+            "success": "User created successfully!"
+        })
 
     if request.method == "GET":
-        return render_component(request, "auth/register.html", "body")
+        return render_component(request, "register.html", "content")
 
 
 def login(request):
@@ -57,20 +59,19 @@ def login(request):
                 "error": "Incorrect username or password"
             }
 
-            return render_component(request, "auth/login_form_fields.html", "form-fields", context, 400)
+            return render_component(request, "login_form.html", "form", context, 400)
 
         django_login(request, user)
-        return redirect("home")
+        return redirect("/")
 
     if request.method == "GET":
-        return render_component(request, "auth/login.html", "body")
+        return render_component(request, "login.html", "content")
 
 
 def logout(request):
     if request.method == "GET":
         django_logout(request)
-        messages.success(request, "Logged out.")
-        return redirect("home")
+        return redirect("/")
 
 
 def profile(request):

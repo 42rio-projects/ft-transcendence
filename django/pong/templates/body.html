@@ -1,0 +1,29 @@
+<header class="header">
+  <h1 class="header-title">
+    ft_transcendence - {% block title %}{% endblock %}
+  </h1>
+  {% if user.is_authenticated %}
+  <nav class="header-nav">
+    <div>
+      <a class="link" href="/">Home</a>
+      <a class="link" href="/pong/">Pong</a>
+      <a class="link" href="/friends/">Friends</a>
+      <a class="link" href="/chats/">Chats</a>
+    </div>
+    <span class="header-vertical-line"></span>
+    <div>
+      <a href="/profile/">
+        <img src="user.avatar.url" alt="Avatar" />
+      </a>
+      <a class="link" href="/logout/">Logout</a>
+    </div>
+  </nav>
+  {% else %}
+  <nav class="header-nav">
+    <a class="link" href="/register/">Register</a>
+    <a class="link" href="/login/">Login</a>
+  </nav>
+  {% endif %}
+</header>
+
+{% block content %}{% endblock %}

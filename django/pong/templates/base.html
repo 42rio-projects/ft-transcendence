@@ -1,5 +1,4 @@
 {% load static %}
-
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -10,7 +9,16 @@
     <link rel="stylesheet" href="{% static 'css/style.css' %}" />
     <script src="{% static 'js/script.js' %}"></script>
   </head>
-  <body id="body">
-    {{ body }}
+  <body>
+    <!-- grid arcade -->
+    <div class="neon-fog"></div>
+    <div class="grid">
+      <div class="grid-top"></div>
+      <div class="grid-lines"></div>
+    </div>
+
+    <div id="content">
+      {{ content }}
+    </div>
   </body>
 </html>

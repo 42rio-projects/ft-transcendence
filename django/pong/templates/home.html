@@ -1,29 +1,13 @@
-{% for message in messages %}
-{% if message.tags == 'success' %}
-<span class="home-success">{{ message }}</span>
-{% endif %}
-{% endfor %}
+{% extends "body.html" %}
 
-<main>
+{% block title %} Home {% endblock %}
+
+{% block content %}
+<main class="home">
   {% if user.is_authenticated %}
-  <header>
-    <h1>Welcome, {{ user.username }}</h1>
-  </header>
-
-  <div class="home-actions">
-    <a href="/pong/">Pong</a>
-    <a href="/friends/">Friends</a>
-    <a href="/profile/">Profile</a>
-    <a href="/auth/logout/">Logout</a>
-  </div>
+  <h2>Authenticated</h2>
   {% else %}
-  <header>
-    <h1>Welcome to transcendence</h1>
-  </header>
-
-  <div class="home-actions">
-    <a href="/auth/login/">Login</a>
-    <a href="/auth/register/">Register</a>
-  </div>
+  <h2>Unauthenticated</h2>
   {% endif %}
 </main>
+{% endblock %}

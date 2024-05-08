@@ -1,0 +1,21 @@
+{% extends 'body.html' %}
+
+{% block content %}
+<main class="auth">
+  <div>
+    <div class="auth-header">
+      {% block auth_header %}{% endblock %}
+    </div>
+
+    <form id="form" class="auth-form" method="post" onsubmit="handleFormSubmit(event)">
+      {% block auth_form %}{% endblock %}
+    </form>
+
+    <hr />
+
+    <div class="auth-footer">
+      {% block auth_footer %}{% endblock %}
+    </div>
+  </div>
+</main>
+{% endblock %}

@@ -1,8 +1,12 @@
 {% csrf_token %}
 
+{% if success %}
+<span class="register-success">{{ success }}</span>
+{% endif %}
+
 <div>
   {% if username_error %}
-  <span class="error">{{ username_error }}</span>
+  <span class="register-error">{{ username_error }}</span>
   {% endif %}
   <input
     type="text"
@@ -14,7 +18,7 @@
 
 <div>
   {% if password_error %}
-  <span class="error">{{ password_error }}</span>
+  <span class="register-error">{{ password_error }}</span>
   {% endif %}
   <input
     type="password"
@@ -26,7 +30,7 @@
 
 <div>
   {% if password2_error %}
-  <span class="error">{{ password2_error }}</span>
+  <span class="register-error">{{ password2_error }}</span>
   {% endif %}
   <input
     type="password"
@@ -34,4 +38,6 @@
     placeholder="Confirm password"
     value="{{ password2 }}"
   />
-</div>  
+</div>
+
+<button type="submit">Register</button>

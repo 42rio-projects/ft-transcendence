@@ -1,0 +1,17 @@
+{% extends 'auth.html' %}
+
+{% block title %} Login {% endblock %}
+
+{% block auth_header %}
+<h1>Login</h1>
+<h2>Enter your account:</h2>
+{% endblock %}
+
+{% block auth_form %}
+{% include 'login_form.html' %}
+{% endblock %}
+
+{% block auth_footer %}
+<p>Don't have an account?</p>
+<a class="link" href="/register/">Register</a>
+{% endblock %}
