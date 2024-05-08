@@ -39,7 +39,7 @@ class LocalGameWebSocket {
     } else if (data["status"] == "score") {
       this.updateScoreboard(data);
     } else if (data["status"] == "finished") {
-      this.stop();
+      this.stop(data["winner"]);
     } else if (data["status"] == "invalid") {
       console.error(data["message"]);
     }
@@ -59,7 +59,7 @@ class LocalGameWebSocket {
     this.socket.send(message);
   }
 
-  stop() {
+  stop(winner) {
     this.unsetKeyListeners();
     this.gameRunning = false;
     let message = JSON.stringify({
@@ -67,7 +67,7 @@ class LocalGameWebSocket {
     });
     this.socket.send(message);
     if (this.tournament) {
-      this.tournament.nextGame();
+      this.tournament.nextGame(winner);
     }
   }
 

@@ -70,12 +70,12 @@ class LocalTournament():
         random.shuffle(players)
         self.games = list(zip(players[::2], players[1::2]))
 
-    async def render_next_game(self, loser=None):
-        if loser:
-            if loser == "player1":
-                self.losers.add(self.currentGame[0])
-            elif loser == "player2":
+    async def render_next_game(self, winner=None):
+        if winner:
+            if winner == "player1":
                 self.losers.add(self.currentGame[1])
+            elif winner == "player2":
+                self.losers.add(self.currentGame[0])
         if len(self.games) == 0:
             self.form_round()
         if self.winner is not None:

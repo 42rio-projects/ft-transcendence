@@ -143,7 +143,10 @@ class Game:
             return
         self.interval_task.cancel()
         self.interval_task = None
-        await self.send_message({"status": "finished"})
+        winner = (
+            'player1' if self.info.p1_score > self.info.p2_score else 'player2'
+        )
+        await self.send_message({"status": "finished", "winner": winner})
 
     async def update_game(self):
         while self.info.finished() is False:

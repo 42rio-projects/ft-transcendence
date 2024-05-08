@@ -88,8 +88,8 @@ class LocalTournamentWebSocket {
     }
   }
 
-  nextGame() {
-    const message = { action: "next_game" };
+  nextGame(winner) {
+    const message = { action: "next_game", winner: winner };
     this.socket.send(JSON.stringify(message));
   }
 }
