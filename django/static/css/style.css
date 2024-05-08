@@ -119,6 +119,23 @@ body {
   height: 90vh;
 }
 
+.home {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--foreground-color);
+  border-radius: 10px;
+  padding: 25px;
+  width: 300px;
+  background-color: var(--background-color);
+  gap: 10px;
+}
+
+.home > form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
 .auth {
   display: flex;
   flex-direction: column;

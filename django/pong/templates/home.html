@@ -3,11 +3,12 @@
 {% block title %} Home {% endblock %}
 
 {% block content %}
-<main class="home">
-  {% if user.is_authenticated %}
-  <h2>Authenticated</h2>
-  {% else %}
-  <h2>Unauthenticated</h2>
-  {% endif %}
+<main class="main-container">
+  <div class="home">
+    <h1 class="neon">Search user</h1>
+    <form id="form" method="post" onsubmit="handleFormSubmit(event)" >
+      {% include 'search_user_form.html' %}
+    </form>
+  <div>
 </main>
 {% endblock %}

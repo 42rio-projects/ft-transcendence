@@ -1,17 +1,18 @@
-<main class="container">
-  <header>
-    <h1 class="neon">Block list</h1>
-  </header>
+{% extends 'friends.html' %}
 
-  <ul>
-    {% for user in user.get_blocks %}
-    <li>
-      <span>{{ user.username }}</span>
-      <form method="post" action="/friends/unblock/{{ user.id }}/" onsubmit="handleFormSubmit(event)">
-        {% csrf_token %}
-        <button type="submit">Unblock</button>
-      </form>
-    </li>
-    {% endfor %}
-  </ul>
-</main>
+{% block friends_title %} Block list {% endblock %}
+
+{% block friends_content %}
+<ul>
+  {% for user in user.get_blocks %}
+  <li>
+    <span>{{ user.username }}</span>
+    <form method="post" onsubmit="handleFormSubmit(event)">
+      {% csrf_token %}
+      <input type="hidden" name="user-id" value="{{ user.id }}" />
+      <button type="submit">Unblock</button>
+    </form>
+  </li>
+  {% endfor %}
+</ul>
+{% endblock %}
