@@ -39,7 +39,9 @@ class LocalGameWebSocket {
     } else if (data["status"] == "score") {
       this.updateScoreboard(data);
     } else if (data["status"] == "finished") {
-      this.stop(data["winner"]);
+      this.stop();
+    } else if (data["status"] == "result") {
+      this.renderResult(data["html"]);
     } else if (data["status"] == "invalid") {
       console.error(data["message"]);
     }
@@ -53,22 +55,26 @@ class LocalGameWebSocket {
     this.setKeyListeners();
     this.gameRunning = true;
     this.gameScreen = new GameScreen();
-    let message = JSON.stringify({
-      start: true,
-    });
-    this.socket.send(message);
+    this.socket.send(JSON.stringify({ start: true }));
   }
 
-  stop(winner) {
+  stop() {
     this.unsetKeyListeners();
     this.gameRunning = false;
-    let message = JSON.stringify({
-      stop: true,
-    });
-    this.socket.send(message);
+    this.socket.send(JSON.stringify({ stop: true }));
+    let tournament, player1, player2;
     if (this.tournament) {
-      this.tournament.nextGame(winner);
+      tournament = true;
+    } else {
+      tournament = false;
     }
+    try {
+      player1 = document.getElementById("p1-alias").textContent;
+      player2 = document.getElementById("p2-alias").textContent;
+    } catch {
+      return;
+    }
+    this.getResult(player1, player2, tournament);
   }
 
   movePlayer() {
@@ -107,6 +113,22 @@ class LocalGameWebSocket {
     event.preventDefault();
     let keyPressed = event.key;
     this.pressedKeys[keyPressed] = false;
+  }
+
+  getResult(player1 = "Player1", player2 = "Player2", tournament) {
+    this.socket.send(
+      JSON.stringify({
+        render: true,
+        player1: player1,
+        player2: player2,
+        tournament: tournament,
+      }),
+    );
+  }
+
+  renderResult(html) {
+    const div = document.getElementById("local-game-section");
+    div.innerHTML = html;
   }
 
   setKeyListeners() {

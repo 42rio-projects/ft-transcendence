@@ -72,9 +72,9 @@ class LocalTournament():
 
     async def render_next_game(self, winner=None):
         if winner:
-            if winner == "player1":
+            if winner == self.currentGame[0]:
                 self.losers.add(self.currentGame[1])
-            elif winner == "player2":
+            elif winner == self.currentGame[1]:
                 self.losers.add(self.currentGame[0])
         if len(self.games) == 0:
             self.form_round()

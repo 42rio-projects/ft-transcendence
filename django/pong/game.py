@@ -2,6 +2,7 @@ import json
 import asyncio
 from channels.layers import get_channel_layer
 from channels.db import database_sync_to_async
+from django.template.loader import render_to_string
 
 from pong.models import Game as GameModel
 
@@ -143,10 +144,7 @@ class Game:
             return
         self.interval_task.cancel()
         self.interval_task = None
-        winner = (
-            'player1' if self.info.p1_score > self.info.p2_score else 'player2'
-        )
-        await self.send_message({"status": "finished", "winner": winner})
+        await self.send_message({"status": "finished"})
 
     async def update_game(self):
         while self.info.finished() is False:
@@ -231,6 +229,23 @@ class LocalGame(Game):
         await self.send_score()
         if self.info.finished():
             await self.stop()
+
+    async def render_result(self, player1, player2, tournament):
+        winner = (
+            player1 if self.info.p1_score > self.info.p2_score else player2
+        )
+        html = render_to_string(
+            'pong/local_game_result.html',
+            {
+                'player1': player1,
+                'player2': player2,
+                'player1_points': self.info.p1_score,
+                'player2_points': self.info.p2_score,
+                'winner': winner,
+                'tournament': tournament
+            }
+        )
+        await self.send_message({"status": "result", "html": html})
 
 
 class OnlineGame(Game):

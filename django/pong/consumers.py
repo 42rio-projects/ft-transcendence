@@ -27,18 +27,23 @@ class LocalGameCosumer(AsyncWebsocketConsumer):
             self.game.info.p2_move = p2_direction
 
     async def receive(self, text_data):
-        data_json = json.loads(text_data)
-        if 'start' in data_json:
+        data = json.loads(text_data)
+        if 'start' in data:
             self.game.start()
             return
-        elif 'stop' in data_json:
+        elif 'stop' in data:
             await self.game.stop()
             return
+        elif 'render' in data:
+            await self.game.render_result(
+                data["player1"], data["player2"], data["tournament"]
+            )
+            return
         try:
-            self.update_player_input(data_json)
+            self.update_player_input(data)
         except KeyError:
             await self.send(text_data=json.dumps(
-                {"status": "invalid", "message": data_json}
+                {"status": "invalid", "message": data}
             ))
 
 
