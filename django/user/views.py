@@ -1,4 +1,4 @@
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect, render, get_object_or_404
 from pong.utils import render_component
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import update_session_auth_hash
@@ -74,7 +74,7 @@ def logout(request):
         return redirect("/")
 
 
-def profile(request):
+def my_profile(request):
     user = request.user
 
     if request.method == "POST":
@@ -121,6 +121,24 @@ def profile(request):
             "username": user.username,
             "email": user.email,
         })
+
+
+def user_profile(request, username):
+    user = get_object_or_404(User, username=username)
+    context = {
+        "user": user
+    }
+
+    if request.method == 'POST':
+        user_action = request.POST.get('user-action')
+        if user_action == 'friend-invite':
+            request.user.add_friend(user)
+            context["success"] = "Friend invite sent"
+        if user_action == 'block':
+            request.user.block_user(user)
+            context["success"] = "User blocked"
+
+    return render_component(request, 'user_profile.html', 'content', context)
 
 
 @login_required

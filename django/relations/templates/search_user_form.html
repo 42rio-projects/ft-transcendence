@@ -1,0 +1,8 @@
+{% csrf_token %}
+
+{% if error %}
+<span>{{ error }}</span>
+{% endif %}
+
+<input type="text" name="username" placeholder="Username" value="{{ username }}" />
+<button type="submit">Search</button>
