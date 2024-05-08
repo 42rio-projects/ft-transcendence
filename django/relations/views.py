@@ -5,22 +5,52 @@ from pong.utils import render_component
 from user.models import User, FriendInvite
 
 
-def friends_index(request):
-    return render_component(request, 'friends_index.html', 'content')
+def friends(request):
+    if request.method == 'POST':
+        # Remove friend
+        user_id = request.POST.get('user-id')
+        user = get_object_or_404(User, pk=user_id)
+        request.user.del_friend(user)
 
-
-def friend_list(request):
-    return render_component(request, 'friend_list.html', 'body')
-
-
-def remove_friend(request, user_id):
-    user = get_object_or_404(User, pk=user_id)
-    request.user.del_friend(user)
-    return render_component(request, 'friend_list.html', 'body')
+    return render_component(request, 'friends.html', 'content')
 
 
 def friend_invites_sent(request):
-    return render_component(request, 'friend_invites_sent.html', 'body')
+    if request.method == 'POST':
+        # Cancel friend invite
+        invite_id = request.POST.get('invite-id')
+        invite = get_object_or_404(FriendInvite, pk=invite_id)
+        if invite.sender != request.user:
+            raise PermissionDenied
+        invite.delete()
+
+    return render_component(request, 'friend_invites_sent.html', 'content')
+
+
+def friend_invites_received(request):
+    if request.method == 'POST':
+        # Accept/Reject friend invite
+        invite_id = request.POST.get('invite-id')
+        invite = get_object_or_404(FriendInvite, pk=invite_id)
+        if invite.receiver != request.user:
+            raise PermissionDenied
+        user_action = request.POST.get('user-action')
+        if user_action == 'accept':
+            invite.respond(accepted=True)
+        elif user_action == 'reject':
+            invite.respond(accepted=False)
+
+    return render_component(request, 'friend_invites_received.html', 'content')
+
+
+def block_list(request):
+    if request.method == 'POST':
+        # Unblock user
+        user_id = request.POST.get('user-id')
+        user = get_object_or_404(User, pk=user_id)
+        request.user.unblock_user(user)
+
+    return render_component(request, 'block_list.html', 'content')
 
 
 def send_friend_invites(request):
@@ -30,7 +60,7 @@ def send_friend_invites(request):
             user = get_object_or_404(User, username=name)
             request.user.add_friend(user)
 
-            return render_component(request, 'send_friend_invites.html', 'body', {
+            return render_component(request, 'send_friend_invites.html', 'content', {
                 'success': 'Friend invite sent!'
             })
         except Exception as e:
@@ -39,42 +69,12 @@ def send_friend_invites(request):
             else:
                 error = e.message
 
-            return render_component(request, 'send_friend_invites.html', 'body', {
+            return render_component(request, 'send_friend_invites.html', 'content', {
                 'username': name, # So user doesn't have to re-type the username
                 'error': error
             })
 
-    return render_component(request, 'send_friend_invites.html', 'body')
-
-
-def cancel_friend_invite(request, invite_id):
-    invite = get_object_or_404(FriendInvite, pk=invite_id)
-    if invite.sender != request.user:
-        raise PermissionDenied
-    invite.delete()
-    return render_component(request, 'friend_invites_sent.html', 'body')
-
-
-def friend_invites_received(request):
-    return render_component(request, 'friend_invites_received.html', 'body')
-
-
-def respond_friend_invite(request, invite_id):
-    invite = get_object_or_404(FriendInvite, pk=invite_id)
-    if invite.receiver != request.user:
-        raise PermissionDenied
-    if request.method == 'POST':
-        user_action = request.POST.get('user-action')
-        if user_action == 'accept':
-            invite.respond(accepted=True)
-        elif user_action == 'reject':
-            invite.respond(accepted=False)
-
-    return render_component(request, 'friend_invites_received.html', 'body')
-
-
-def block_list(request):
-    return render_component(request, 'block_list.html', 'body')
+    return render_component(request, 'send_friend_invites.html', 'content')
 
 
 def block_user(request):
@@ -83,7 +83,7 @@ def block_user(request):
             name = request.POST.get('username')
             user = get_object_or_404(User, username=name)
             request.user.block_user(user)
-            return render_component(request, 'block_user.html', 'body', {
+            return render_component(request, 'block_user.html', 'content', {
                 'success': 'User blocked!'
             })
         except Exception as e:
@@ -92,17 +92,9 @@ def block_user(request):
             else:
                 error = e.message
 
-            return render_component(request, 'block_user.html', 'body', {
+            return render_component(request, 'block_user.html', 'content', {
                 'username': name, # So user doesn't have to re-type the username
                 'error': error
             })
 
-    return render_component(request, 'block_user.html', 'body')
-
-
-def unblock_user(request, user_id):
-    if request.method == 'POST':
-        user = get_object_or_404(User, pk=user_id)
-        request.user.unblock_user(user)
-
-    return render_component(request, 'block_list.html', 'body')
+    return render_component(request, 'block_user.html', 'content')

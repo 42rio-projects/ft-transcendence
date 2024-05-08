@@ -1,0 +1,47 @@
+{% extends 'body.html' %}
+
+{% block title %} Friends {% endblock %}
+
+{% block content %}
+<main class="main-container">
+  <div class="friends">
+    <div class="friends-header">
+      <h1 class="neon">
+        {% block friends_title %}
+        Friend list
+        {% endblock %}
+      </h1>
+      <div class="friends-header-links">
+        <a class="link" href="/friends/">
+          Friend list
+        </a>
+        <span class="vertical-line"></span>
+        <a class="link" href="/friends/invites-sent/">
+          Invites sent
+        </a>
+        <span class="vertical-line"></span>
+        <a class="link" href="/friends/invites-received/">
+          Invites received
+        </a>
+      </div>
+    </div>
+
+    <hr />
+
+    {% block friends_content %}
+    <ul>
+      {% for user in user.get_friends %}
+      <li>{{ user.username }}
+        <p id="{{ user.username }}">OFF</p>
+        <form method="post" onsubmit="handleFormSubmit(event)">
+          {% csrf_token %}
+          <input type="hidden" name="user-id" value="{{ user.id }}" />
+          <button type="submit">Remove friend</button>
+        </form>
+      </li>
+      {% endfor %}
+    </ul>
+    {% endblock %}
+  </div>
+</main>
+{% endblock %}

@@ -56,7 +56,7 @@ body {
   overflow: hidden;
   background: radial-gradient(
       ellipse at center,
-      rgb(10, 130, 210) 0%,
+      rgb(50, 40, 180) 0%,
       rgba(0, 0, 0, 0.8) 60%,
       rgba(0, 0, 0, 1) 90%
     ),
@@ -72,6 +72,11 @@ body {
 
 .link:hover {
   color: var(--primary-color);
+}
+
+
+.neon {
+  animation: neon 1.5s ease-in-out infinite alternate;
 }
 
 .header {
@@ -91,29 +96,30 @@ body {
 
 .header-nav {
   display: flex;
-  gap: 10px;
+  align-items: center;
+  gap: 20px;
 }
 
 .header-nav div {
   display: flex;
-  gap: 10px;
+  align-items: center;
+  gap: 20px;
 }
 
-.header-vertical-line {
-  width: 2px;
+.vertical-line {
+  width: 1px;
   height: 20px;
   background-color: var(--foreground-color);
-  margin: 0 5px;
 }
 
-.auth {
+.main-container {
   display: flex;
   justify-content: center;
   align-items: center;
   height: 90vh;
 }
 
-.auth > div {
+.auth {
   display: flex;
   flex-direction: column;
   border: 1px solid var(--foreground-color);
@@ -128,10 +134,6 @@ body {
   display: flex;
   flex-direction: column;
   gap: 10px;
-}
-
-.auth-header h1 {
-  animation: neon 1.5s ease-in-out infinite alternate;
 }
 
 .auth-header h2 {
@@ -167,6 +169,29 @@ body {
 .register-error {
   font-size: 0.9rem;
   color: var(--error-color);
+}
+
+.friends {
+  display: flex;
+  flex-direction: column;
+  width: 500px;
+  border: 1px solid var(--foreground-color);
+  border-radius: 10px;
+  padding: 25px;
+  background-color: var(--background-color);
+  gap: 20px;
+}
+
+.friends-header {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.friends-header-links {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .neon-fog {
