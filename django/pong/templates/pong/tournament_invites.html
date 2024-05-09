@@ -1,5 +1,15 @@
 <h2>Create Tournament</h2>
-<p>tmp</p>
+<form
+  method="post"
+  action="{% url 'tournamentInvites' %}"
+  onsubmit="handleForm(event)"
+>
+  {% csrf_token %}
+  <label for="tournament-name">Tournament name:</label>
+  <input type="text" name="tournament-name" id="tournament-name" required />
+  <input type="hidden" name="url" value="{% url 'tournamentInvites' %}" />
+  <button type="submit">Create</button>
+</form>
 <h2>Current Tournaments you're administrating</h2>
 <ul id="active-admin-tournaments">
   {% for tournament in user.current_admin_tournaments %}

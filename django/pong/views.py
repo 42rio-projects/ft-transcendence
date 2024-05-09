@@ -74,12 +74,6 @@ def gameInvites(request):
     return HttpResponse(template.render(context, request))
 
 
-def TournamentInvites(request):
-    template = loader.get_template("pong/tournament_invites.html")
-    context = {}
-    return HttpResponse(template.render(context, request))
-
-
 def respondGameInvite(request, invite_id):
     invite = get_object_or_404(
         models.GameInvite,
@@ -112,6 +106,31 @@ def tournamentMenu(request):
 def localTournament(request):
     if request.method == "GET":
         return render(request, "pong/local_tournament.html")
+
+
+def TournamentInvites(request):
+    if request.method == 'POST':
+        name = request.POST.get('tournament-name')
+        try:
+            tournament = models.Tournament(admin=request.user, name=name)
+            tournament.save()
+            return redirect('onlineTournament', tournament_id=tournament.pk)
+        except Exception as e:
+            # add 40x response that is not rendered on the front end
+            return HttpResponse(e)
+    template = loader.get_template("pong/tournament_invites.html")
+    context = {}
+    return HttpResponse(template.render(context, request))
+
+
+def onlineTournament(request, tournament_id):
+    tournament = get_object_or_404(models.Tournament, pk=tournament_id)
+    context = {"tournament": tournament}
+    if tournament.finished:
+        template = loader.get_template('pong/online_tournament_result.html')
+    else:
+        template = loader.get_template('pong/online_tournament.html')
+    return HttpResponse(template.render(context, request))
 
 # class TournamentViewSet(viewsets.ModelViewSet):
 #     queryset = models.Tournament.objects.all()

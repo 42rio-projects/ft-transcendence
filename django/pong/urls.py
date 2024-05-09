@@ -16,6 +16,11 @@ urlpatterns = [
     path('tournament-menu/', views.tournamentMenu, name='tournamentMenu'),
     path('local-tournament/', views.localTournament, name='localTournament'),
     path(
+        'online-tournament/<int:tournament_id>/',
+        views.onlineTournament,
+        name='onlineTournament'
+    ),
+    path(
         "tournament-invites/",
         views.TournamentInvites,
         name="tournamentInvites"
