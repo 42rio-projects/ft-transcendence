@@ -41,8 +41,56 @@ class Tournament(models.Model):
                 round.save()
                 round.next_games(previous)
 
+    def invite(self, user):
+        TournamentInvite(tournament=self, receiver=user).save()
+
     def __str__(self):
         return (self.name)
+
+
+class TournamentInvite(models.Model):
+    tournament = models.ForeignKey(
+        Tournament,
+        on_delete=models.CASCADE,
+        related_name='invites_sent'
+    )
+    receiver = models.ForeignKey(
+        'user.User',
+        on_delete=models.CASCADE,
+        related_name='tournament_invites_received'
+    )
+
+    def respond(self, accepted):
+        tournament = self.tournament
+        if accepted is True:
+            tournament.players.add(self.receiver)
+            tournament.save()
+        self.delete()
+
+    def clean(self):
+        """
+        Custom validation to prevent sending invites to friends.
+        """
+        if self.receiver in self.tournament.players.all():
+            raise ValidationError(
+                'You cannot send a invite to someone who is already in\
+                the tournament.'
+            )
+
+    def save(self, *args, **kwargs):
+        """
+        Overridden save method to enforce validation
+        """
+        self.clean()
+        super().save(*args, **kwargs)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                name="%(app_label)s_%(class)s_unique_relationships",
+                fields=["tournament", "receiver"]
+            ),
+        ]
 
 
 class Round(models.Model):

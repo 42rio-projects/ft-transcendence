@@ -99,14 +99,23 @@ class User(AbstractUser):
             game.delete()
             raise e
 
-    def current_tournaments(self):
+    def all_tournaments(self):
+        admin = self.my_tournaments.filter(Q(finished=False))
+        player = self.tournaments.filter(Q(finished=False))
+        tournaments = player.union(admin).all()
+        return tournaments
+
+    def current_player_tournaments(self):
         return self.tournaments.filter(Q(finished=False)).all()
 
     def current_admin_tournaments(self):
         return self.my_tournaments.filter(Q(finished=False)).all()
 
-    def finished_tournaments(self):
+    def finished_player_tournaments(self):
         return self.my_tournaments.filter(Q(finished=True)).all()
 
     def finished_admin_tournaments(self):
         return self.my_tournaments.filter(Q(finished=True)).all()
+
+    def __str__(self):
+        return (self.username)

@@ -22,7 +22,12 @@ urlpatterns = [
     ),
     path(
         "tournament-invites/",
-        views.TournamentInvites,
+        views.tournamentInvites,
         name="tournamentInvites"
+    ),
+    path(
+        "tournament-invites/respond-invite/<int:invite_id>/",
+        views.respondTournamentInvite,
+        name="respondTournamentInvite"
     ),
 ]

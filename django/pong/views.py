@@ -7,6 +7,7 @@ from django.core.exceptions import PermissionDenied
 from channels.layers import get_channel_layer
 from django.shortcuts import render
 from asgiref.sync import async_to_sync
+from django.http import HttpResponseForbidden
 
 
 @async_to_sync
@@ -87,7 +88,6 @@ def respondGameInvite(request, invite_id):
             invite.respond(accepted=True)
             return redirect('onlineGame', game_id=invite.game.pk)
         elif action == 'reject':
-            invite.game.pk
             send_channel_message(
                 f'game_{invite.game.pk}',
                 {"type": "game.update", "json": {"status": "canceled"}},
@@ -108,7 +108,7 @@ def localTournament(request):
         return render(request, "pong/local_tournament.html")
 
 
-def TournamentInvites(request):
+def tournamentInvites(request):
     if request.method == 'POST':
         name = request.POST.get('tournament-name')
         try:
@@ -125,12 +125,44 @@ def TournamentInvites(request):
 
 def onlineTournament(request, tournament_id):
     tournament = get_object_or_404(models.Tournament, pk=tournament_id)
+    if request.method == 'POST':
+        if request.user != tournament.admin:
+            return HttpResponseForbidden("You're not tournament admin.")
+        if tournament.started:
+            return HttpResponseForbidden("Tournament already started")
+        name = request.POST.get('username')
+        user = get_object_or_404(
+            User,
+            username=name,
+        )
+        try:
+            tournament.invite(user)
+        except Exception as e:
+            return HttpResponse(e)
     context = {"tournament": tournament}
     if tournament.finished:
         template = loader.get_template('pong/online_tournament_result.html')
     else:
         template = loader.get_template('pong/online_tournament.html')
     return HttpResponse(template.render(context, request))
+
+
+def respondTournamentInvite(request, invite_id):
+    invite = get_object_or_404(
+        models.TournamentInvite,
+        pk=invite_id,
+    )
+    if invite.receiver != request.user:
+        raise PermissionDenied
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        if action == 'accept':
+            invite.respond(accepted=True)
+        elif action == 'reject':
+            invite.respond(accepted=False)
+        else:
+            raise Exception('Invalid action')
+    return redirect('tournamentInvites')
 
 # class TournamentViewSet(viewsets.ModelViewSet):
 #     queryset = models.Tournament.objects.all()

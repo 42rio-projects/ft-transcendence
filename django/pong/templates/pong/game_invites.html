@@ -15,7 +15,7 @@
   {% for invite in user.game_invites_received.all%}
   <li>
     {{ invite.sender }}
-    <div id="game-invite-actions" class="verticalDiv">
+    <div class="verticalDiv">
       <form method="POST" onsubmit="handleForm(event)">
         {% csrf_token %}
         <button type="submit">Accept request</button>

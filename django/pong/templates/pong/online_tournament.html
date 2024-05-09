@@ -1,1 +1,34 @@
-<h1>{{ tournament.name }}</h1>
+<div id="tournament-display">
+  <h1>{{ tournament }}</h1>
+  {% if user == tournament.admin %}
+  <div id="admin-pannel">
+    <form
+      method="post"
+      action="{% url 'onlineTournament' tournament.id%}"
+      onsubmit="handleForm(event)"
+    >
+      {% csrf_token %}
+      <label for="username">Invite user:</label>
+      <input type="text" name="username" id="username" required />
+      <input
+        type="hidden"
+        name="url"
+        value="{% url 'onlineTournament' tournament.id%}"
+      />
+      <button type="submit">Invite</button>
+    </form>
+  </div>
+  {% endif %}
+  <div id="tournament-players">
+    <h2>Players</h2>
+    {% for player in tournament.players.all %}
+    <p id="player-{{ player.username }}">{{ player.username }}</p>
+    {% endfor %}
+  </div>
+  <div id="invited-players">
+    <h2>Invites Sent</h2>
+    {% for invite in tournament.invites_sent.all %}
+    <p id="invitee-{{ invite.receiver}}">{{ invite.receiver }}</p>
+    {% endfor %}
+  </div>
+</div>
