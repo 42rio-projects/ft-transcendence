@@ -1,8 +1,14 @@
 <h2>Create Tournament</h2>
 <p>tmp</p>
-<h2>Current Tournaments</h2>
-<ul id="active-tournaments">
-  {% for tournament in user.tournaments.all %}
+<h2>Current Tournaments you're administrating</h2>
+<ul id="active-admin-tournaments">
+  {% for tournament in user.current_admin_tournaments %}
+  <li>{{ tournament.name }}</li>
+  {% endfor %}
+</ul>
+<h2>Current Tournaments you're playing in</h2>
+<ul id="active-player-tournaments">
+  {% for tournament in user.current_tournaments %}
   <li>{{ tournament.name }}</li>
   {% endfor %}
 </ul>

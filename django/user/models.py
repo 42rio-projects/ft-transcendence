@@ -6,7 +6,7 @@ from relations.models import IsFriendsWith
 from relations.models import IsBlockedBy
 from relations.models import FriendInvite
 from chat.models import Chat
-from pong.models import Game, GameInvite
+from pong.models import Game, GameInvite, Tournament
 
 
 class User(AbstractUser):
@@ -98,3 +98,15 @@ class User(AbstractUser):
         except Exception as e:
             game.delete()
             raise e
+
+    def current_tournaments(self):
+        return self.tournaments.filter(Q(finished=False)).all()
+
+    def current_admin_tournaments(self):
+        return self.my_tournaments.filter(Q(finished=False)).all()
+
+    def finished_tournaments(self):
+        return self.my_tournaments.filter(Q(finished=True)).all()
+
+    def finished_admin_tournaments(self):
+        return self.my_tournaments.filter(Q(finished=True)).all()

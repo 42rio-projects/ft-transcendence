@@ -4,6 +4,11 @@ from django.core.exceptions import ValidationError
 
 class Tournament(models.Model):
     name = models.CharField(max_length=100, unique=True)
+    admin = models.ForeignKey(
+        'user.User',
+        on_delete=models.CASCADE,
+        related_name='my_tournaments'
+    )
     date = models.DateField(auto_now_add=True)
     players = models.ManyToManyField('user.User', related_name='tournaments')
     winner = models.ForeignKey(
@@ -13,6 +18,8 @@ class Tournament(models.Model):
         on_delete=models.SET_NULL,
         related_name='championships'
     )
+    started = models.BooleanField(default=False)
+    finished = models.BooleanField(default=False)
 
     def new_round(self):
         if self.winner is not None:
