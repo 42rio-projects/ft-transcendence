@@ -1,31 +1,27 @@
-{% extends 'body.html' %}
+{% extends 'index.html' %}
 
-{% block title %} Login {% endblock %}
+{% block title %}Login{% endblock %}
 
 {% block content %}
-<main class="main-container">
-  <div class="auth">
-    <div class="auth-header">
-      {% block auth_header %}
-      <h1>Login</h1>
-      <h2>Enter your account:</h2>
-      {% endblock %}
-    </div>
-
-    <form id="form" class="auth-form" method="post" onsubmit="handleFormSubmit(event)">
-      {% block auth_form %}
-      {% include 'login_form.html' %}
-      {% endblock %}
-    </form>
-
-    <hr />
-
-    <div class="auth-footer">
-      {% block auth_footer %}
-      <p>Don't have an account?</p>
-      <a class="link" href="/register/">Register</a>
-      {% endblock %}
-    </div>
+<div>
+  <div>
+    <h2 class="neon text-3xl">{% block auth_title %}Login{% endblock %}</h2>
+    <h3 class="text-xl font-normal">
+      {% block auth_subtitle %}Enter your account:{% endblock %}
+    </h3>
   </div>
-</main>
+
+  <form id="form" method="post" onsubmit="handleFormSubmit(event)">
+    {% block auth_form %} {% include 'login_form.html' %} {% endblock %}
+  </form>
+
+  <hr />
+
+  <div class="auth-footer">
+    {% block auth_footer %}
+    <p>Don't have an account?</p>
+    <a href="/register/">Register</a>
+    {% endblock %}
+  </div>
+</div>
 {% endblock %}

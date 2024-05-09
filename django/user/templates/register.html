@@ -1,17 +1,14 @@
 {% extends 'login.html' %}
 
-{% block title %} Register {% endblock %}
+{% block title %}Register{% endblock %}
 
-{% block auth_header %}
-<h1>Register</h1>
-<h2>Create your account:</h2>
-{% endblock %}
+{% block auth_title %}Register{% endblock %}</h2>
 
-{% block auth_form %}
-{% include 'register_form.html' %}
-{% endblock %}
+{% block auth_subtitle %}Create your account:{% endblock %}
+
+{% block auth_form %}{% include 'register_form.html' %}{% endblock %}
 
 {% block auth_footer %}
 <p>Already have an account?</p>
-<a class="link" href="/login/">Login</a>
+<a href="/login/">Login</a>
 {% endblock %}

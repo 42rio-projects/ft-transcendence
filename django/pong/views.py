@@ -5,7 +5,7 @@ from .utils import render_component
 # Create your views here.
 
 
-def home(request):
+def index(request):
     if request.method == 'POST':
         username = request.POST.get('username')
         try:
@@ -16,6 +16,6 @@ def home(request):
                 'username': username # So user doesn't have to re-type
             }, status=404)
 
-        return redirect('/profile/' + user.username)
+        return redirect('/profile/' + user.username + '/')
 
-    return render_component(request, 'home.html', 'content')
+    return render_component(request, 'index.html', 'content')

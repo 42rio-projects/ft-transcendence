@@ -1,11 +1,14 @@
-{% extends 'body.html' %}
+{% extends 'index.html' %}
 
-{% block title %} {{ user.username }} {% endblock %}
+{% block title %}{{ user.username }}{% endblock %}
 
 {% block content %}
-<main class="main-container">
+<div>
   {% if success %}
   <span>{{ success }}</span>
+  {% endif %}
+  {% if error %}
+  <span>{{ error }}</span>
   {% endif %}
   <div>
     <img src="{{ user.avatar.url }}" alt="Avatar" />
@@ -14,16 +17,16 @@
   <div>
     <form method="post" onsubmit="handleFormSubmit(event)">
       {% csrf_token %}
-      <input type="hidden" name="user-id" value="{{ user.id }}">
-      <input type="hidden" name="user-action" value="friend-invite">
+      <input type="hidden" name="user-id" value="{{ user.id }}" />
+      <input type="hidden" name="user-action" value="friend-invite" />
       <button type="submit">Friend invite</button>
     </form>
     <form method="post" onsubmit="handleFormSubmit(event)">
       {% csrf_token %}
-      <input type="hidden" name="user-id" value="{{ user.id }}">
-      <input type="hidden" name="user-action" value="block">
+      <input type="hidden" name="user-id" value="{{ user.id }}" />
+      <input type="hidden" name="user-action" value="block" />
       <button type="submit">Block</button>
     </form>
   </div>
-</main>
+</div>
 {% endblock %}

@@ -65,45 +65,110 @@ body {
   background-position: center;
 }
 
-.link {
+button {
+  border: none;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  padding: 10px;
+  background-color: var(--primary-color-darker);
+  color: var(--foreground-color);
+  cursor: pointer;
+  transition: background-color 0.5s ease-out, color 0.2s ease-out;
+}
+
+button:hover {
+  background-color: var(--primary-color);
+}
+
+input {
+  display: flex;
+  border: none;
+  border-radius: 5px;
+  padding: 10px;
+  background-color: var(--background-color-lighter);
+  color: var(--foreground-color);
+}
+
+input:focus {
+  outline: none;
+}
+
+hr {
+  margin: 5px 0;
+}
+
+a {
   text-decoration: none;
   color: var(--foreground-color);
 }
 
-.link:hover {
+a:hover {
   color: var(--primary-color);
 }
 
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+form div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
 
 .neon {
   animation: neon 1.5s ease-in-out infinite alternate;
+}
+
+.text-sm {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+.text-xl {
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+}
+
+.text-2xl {
+  font-size: 1.5rem;
+  line-height: 2rem;
+}
+
+.text-3xl {
+  font-size: 1.875rem;
+  line-height: 2.25rem;
+}
+
+.font-normal {
+  font-weight: 400;
+}
+
+.color-success {
+  color: var(--success-color);
+}
+
+.color-error {
+  color: var(--error-color);
 }
 
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 15px 20px;
+  padding: 0 25px;
+  height: 50px;
   background-color: var(--background-color);
   color: var(--foreground-color);
   border-bottom: 1px solid var(--foreground-color);
 }
 
-.header-title {
-  font-size: 1.7rem;
-  animation: neon 1.5s ease-in-out infinite alternate;
-}
-
-.header-nav {
+.header-section {
   display: flex;
   align-items: center;
-  gap: 20px;
-}
-
-.header-nav div {
-  display: flex;
-  align-items: center;
-  gap: 20px;
+  gap: 16px;
 }
 
 .vertical-line {
@@ -119,55 +184,18 @@ body {
   height: 90vh;
 }
 
+.main-container > div {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--foreground-color);
+  border-radius: 10px;
+  padding: 25px;
+  background-color: var(--background-color);
+  gap: 10px;
+}
+
 .home {
-  display: flex;
-  flex-direction: column;
-  border: 1px solid var(--foreground-color);
-  border-radius: 10px;
-  padding: 25px;
   width: 300px;
-  background-color: var(--background-color);
-  gap: 10px;
-}
-
-.home > form {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.auth {
-  display: flex;
-  flex-direction: column;
-  border: 1px solid var(--foreground-color);
-  border-radius: 10px;
-  padding: 25px;
-  width: 300px;
-  background-color: var(--background-color);
-  gap: 10px;
-}
-
-.auth-header {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.auth-header h2 {
-  font-size: 1.4rem;
-  font-weight: 500;
-}
-
-.auth-form {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.auth-form div {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
 }
 
 .auth-footer {
@@ -188,24 +216,13 @@ body {
   color: var(--error-color);
 }
 
-.friends {
-  display: flex;
-  flex-direction: column;
-  width: 500px;
-  border: 1px solid var(--foreground-color);
-  border-radius: 10px;
-  padding: 25px;
-  background-color: var(--background-color);
-  gap: 20px;
-}
-
 .friends-header {
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
-.friends-header-links {
+.friends-links {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -266,46 +283,4 @@ body {
   height: 100%;
   width: 100%;
   position: absolute;
-}
-
-button {
-  border: none;
-  border-radius: 10px;
-  font-size: 0.9rem;
-  padding: 10px;
-  background-color: var(--primary-color-darker);
-  color: var(--foreground-color);
-  cursor: pointer;
-  transition: background-color 0.5s ease-out, color 0.2s ease-out;
-}
-
-button:hover {
-  background-color: var(--primary-color);
-}
-
-.link {
-  padding: 0;
-  background-color: var(--background-color);
-}
-
-.link:hover {
-  background-color: var(--background-color);
-  color: var(--primary-color-lighter);
-}
-
-input {
-  display: flex;
-  border: none;
-  border-radius: 5px;
-  padding: 10px;
-  background-color: var(--background-color-lighter);
-  color: var(--foreground-color);
-}
-
-input:focus {
-  outline: none;
-}
-
-hr {
-  margin: 5px 0;
 }

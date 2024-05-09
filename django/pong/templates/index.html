@@ -1,0 +1,37 @@
+<header class="header">
+  <h1 class="neon text-2xl">
+    ft_transcendence - {% block title %}Home{% endblock %}
+  </h1>
+  <nav class="header-section">
+    {% if user.is_authenticated %}
+    <div class="header-section">
+      <a href="/">Home</a>
+      <a href="/pong/">Pong</a>
+      <a href="/friends/">Friends</a>
+      <a href="/chats/">Chats</a>
+    </div>
+    <span class="vertical-line"></span>
+    <div class="header-section">
+      <a href="/profile/">
+        <img src="{{ user.avatar.url }}" alt="Avatar" />
+      </a>
+      <a href="/logout/">Logout</a>
+    </div>
+    {% else %}
+    <a href="/register/">Register</a>
+    <span class="vertical-line"></span>
+    <a href="/login/">Login</a>
+    {% endif %}
+  </nav>
+</header>
+
+<main class="main-container">
+  {% block content %}
+  <div class="home">
+    <h1 class="neon">Search user</h1>
+    <form id="form" method="post" onsubmit="handleFormSubmit(event)">
+      {% include 'search_user_form.html' %}
+    </form>
+  </div>
+  {% endblock %}
+</main>
