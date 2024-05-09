@@ -9,6 +9,15 @@ from django.shortcuts import render
 from asgiref.sync import async_to_sync
 
 
+@async_to_sync
+async def send_channel_message(group, message):
+    channel_layer = get_channel_layer()
+    await channel_layer.group_send(
+        group,
+        message,
+    )
+
+
 def index(request):
     if request.method == "GET":
         return render(request, "pong/index.html")
@@ -65,13 +74,10 @@ def gameInvites(request):
     return HttpResponse(template.render(context, request))
 
 
-@async_to_sync
-async def send_channel_message(group, message):
-    channel_layer = get_channel_layer()
-    await channel_layer.group_send(
-        group,
-        message,
-    )
+def TournamentInvites(request):
+    template = loader.get_template("pong/tournament_invites.html")
+    context = {}
+    return HttpResponse(template.render(context, request))
 
 
 def respondGameInvite(request, invite_id):
