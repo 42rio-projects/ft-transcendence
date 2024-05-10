@@ -52,9 +52,7 @@ services:
     restart: always
     depends_on:
       - postgres
-    environment:
-      PGADMIN_DEFAULT_EMAIL: daniel@42.com
-      PGADMIN_DEFAULT_PASSWORD: memude
+    env_file: .env
     networks:
       - ft_transcendence
 
@@ -103,8 +101,9 @@ services:
       - grafana_data:/var/lib/grafana
       - ./grafana/datasource/datasource.yaml:/etc/grafana/provisioning/datasources/datasource.yaml
       - ./grafana/dashboard/dashboard.yaml:/etc/grafana/provisioning/dashboards/dashboard.yaml
-      - ./grafana/dashboard/dashboard-transcendence.json:/var/lib/grafana/dashboards/dashboard-transcendence.json
+      - ./grafana/dashboard/dashboard-overview.json:/var/lib/grafana/dashboards/dashboard-overview.json
       - ./grafana/dashboard/dashboard-cadvisor.json:/var/lib/grafana/dashboards/dashboard-cadvisor.json
+      - ./grafana/dashboard/dashboard-requests.json:/var/lib/grafana/dashboards/dashboard-requests.json
     networks:
       - ft_transcendence
 

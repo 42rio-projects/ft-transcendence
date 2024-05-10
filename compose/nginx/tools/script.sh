@@ -1,13 +1,5 @@
 #!/bin/sh
 
-# Generate country, state, locality, organization, and domain name variables
-# Replace these with your actual values
-COUNTRY="BR"
-STATE="RJ"
-LOCALITY="Rio de Janeiro"
-ORGANIZATION="ft_endGame"
-DOMAIN_NAME="endgame.42.rio"
-OUNITY="42Rio"
 CERT_DIR="/etc/nginx/ssl"
 
 mkdir -p "$CERT_DIR"
