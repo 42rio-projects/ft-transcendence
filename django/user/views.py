@@ -75,52 +75,7 @@ def logout(request):
 
 
 def my_profile(request):
-    user = request.user
-
-    if request.method == 'POST':
-        username = request.POST.get('username')
-        email = request.POST.get('email')
-
-        if username == user.username and email == user.email:
-            return render_component(request, 'profile/profile_form_fields.html', 'form-fields', {
-                'username': user.username,
-                'email': user.email,
-            })
-
-        errors_context = {}
-
-        if username != user.username:
-            if User.objects.filter(username=username).exists():
-                errors_context['username_error'] = 'Username already in use'
-            else:
-                user.username = username
-
-        if email != user.email:
-            if User.objects.filter(email=email).exists():
-                errors_context['email_error'] = 'Email already in use'
-            else:
-                user.email = email
-                user.email_verified = False
-
-        if errors_context:
-            errors_context['username'] = username
-            errors_context['email'] = email
-
-            return render_component(request, 'profile/profile_form_fields.html', 'form-fields', errors_context, 400)
-
-        user.save()
-
-        return render_component(request, 'profile/profile_form_fields.html', 'form-fields', {
-            'success': 'Profile saved!',
-            'username': user.username,
-            'email': user.email,
-        })
-
-    if request.method == 'GET':
-        return render_component(request, 'profile/profile.html', 'body', {
-            'username': user.username,
-            'email': user.email,
-        })
+    return render_component(request, 'profile.html', 'content')
 
 
 def user_profile(request, username):
@@ -144,7 +99,55 @@ def user_profile(request, username):
         except Exception as e:
             context['error'] = e.message
 
-    return render_component(request, 'user_profile.html', 'content', context)
+    return render_component(request, 'profile.html', 'content', context)
+
+
+def edit_profile(request):
+    user = request.user
+
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        email = request.POST.get('email')
+
+        if username == user.username and email == user.email:
+            return render_component(request, 'edit_profile_form.html', 'form', {
+                'username': user.username,
+                'email': user.email,
+            })
+
+        errors_context = {}
+
+        if username != user.username:
+            if User.objects.filter(username=username).exists():
+                errors_context['username_error'] = 'Username already in use'
+            else:
+                user.username = username
+
+        if email != user.email:
+            if User.objects.filter(email=email).exists():
+                errors_context['email_error'] = 'Email already in use'
+            else:
+                user.email = email
+                user.email_verified = False
+
+        if errors_context:
+            errors_context['username'] = username
+            errors_context['email'] = email
+
+            return render_component(request, 'edit_profile_form.html', 'form', errors_context, 400)
+
+        user.save()
+
+        return render_component(request, 'edit_profile_form.html', 'form', {
+            'success': 'Profile saved!',
+            'username': user.username,
+            'email': user.email,
+        })
+
+    return render_component(request, 'edit_profile.html', 'content', {
+        "username": user.username,
+        "email": user.email
+    })
 
 
 @login_required

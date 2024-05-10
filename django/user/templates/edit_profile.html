@@ -1,20 +1,15 @@
-{% include 'messages.html' %}
+{% extends 'index.html' %}
 
-<form method="post" action="edit_profile/" onsubmit="fetchHTMLForm('main', event)">
-    {% csrf_token %}
-    <ul>
-        <li>
-            <label>Username:</label>
-            <input type="text" name="username" placeholder="username" value="{{ username }}" />
-        </li>
-        {% if not user.email_verified %}
-        <li>
-            <label>Email:</label>
-            <input type="email" name="email" placeholder="email" value="{{ email }}" />
-        </li>
-        {% endif %}
-    </ul>
-    <button type="submit">Save</button>
-</form>
+{% block title %}Edit profile{% endblock %}
 
-<button onclick="fetchHTML('main', 'profile/')">Back to profile</button>
+{% block content %}
+<div>
+  <h1 class="neon">Edit profile</h1>
+
+  <hr />
+
+  <form id="form" method="post" onsubmit="handleFormSubmit(event)">
+    {% include 'edit_profile_form.html' %}
+  </form>
+</div>
+{% endblock %}

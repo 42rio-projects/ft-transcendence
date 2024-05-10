@@ -89,6 +89,7 @@ button:hover {
   color: var(--foreground-color);
   cursor: pointer;
   transition: background-color 0.5s ease-out, color 0.2s ease-out;
+  text-align: center;
 }
 
 .button:hover {
@@ -272,6 +273,12 @@ form div {
   height: 10px;
   border-radius: 50%;
   background-color: var(--error-color);
+}
+
+.profile-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
 }
 
 .neon-fog {

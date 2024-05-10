@@ -1,0 +1,45 @@
+{% extends 'index.html' %}
+
+{% block title %}
+{% if user == request.user %}
+{{ user.username }}
+{% else %}
+Profile
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="profile">
+  <h1 class="neon">Profile</h1>
+
+  <hr />
+
+  {% if success %}
+  <span class="color-success">{{ success }}</span>
+  {% endif %} {% if error %}
+  <span class="color-error">{{ error }}</span>
+  {% endif %}
+  <div>
+    <img src="{{ user.avatar.url }}" alt="Avatar" />
+    <span>{{ user.username }}</span>
+  </div>
+  {% if user == request.user %}
+  <a class="button" href="/edit_profile/">Edit profile</a>
+  {% else %}
+  <div class="profile-buttons">
+    <form method="post" onsubmit="handleFormSubmit(event)">
+      {% csrf_token %}
+      <input type="hidden" name="user-id" value="{{ user.id }}" />
+      <input type="hidden" name="user-action" value="friend-invite" />
+      <button type="submit">Friend invite</button>
+    </form>
+    <form method="post" onsubmit="handleFormSubmit(event)">
+      {% csrf_token %}
+      <input type="hidden" name="user-id" value="{{ user.id }}" />
+      <input type="hidden" name="user-action" value="block" />
+      <button type="submit">Block</button>
+    </form>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
