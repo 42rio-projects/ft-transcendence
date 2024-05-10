@@ -1,14 +1,13 @@
 import json
 import random
 from django.template.loader import render_to_string
+from channels.db import database_sync_to_async
 
-UPPER_PLAYER_LIMIT = 16
-LOWER_PLAYER_LIMIT = 4
+from pong.models import Tournament, UPPER_PLAYER_LIMIT, LOWER_PLAYER_LIMIT
 
 
 class LocalTournament():
     def __init__(self, socket):
-        super().__init__()
         self.socket = socket
         self.players = set()
         self.games = []
@@ -92,3 +91,45 @@ class LocalTournament():
         else:
             await self.send_message({"status": "started"})
             await self.render_next_game()
+
+
+class OnlineTournament():
+    def __init__(self, socket):
+        self.socket = socket
+        self.tournament_id = socket.tournament_id
+
+    @database_sync_to_async
+    def delete_tournament(self):
+        self.tournament.delete()
+
+    @database_sync_to_async
+    def save_tournament(self):
+        self.tournament.save()
+
+    @database_sync_to_async
+    def get_tournament(self):
+        self.tournament = Tournament.objects.prefetch_related(
+            'admin', 'players').get(pk=self.tournament_id)
+
+    async def send_message(self, data):
+        pass
+
+    async def add_player(self, player):
+        pass
+
+    async def remove_player(self, player):
+        pass
+
+    def get_result_html(self):
+        pass
+
+    def form_round(self):
+        pass
+
+    async def start(self):
+        pass
+
+    def is_admin(self, user):
+        if self.tournament.admin == user:
+            return True
+        return False

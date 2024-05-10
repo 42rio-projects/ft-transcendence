@@ -2,7 +2,7 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 import json
 
 from pong.game import LocalGame, OnlineGame
-from pong.tournament import LocalTournament
+from pong.tournament import LocalTournament, OnlineTournament
 
 
 class LocalGameCosumer(AsyncWebsocketConsumer):
@@ -127,6 +127,32 @@ class LocalTournamentCosumer(AsyncWebsocketConsumer):
                 await self.tournament.start()
             elif action == 'next_game':
                 await self.tournament.render_next_game(data['winner'])
+        except Exception:
+            await self.send(text_data=json.dumps(
+                {"status": "excepted", "data_received": data}
+            ))
+
+
+class OnlineTournamentCosumer(AsyncWebsocketConsumer):
+    async def connect(self):
+        self.tournament_id = self.scope['url_route']['kwargs']['room_id']
+        self.room_group_name = f'tournament_{self.tournament_id}'
+        self.tournament = OnlineTournament(self)
+        await self.tournament.get_tournament()
+        self.admin = self.tournament.is_admin(self.scope['user'])
+        await self.accept()
+
+    async def disconnect(self, close_code):
+        pass
+
+    async def receive(self, text_data):
+        data = json.loads(text_data)
+        try:
+            action = data['action']
+            if action == 'get_status':
+                await self.send(text_data=json.dumps({"is admin": self.admin}))
+            else:
+                raise Exception()
         except Exception:
             await self.send(text_data=json.dumps(
                 {"status": "excepted", "data_received": data}

@@ -2,6 +2,10 @@ from django.db import models
 from django.core.exceptions import ValidationError
 
 
+UPPER_PLAYER_LIMIT = 16
+LOWER_PLAYER_LIMIT = 4
+
+
 class Tournament(models.Model):
     name = models.CharField(max_length=100, unique=True)
     admin = models.ForeignKey(
