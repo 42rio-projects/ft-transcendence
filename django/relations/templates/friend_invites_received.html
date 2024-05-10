@@ -7,18 +7,20 @@
   {% for invite in user.friend_invites_received.all %}
   <li>
     <span>{{ invite.sender }}</span>
-    <form method="post" onsubmit="handleFormSubmit(event)">
-      {% csrf_token %}
-      <input type="hidden" name="invite-id" value="{{ invite.id }}" />
-      <input type="hidden" name="user-action" value="accept" />
-      <button type="submit">Accept invite</button>
-    </form>
-    <form method="post" onsubmit="handleFormSubmit(event)">
-      {% csrf_token %}
-      <input type="hidden" name="invite-id" value="{{ invite.id }}" />
-      <input type="hidden" name="user-action" value="reject" />
-      <button type="submit">Reject invite</button>
-    </form>
+    <div>
+      <form method="post" onsubmit="handleFormSubmit(event)">
+        {% csrf_token %}
+        <input type="hidden" name="invite-id" value="{{ invite.id }}" />
+        <input type="hidden" name="user-action" value="accept" />
+        <button type="submit">Accept invite</button>
+      </form>
+      <form method="post" onsubmit="handleFormSubmit(event)">
+        {% csrf_token %}
+        <input type="hidden" name="invite-id" value="{{ invite.id }}" />
+        <input type="hidden" name="user-action" value="reject" />
+        <button type="submit">Reject invite</button>
+      </form>
+    </div>
   </li>
   {% endfor %}
 </ul>
