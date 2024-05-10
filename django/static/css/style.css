@@ -80,6 +80,22 @@ button:hover {
   background-color: var(--primary-color);
 }
 
+.button {
+  border: none;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  padding: 10px;
+  background-color: var(--primary-color-darker);
+  color: var(--foreground-color);
+  cursor: pointer;
+  transition: background-color 0.5s ease-out, color 0.2s ease-out;
+}
+
+.button:hover {
+  color: var(--foreground-color);
+  background-color: var(--primary-color);
+}
+
 input {
   display: flex;
   border: none;
@@ -180,8 +196,7 @@ form div {
 .main-container {
   display: flex;
   justify-content: center;
-  align-items: center;
-  height: 90vh;
+  margin-top: 10%;
 }
 
 .main-container > div {
@@ -226,6 +241,37 @@ form div {
   display: flex;
   align-items: center;
   gap: 10px;
+}
+
+.user-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.user-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 10px;
+}
+
+.user-list li:not(:last-child) {
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--foreground-color);
+}
+
+.user-list div {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.offline-circle {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: var(--error-color);
 }
 
 .neon-fog {

@@ -20,16 +20,21 @@
   <hr />
 
   {% block friends_content %}
-  <ul>
+  <ul class="user-list">
     {% for user in user.get_friends %}
     <li>
-      <span>{{ user.username }}</span>
-      <p id="{{ user.username }}">OFF</p>
-      <form method="post" onsubmit="handleFormSubmit(event)">
-        {% csrf_token %}
-        <input type="hidden" name="user-id" value="{{ user.id }}" />
-        <button type="submit">Remove friend</button>
-      </form>
+      <div>
+        <span>{{ user.username }}</span>
+        <div id="{{ user.username }}" class="offline-circle"></div>
+      </div>
+      <div>
+        <a class="button" href="/profile/{{ user.username }}/">See profile</a>
+        <form method="post" onsubmit="handleFormSubmit(event)">
+          {% csrf_token %}
+          <input type="hidden" name="user-id" value="{{ user.id }}" />
+          <button type="submit">Remove friend</button>
+        </form>
+      </div>
     </li>
     {% endfor %}
   </ul>

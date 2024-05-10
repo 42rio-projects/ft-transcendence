@@ -3,7 +3,7 @@
 {% block friends_title %}Invites received{% endblock %}
 
 {% block friends_content %}
-<ul>
+<ul class="user-list">
   {% for invite in user.friend_invites_received.all %}
   <li>
     <span>{{ invite.sender }}</span>

@@ -3,7 +3,7 @@
 {% block friends_title %}Block list{% endblock %}
 
 {% block friends_content %}
-<ul>
+<ul class="user-list">
   {% for user in user.get_blocks %}
   <li>
     <span>{{ user.username }}</span>
