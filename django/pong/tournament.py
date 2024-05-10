@@ -103,6 +103,10 @@ class OnlineTournament():
         self.tournament.delete()
 
     @database_sync_to_async
+    def refresh_tournament(self):
+        self.tournament.refresh()
+
+    @database_sync_to_async
     def save_tournament(self):
         self.tournament.save()
 
@@ -112,12 +116,6 @@ class OnlineTournament():
             'admin', 'players').get(pk=self.tournament_id)
 
     async def send_message(self, data):
-        pass
-
-    async def add_player(self, player):
-        pass
-
-    async def remove_player(self, player):
         pass
 
     def get_result_html(self):

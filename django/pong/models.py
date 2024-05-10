@@ -46,7 +46,9 @@ class Tournament(models.Model):
                 round.next_games(previous)
 
     def invite(self, user):
-        TournamentInvite(tournament=self, receiver=user).save()
+        invite = TournamentInvite(tournament=self, receiver=user)
+        invite.save()
+        return invite
 
     def __str__(self):
         return (self.name)

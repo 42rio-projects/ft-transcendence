@@ -7,7 +7,20 @@ from django.core.exceptions import PermissionDenied
 from channels.layers import get_channel_layer
 from django.shortcuts import render
 from asgiref.sync import async_to_sync
-from django.http import HttpResponseForbidden
+from django.http import JsonResponse
+from django.template.loader import render_to_string
+
+
+def json_error(message):
+    return JsonResponse(
+        {"status": "error", "message": message}
+    )
+
+
+def json_success(message):
+    return JsonResponse(
+        {"status": "success", "message": message}
+    )
 
 
 @async_to_sync
@@ -124,27 +137,44 @@ def tournamentInvites(request):
 
 
 def onlineTournament(request, tournament_id):
-    tournament = get_object_or_404(models.Tournament, pk=tournament_id)
     if request.method == 'POST':
-        if request.user != tournament.admin:
-            return HttpResponseForbidden("You're not tournament admin.")
-        if tournament.started:
-            return HttpResponseForbidden("Tournament already started")
-        name = request.POST.get('username')
-        user = get_object_or_404(
-            User,
-            username=name,
-        )
         try:
-            tournament.invite(user)
+            tournament = models.Tournament.objects.get(pk=tournament_id)
+        except Exception:
+            return json_error("Tournament does not exist.")
+        if request.user != tournament.admin:
+            return json_error("You're not tournament admin.")
+        if tournament.started:
+            return json_error("Tournament already started.")
+        name = request.POST.get('username')
+        try:
+            user = User.objects.get(username=name)
+        except Exception:
+            return json_error(f"User '{name}' does not exist.")
+        try:
+            invite = tournament.invite(user)
+            html = render_to_string(
+                'pong/tournament/online/invite_sent.html', {'invite': invite}
+            )
+            send_channel_message(
+                f'tournament_{tournament.pk}',
+                {
+                    "type": "new.invite", "json":
+                    {"status": "new_invite", "html": html}
+                }
+            )
+            return json_success(f"Invite sent to {name}")
         except Exception as e:
-            return HttpResponse(e)
-    context = {"tournament": tournament}
-    if tournament.finished:
-        template = loader.get_template('pong/online_tournament_result.html')
-    else:
-        template = loader.get_template('pong/online_tournament.html')
-    return HttpResponse(template.render(context, request))
+            return json_error(e)
+    elif request.method == 'GET':
+        tournament = get_object_or_404(models.Tournament, pk=tournament_id)
+        context = {"tournament": tournament}
+        if tournament.finished:
+            template = loader.get_template(
+                'pong/online_tournament_result.html')
+        else:
+            template = loader.get_template('pong/online_tournament.html')
+        return HttpResponse(template.render(context, request))
 
 
 def respondTournamentInvite(request, invite_id):

@@ -140,6 +140,9 @@ class OnlineTournamentCosumer(AsyncWebsocketConsumer):
         self.tournament = OnlineTournament(self)
         await self.tournament.get_tournament()
         self.admin = self.tournament.is_admin(self.scope['user'])
+        await self.channel_layer.group_add(
+            self.room_group_name, self.channel_name
+        )
         await self.accept()
 
     async def disconnect(self, close_code):
@@ -157,3 +160,6 @@ class OnlineTournamentCosumer(AsyncWebsocketConsumer):
             await self.send(text_data=json.dumps(
                 {"status": "excepted", "data_received": data}
             ))
+
+    async def new_invite(self, event):
+        await self.send(text_data=json.dumps(event["json"]))

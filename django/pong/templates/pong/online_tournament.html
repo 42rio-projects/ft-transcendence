@@ -2,11 +2,7 @@
   <h1>{{ tournament }}</h1>
   {% if user == tournament.admin %}
   <div id="admin-pannel">
-    <form
-      method="post"
-      action="{% url 'onlineTournament' tournament.id%}"
-      onsubmit="handleForm(event)"
-    >
+    <form method="post" onsubmit="onlineTournamentSocket.invitePlayer(event)">
       {% csrf_token %}
       <label for="username">Invite user:</label>
       <input type="text" name="username" id="username" required />
@@ -32,4 +28,3 @@
     {% endfor %}
   </div>
 </div>
-<button onclick="onlineTournamentSocket.getStatus()">Get Status</button>
