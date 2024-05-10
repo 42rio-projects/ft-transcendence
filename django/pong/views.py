@@ -159,7 +159,7 @@ def onlineTournament(request, tournament_id):
             send_channel_message(
                 f'tournament_{tournament.pk}',
                 {
-                    "type": "new.invite", "json":
+                    "type": "tournament.update", "json":
                     {"status": "new_invite", "html": html}
                 }
             )
@@ -188,10 +188,27 @@ def respondTournamentInvite(request, invite_id):
         action = request.POST.get('action')
         if action == 'accept':
             invite.respond(accepted=True)
+            html = render_to_string(
+                'pong/tournament/online/player.html', {'player': request.user}
+            )
+            send_channel_message(
+                f'tournament_{invite.tournament.pk}',
+                {
+                    "type": "tournament.update", "json":
+                    {"status": "new_player", "html": html}
+                }
+            )
         elif action == 'reject':
             invite.respond(accepted=False)
         else:
             raise Exception('Invalid action')
+        send_channel_message(
+            f'tournament_{invite.tournament.pk}',
+            {
+                "type": "tournament.update", "json":
+                {"status": "delete_invite", "id": invite_id}
+            }
+        )
     return redirect('tournamentInvites')
 
 # class TournamentViewSet(viewsets.ModelViewSet):

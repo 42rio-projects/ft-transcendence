@@ -18,13 +18,13 @@
   <div id="tournament-players">
     <h2>Players</h2>
     {% for player in tournament.players.all %}
-    <p id="player-{{ player.username }}">{{ player.username }}</p>
+    <p id="player-{{ player.pk }}">{{ player.username }}</p>
     {% endfor %}
   </div>
   <div id="invited-players">
     <h2>Invites Sent</h2>
     {% for invite in tournament.invites_sent.all %}
-    <p id="invitee-{{ invite.receiver}}">{{ invite.receiver }}</p>
+    <p id="invite-{{ invite.pk }}">{{ invite.receiver }}</p>
     {% endfor %}
   </div>
 </div>

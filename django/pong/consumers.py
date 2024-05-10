@@ -161,5 +161,5 @@ class OnlineTournamentCosumer(AsyncWebsocketConsumer):
                 {"status": "excepted", "data_received": data}
             ))
 
-    async def new_invite(self, event):
+    async def tournament_update(self, event):
         await self.send(text_data=json.dumps(event["json"]))
