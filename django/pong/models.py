@@ -46,12 +46,25 @@ class Tournament(models.Model):
                 round.next_games(previous)
 
     def invite(self, user):
+        if self.players.count() + self.invites_sent.count() >= UPPER_PLAYER_LIMIT:
+            raise Exception("Player limit reached")
         invite = TournamentInvite(tournament=self, receiver=user)
         invite.save()
         return invite
 
     def __str__(self):
         return (self.name)
+
+    def clean(self):
+        if self.players.count() >= UPPER_PLAYER_LIMIT:
+            raise ValidationError('Tournament is full.')
+
+    def save(self, *args, **kwargs):
+        """
+        Overridden save method to enforce validation
+        """
+        self.clean()
+        super().save(*args, **kwargs)
 
 
 class TournamentInvite(models.Model):
@@ -74,9 +87,6 @@ class TournamentInvite(models.Model):
         self.delete()
 
     def clean(self):
-        """
-        Custom validation to prevent sending invites to friends.
-        """
         if self.receiver in self.tournament.players.all():
             raise ValidationError(
                 'You cannot send a invite to someone who is already in\

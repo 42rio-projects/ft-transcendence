@@ -165,7 +165,7 @@ def onlineTournament(request, tournament_id):
             )
             return json_success(f"Invite sent to {name}")
         except Exception as e:
-            return json_error(e)
+            return json_error(e.__str__())
     elif request.method == 'GET':
         tournament = get_object_or_404(models.Tournament, pk=tournament_id)
         context = {"tournament": tournament}
