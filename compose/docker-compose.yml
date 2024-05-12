@@ -280,3 +280,12 @@ services:
       - ./elk/kibanasetup.sh:/usr/local/bin/kibanasetup.sh
     command: >
       sh -c "/usr/local/bin/kibanasetup.sh"
+
+  locust:
+    container_name: locust
+    image: locustio/locust
+    command: -f /mnt/locust/locustfile.py --host=http://django:8000
+    volumes:
+      - ./locust-tasks:/mnt/locust
+    networks:
+      - ft_transcendence
