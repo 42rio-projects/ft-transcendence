@@ -194,6 +194,12 @@ form div {
   background-color: var(--foreground-color);
 }
 
+.header-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+}
+
 .main-container {
   display: flex;
   justify-content: center;
@@ -273,6 +279,18 @@ form div {
   height: 10px;
   border-radius: 50%;
   background-color: var(--error-color);
+}
+
+.profile div {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
 }
 
 .profile-buttons {

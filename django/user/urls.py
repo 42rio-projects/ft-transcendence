@@ -12,7 +12,6 @@ urlpatterns = [
     path('profile/<str:username>/', views.user_profile),
     path('edit_profile/', views.edit_profile),
 
-    path('upload_avatar', views.upload_avatar),
     path('change_password', views.change_password),
     path('email_change/', views.email_change),
     path(

@@ -5,6 +5,15 @@
 {% endif %}
 
 <div>
+  <label for="avatar">Avatar:</label>
+  <input
+    class="button"
+    type="file"
+    name="avatar"
+  />
+</div>
+
+<div>
   {% if username_error %}
   <span class="error">{{ username_error }}</span>
   {% endif %}

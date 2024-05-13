@@ -32,9 +32,3 @@ class EmailChangeForm(forms.Form):
             if new_email != confirm_email:
                 raise forms.ValidationError("Os novos e-mails não correspondem.")
         return cleaned_data
-
-
-class UserProfileForm(forms.ModelForm):
-    class Meta:
-        model = User
-        fields = ['avatar']

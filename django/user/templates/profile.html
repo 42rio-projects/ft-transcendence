@@ -20,7 +20,7 @@ Profile
   <span class="color-error">{{ error }}</span>
   {% endif %}
   <div>
-    <img src="{{ user.avatar.url }}" alt="Avatar" />
+    <img class="avatar" src="{{ user.avatar.url }}" alt="Avatar" />
     <span>{{ user.username }}</span>
   </div>
   {% if user == request.user %}

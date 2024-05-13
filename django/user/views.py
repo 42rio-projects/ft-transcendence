@@ -10,7 +10,6 @@ import os
 from user.models import User
 from user.forms import EmailChangeForm
 from user.forms import ChangePasswordForm
-from user.forms import UserProfileForm
 
 from .utils import validate_register
 
@@ -106,16 +105,20 @@ def edit_profile(request):
     user = request.user
 
     if request.method == 'POST':
+        avatar = request.FILES.get('avatar')
         username = request.POST.get('username')
         email = request.POST.get('email')
 
-        if username == user.username and email == user.email:
+        if not avatar and username == user.username and email == user.email:
             return render_component(request, 'edit_profile_form.html', 'form', {
                 'username': user.username,
                 'email': user.email,
             })
 
         errors_context = {}
+
+        if avatar:
+            user.avatar = avatar
 
         if username != user.username:
             if User.objects.filter(username=username).exists():
@@ -148,18 +151,6 @@ def edit_profile(request):
         "username": user.username,
         "email": user.email
     })
-
-
-@login_required
-def upload_avatar(request):
-    if request.method == 'POST':
-        form = UserProfileForm(
-            request.POST, request.FILES, instance=request.user)
-        if form.is_valid():
-            form.save()
-    else:
-        form = UserProfileForm(instance=request.user)
-    return render(request, 'upload_avatar.html', {'form': form})
 
 
 def change_password(request):
