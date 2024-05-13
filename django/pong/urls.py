@@ -31,6 +31,11 @@ urlpatterns = [
         name='cancelTournament'
     ),
     path(
+        'online-tournament/<int:tournament_id>/start',
+        views.startTournament,
+        name='startTournament'
+    ),
+    path(
         "tournament-invites/",
         views.tournamentInvites,
         name="tournamentInvites"

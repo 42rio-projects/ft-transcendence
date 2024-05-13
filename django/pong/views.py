@@ -169,7 +169,24 @@ def cancelTournament(request, tournament_id):
         return json_error(e.__str__())
 
 
-# Refactor to put error messages inside invite function
+def startTournament(request, tournament_id):
+    try:
+        tournament = models.Tournament.objects.get(pk=tournament_id)
+    except Exception:
+        return json_error("Tournament does not exist.")
+    if request.user != tournament.admin:
+        return json_error("You're not tournament admin.")
+    try:
+        tournament.start()
+        html = render_to_string(
+            'pong/online_tournament.html', {"tournament": tournament}
+        )
+        tournament_update(tournament.pk, {"status": "started", "html": html})
+        return json_success(f"Tournament {tournament.name} started.")
+    except Exception as e:
+        return json_error(e.__str__())
+
+
 def inviteToTournament(request, tournament_id):
     if request.method != 'POST':
         return
@@ -207,28 +224,17 @@ def respondTournamentInvite(request, invite_id):
     if request.method == 'POST':
         action = request.POST.get('action')
         if action == 'accept':
+            pk = invite.tournament.pk
             invite.respond(accepted=True)
             html = render_to_string(
                 'pong/tournament/online/player.html', {'player': request.user}
             )
-            send_channel_message(
-                f'tournament_{invite.tournament.pk}',
-                {
-                    "type": "tournament.update", "json":
-                    {"status": "new_player", "html": html}
-                }
-            )
+            tournament_update(pk, {"status": "new_player", "html": html})
         elif action == 'reject':
             invite.respond(accepted=False)
         else:
             raise Exception('Invalid action')
-        send_channel_message(
-            f'tournament_{invite.tournament.pk}',
-            {
-                "type": "tournament.update", "json":
-                {"status": "delete_invite", "id": invite_id}
-            }
-        )
+        tournament_update(pk, {"status": "delete_invite", "id": invite_id})
     return redirect('tournamentInvites')
 
 # class TournamentViewSet(viewsets.ModelViewSet):

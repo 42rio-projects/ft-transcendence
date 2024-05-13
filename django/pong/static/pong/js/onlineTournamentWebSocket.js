@@ -16,8 +16,8 @@ class OnlineTournamentWebSocket {
       this.delInvitedPlayer(data?.["id"]);
     } else if (status == "new_player") {
       this.addPlayer(data?.["html"]);
-    } else if (status == "cancelled") {
-      this.cancel(data?.["html"]);
+    } else if (status == "started" || status == "cancelled") {
+      this.display(data?.["html"]);
     }
   }
 
@@ -50,7 +50,7 @@ class OnlineTournamentWebSocket {
     }
   }
 
-  cancel(html) {
+  display(html) {
     document.getElementById("tournament-display").innerHTML = html;
   }
 

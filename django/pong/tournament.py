@@ -1,9 +1,11 @@
 import json
 import random
+import asyncio
 from django.template.loader import render_to_string
 from channels.db import database_sync_to_async
 
-from pong.models import Tournament, UPPER_PLAYER_LIMIT, LOWER_PLAYER_LIMIT
+# from pong.models import Tournament, UPPER_PLAYER_LIMIT, LOWER_PLAYER_LIMIT
+import pong.models as models
 
 
 class LocalTournament():
@@ -20,7 +22,7 @@ class LocalTournament():
 
     async def add_player(self, player):
         previous_size = len(self.players)
-        if previous_size >= UPPER_PLAYER_LIMIT:
+        if previous_size >= models.UPPER_PLAYER_LIMIT:
             await self.send_message(
                 {"status": "warning", "content": "Player limit reached"}
             )
@@ -84,7 +86,7 @@ class LocalTournament():
         await self.send_message({"status": "next_game", "html": html})
 
     async def start(self):
-        if len(self.players) < LOWER_PLAYER_LIMIT:
+        if len(self.players) < models.LOWER_PLAYER_LIMIT:
             await self.send_message(
                 {"status": "warning", "content": "Not enough players to start"}
             )
@@ -99,8 +101,8 @@ class OnlineTournament():
         self.tournament_id = socket.tournament_id
 
     @database_sync_to_async
-    def delete_tournament(self):
-        self.tournament.delete()
+    def cancel_tournament(self):
+        self.tournament.cancel()
 
     @database_sync_to_async
     def refresh_tournament(self):
@@ -112,7 +114,7 @@ class OnlineTournament():
 
     @database_sync_to_async
     def get_tournament(self):
-        self.tournament = Tournament.objects.prefetch_related(
+        self.tournament = models.Tournament.objects.prefetch_related(
             'admin', 'players').get(pk=self.tournament_id)
 
     async def send_message(self, data):
@@ -126,6 +128,15 @@ class OnlineTournament():
 
     async def start(self):
         pass
+
+    async def timeout(self):
+        await asyncio.sleep(models.TOURNAMENT_START_LIMIT)
+        await self.refresh_tournament()
+        if self.tournament.started is False:
+            await self.cancel_tournament()
+
+    def set_timer(self):
+        asyncio.create_task(self.timeout())
 
     def is_admin(self, user):
         if self.tournament.admin == user:

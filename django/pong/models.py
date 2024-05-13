@@ -4,6 +4,7 @@ from django.core.exceptions import ValidationError
 
 UPPER_PLAYER_LIMIT = 16
 LOWER_PLAYER_LIMIT = 4
+TOURNAMENT_START_LIMIT = 60 * 5  # seconds
 
 
 class Tournament(models.Model):
@@ -26,7 +27,7 @@ class Tournament(models.Model):
     finished = models.BooleanField(default=False)
 
     def new_round(self):
-        if self.winner is not None:
+        if self.finished:
             raise Exception('Tournament already over')
         elif self.players.count() < 4:
             raise Exception('Not enough players in the tournament.')
@@ -59,21 +60,16 @@ class Tournament(models.Model):
             raise Exception("Tournament already started.")
         self.delete()
 
+    def start(self):
+        if self.started:
+            return
+        if self.players.count() < LOWER_PLAYER_LIMIT:
+            raise Exception("Not enough players")
+        self.started = True
+        self.save()
+
     def __str__(self):
         return (self.name)
-
-    def clean(self):
-        if not self.pk:
-            return
-        if self.players.count() >= UPPER_PLAYER_LIMIT:
-            raise ValidationError('Tournament is full.')
-
-    def save(self, *args, **kwargs):
-        """
-        Overridden save method to enforce validation
-        """
-        self.clean()
-        super().save(*args, **kwargs)
 
 
 class TournamentInvite(models.Model):
@@ -90,7 +86,7 @@ class TournamentInvite(models.Model):
 
     def respond(self, accepted):
         tournament = self.tournament
-        if accepted is True:
+        if accepted is True and tournament.started is False:
             tournament.players.add(self.receiver)
             tournament.save()
         self.delete()

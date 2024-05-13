@@ -144,6 +144,8 @@ class OnlineTournamentCosumer(AsyncWebsocketConsumer):
             self.room_group_name, self.channel_name
         )
         await self.accept()
+        if self.admin:
+            self.tournament.set_timer()
 
     async def disconnect(self, close_code):
         pass
