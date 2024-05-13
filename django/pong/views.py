@@ -149,6 +149,20 @@ def onlineTournament(request, tournament_id):
     return HttpResponse(template.render(context, request))
 
 
+def cancelTournament(request, tournament_id):
+    try:
+        tournament = models.Tournament.objects.get(pk=tournament_id)
+    except Exception:
+        return json_error("Tournament does not exist.")
+    if request.user != tournament.admin:
+        return json_error("You're not tournament admin.")
+    try:
+        tournament.cancel()
+        return json_success(f"Tournament {tournament.name} cancelled.")
+    except Exception as e:
+        return json_error(e.__str__())
+
+
 # Refactor to put error messages inside invite function
 def inviteToTournament(request, tournament_id):
     if request.method != 'POST':

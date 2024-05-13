@@ -25,7 +25,7 @@ class OnlineTournamentWebSocket {
     this.socket.send(JSON.stringify({ action: "get_status" }));
   }
 
-  async invitePlayer(event) {
+  async form(event) {
     event.preventDefault();
 
     const form = event.target;
@@ -38,7 +38,7 @@ class OnlineTournamentWebSocket {
     try {
       status = json["status"];
     } catch {
-      console.error("Invalid Json response when inviting player");
+      console.error("Invalid Json response");
       return;
     }
     if (status == "success") {

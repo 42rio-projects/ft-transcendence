@@ -54,6 +54,11 @@ class Tournament(models.Model):
         invite.save()
         return invite
 
+    def cancel(self):
+        if self.started:
+            raise Exception("Tournament already started.")
+        self.delete()
+
     def __str__(self):
         return (self.name)
 
