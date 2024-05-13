@@ -7,6 +7,7 @@ from django.contrib import messages
 from django.shortcuts import render
 import os
 from django.core.paginator import Paginator
+import sys
 
 from django.http import JsonResponse
 from django.http import HttpResponse
@@ -188,8 +189,9 @@ def edit_profile(request):
     if request.method == "POST":
         user = request.user
         username = request.POST.get("username")
+        nickname = request.POST.get("nickname")
 
-        if username != user.username:
+        if username and username != user.username:
             if User.objects.filter(username=username).exists():
                 messages.error(request, "Username already in use")
             elif len(username) < 3:
@@ -199,6 +201,17 @@ def edit_profile(request):
                 user.username = username
 
                 messages.success(request, "Username changed successfully")
+
+        if nickname and nickname != user.nickname:
+            if User.objects.filter(nickname=nickname).exists():
+                messages.error(request, "Nickname already in use")
+            elif len(nickname) < 3:
+                messages.error(
+                    request, "Nickname must be at least 3 characters")
+            else:
+                user.nickname =nickname
+
+                messages.success(request, "Nickname changed successfully")
 
         if not user.email_verified:
             email = request.POST.get("email")
