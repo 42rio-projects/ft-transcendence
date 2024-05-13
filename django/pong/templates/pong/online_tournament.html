@@ -1,7 +1,18 @@
 <div id="tournament-display">
   <h1>{{ tournament }}</h1>
   {% if user == tournament.admin %}
-  <div id="admin-pannel">
+  <div id="admin-pannel" class="verticalDiv">
+    <form method="post" onsubmit="onlineTournamentSocket.invitePlayer(event)">
+      {% csrf_token %}
+      <label for="username">Invite user:</label>
+      <input type="text" name="username" id="username" required />
+      <input
+        type="hidden"
+        name="url"
+        value="{% url 'inviteToTournament' tournament.id%}"
+      />
+      <button type="submit">Invite</button>
+    </form>
     <form method="post" onsubmit="onlineTournamentSocket.invitePlayer(event)">
       {% csrf_token %}
       <label for="username">Invite user:</label>

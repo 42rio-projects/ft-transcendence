@@ -21,6 +21,11 @@ urlpatterns = [
         name='onlineTournament'
     ),
     path(
+        'online-tournament/<int:tournament_id>/invite',
+        views.inviteToTournament,
+        name='inviteToTournament'
+    ),
+    path(
         "tournament-invites/",
         views.tournamentInvites,
         name="tournamentInvites"

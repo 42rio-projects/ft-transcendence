@@ -46,6 +46,8 @@ class Tournament(models.Model):
                 round.next_games(previous)
 
     def invite(self, user):
+        if self.started:
+            raise Exception("Tournament already started.")
         if self.players.count() + self.invites_sent.count() >= UPPER_PLAYER_LIMIT:
             raise Exception("Player limit reached")
         invite = TournamentInvite(tournament=self, receiver=user)
@@ -56,6 +58,8 @@ class Tournament(models.Model):
         return (self.name)
 
     def clean(self):
+        if not self.pk:
+            return
         if self.players.count() >= UPPER_PLAYER_LIMIT:
             raise ValidationError('Tournament is full.')
 

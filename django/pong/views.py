@@ -137,44 +137,48 @@ def tournamentInvites(request):
 
 
 def onlineTournament(request, tournament_id):
-    if request.method == 'POST':
-        try:
-            tournament = models.Tournament.objects.get(pk=tournament_id)
-        except Exception:
-            return json_error("Tournament does not exist.")
-        if request.user != tournament.admin:
-            return json_error("You're not tournament admin.")
-        if tournament.started:
-            return json_error("Tournament already started.")
+    if request.method != 'GET':
+        return
+    tournament = get_object_or_404(models.Tournament, pk=tournament_id)
+    context = {"tournament": tournament}
+    if tournament.finished:
+        template = loader.get_template(
+            'pong/online_tournament_result.html')
+    else:
+        template = loader.get_template('pong/online_tournament.html')
+    return HttpResponse(template.render(context, request))
+
+
+# Refactor to put error messages inside invite function
+def inviteToTournament(request, tournament_id):
+    if request.method != 'POST':
+        return
+    try:
+        tournament = models.Tournament.objects.get(pk=tournament_id)
+    except Exception:
+        return json_error("Tournament does not exist.")
+    try:
         name = request.POST.get('username')
-        try:
-            user = User.objects.get(username=name)
-        except Exception:
-            return json_error(f"User '{name}' does not exist.")
-        try:
-            invite = tournament.invite(user)
-            html = render_to_string(
-                'pong/tournament/online/invite_sent.html', {'invite': invite}
-            )
-            send_channel_message(
-                f'tournament_{tournament.pk}',
-                {
-                    "type": "tournament.update", "json":
-                    {"status": "new_invite", "html": html}
-                }
-            )
-            return json_success(f"Invite sent to {name}")
-        except Exception as e:
-            return json_error(e.__str__())
-    elif request.method == 'GET':
-        tournament = get_object_or_404(models.Tournament, pk=tournament_id)
-        context = {"tournament": tournament}
-        if tournament.finished:
-            template = loader.get_template(
-                'pong/online_tournament_result.html')
-        else:
-            template = loader.get_template('pong/online_tournament.html')
-        return HttpResponse(template.render(context, request))
+        user = User.objects.get(username=name)
+    except Exception:
+        return json_error(f"User '{name}' does not exist.")
+    try:
+        if request.user != tournament.admin:
+            raise Exception("You're not tournament admin.")
+        invite = tournament.invite(user)
+        html = render_to_string(
+            'pong/tournament/online/invite_sent.html', {'invite': invite}
+        )
+        send_channel_message(
+            f'tournament_{tournament.pk}',
+            {
+                "type": "tournament.update", "json":
+                {"status": "new_invite", "html": html}
+            }
+        )
+        return json_success(f"Invite sent to {name}")
+    except Exception as e:
+        return json_error(e.__str__())
 
 
 def respondTournamentInvite(request, invite_id):
