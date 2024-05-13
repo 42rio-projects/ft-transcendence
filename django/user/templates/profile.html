@@ -1,33 +1,45 @@
 {% include 'messages.html' %}
 
 <ul>
-    <li>
-        <label>Username:</label>
-        <span>{{ user.username }}</span>
-    </li>
-    {% if user.email %}
-    <li>
-        <label>Email:</label>
-        <span>{{ user.email }}</span>
-        {% if user.email_verified %}
-        <span>Email verified</span>
-        {% else %}
-        <button onclick="fetchHTML('main', 'email_verify_code/')">Verify email</button>
-        {% endif %}
-    </li>
+  <li>
+    <label>Username:</label>
+    <span>{{ user.username }}</span>
+  </li>
+  {% if user.email %}
+  <li>
+    <label>Email:</label>
+    <span>{{ user.email }}</span>
+    {% if user.email_verified %}
+    <span>Email verified</span>
     {% else %}
-    <li>
-        No email
-    </li>
+    <button onclick="fetchHTML('main', 'email_verify_code/')">
+      Verify email
+    </button>
     {% endif %}
-    <li>
-        <label>Avatar:</label>
-        {% if user.avatar %}
-        <img src="{{ user.avatar.url}}" alt="Avatar" style="width: 100px; height: 100px;"/>
-        {% else %}
-        <span>No avatar</span>
-        {% endif %}
-    </li>
+  </li>
+  {% else %}
+  <li>No email</li>
+  {% endif %}
+  <li>
+    <label>Avatar:</label>
+    {% if user.avatar %}
+    <img
+      src="{{ user.avatar.url}}"
+      alt="Avatar"
+      style="width: 100px; height: 100px"
+    />
+    {% else %}
+    <span>No avatar</span>
+    {% endif %}
+  </li>
+  <li>
+    <label>Wins:</label>
+    <span>{{ user.count_wins }}</span>
+  </li>
+  <li>
+    <label>Losses:</label>
+    <span>{{ user.count_losses }}</span>
+  </li>
 </ul>
 
 {% if user.email and user.email_verified %}
