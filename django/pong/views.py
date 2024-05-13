@@ -26,9 +26,12 @@ def json_success(message):
 @async_to_sync
 async def send_channel_message(group, message):
     channel_layer = get_channel_layer()
-    await channel_layer.group_send(
-        group,
-        message,
+    await channel_layer.group_send(group, message,)
+
+
+def tournament_update(pk, json):
+    send_channel_message(
+        f'tournament_{pk}', {"type": "tournament.update", "json": json}
     )
 
 
@@ -157,7 +160,10 @@ def cancelTournament(request, tournament_id):
     if request.user != tournament.admin:
         return json_error("You're not tournament admin.")
     try:
+        pk = tournament.pk
         tournament.cancel()
+        html = render_to_string('pong/tournament/online/cancelled.html')
+        tournament_update(pk, {"status": "cancelled", "html": html})
         return json_success(f"Tournament {tournament.name} cancelled.")
     except Exception as e:
         return json_error(e.__str__())
@@ -183,12 +189,8 @@ def inviteToTournament(request, tournament_id):
         html = render_to_string(
             'pong/tournament/online/invite_sent.html', {'invite': invite}
         )
-        send_channel_message(
-            f'tournament_{tournament.pk}',
-            {
-                "type": "tournament.update", "json":
-                {"status": "new_invite", "html": html}
-            }
+        tournament_update(
+            tournament.pk, {"status": "new_invite", "html": html}
         )
         return json_success(f"Invite sent to {name}")
     except Exception as e:
