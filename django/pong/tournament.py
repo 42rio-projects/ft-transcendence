@@ -1,6 +1,7 @@
 import json
 import random
 import asyncio
+from channels.layers import get_channel_layer
 from django.template.loader import render_to_string
 from channels.db import database_sync_to_async
 
@@ -96,9 +97,12 @@ class LocalTournament():
 
 
 class OnlineTournament():
+    channel_layer = get_channel_layer()
+
     def __init__(self, socket):
         self.socket = socket
         self.tournament_id = socket.tournament_id
+        self.room_group_name = socket.room_group_name
 
     @database_sync_to_async
     def cancel_tournament(self):
@@ -113,12 +117,18 @@ class OnlineTournament():
         self.tournament.save()
 
     @database_sync_to_async
+    def start_tournament(self):
+        self.tournament.start()
+
+    @database_sync_to_async
     def get_tournament(self):
         self.tournament = models.Tournament.objects.prefetch_related(
             'admin', 'players').get(pk=self.tournament_id)
 
-    async def send_message(self, data):
-        pass
+    async def send_message(self, json):
+        await self.channel_layer.group_send(
+            self.room_group_name, {"type": "tournament.update", "json": json}
+        )
 
     def get_result_html(self):
         pass
@@ -127,7 +137,11 @@ class OnlineTournament():
         pass
 
     async def start(self):
-        pass
+        await self.start_tournament()
+        html = render_to_string(
+            'pong/online_tournament.html', {"tournament": self.tournament}
+        )
+        await self.send_message({"status": "started", "html": html})
 
     async def timeout(self):
         await asyncio.sleep(models.TOURNAMENT_START_LIMIT)
@@ -136,7 +150,8 @@ class OnlineTournament():
             await self.cancel_tournament()
 
     def set_timer(self):
-        asyncio.create_task(self.timeout())
+        if self.tournament.started is False:
+            asyncio.create_task(self.timeout())
 
     def is_admin(self, user):
         if self.tournament.admin == user:

@@ -22,15 +22,7 @@
       />
       <button type="submit">Cancel Tournament</button>
     </form>
-    <form method="post" onsubmit="onlineTournamentSocket.form(event)">
-      {% csrf_token %}
-      <input
-        type="hidden"
-        name="url"
-        value="{% url 'startTournament' tournament.id %}"
-      />
-      <button type="submit">Start Tournament</button>
-    </form>
+    <button onclick="onlineTournamentSocket.start()">Start Tournament</button>
   </div>
   {% endif %}
   <div id="tournament-players">

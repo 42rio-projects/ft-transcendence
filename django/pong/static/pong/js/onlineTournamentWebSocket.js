@@ -18,6 +18,8 @@ class OnlineTournamentWebSocket {
       this.addPlayer(data?.["html"]);
     } else if (status == "started" || status == "cancelled") {
       this.display(data?.["html"]);
+    } else if (status == "error") {
+      console.error(data?.message);
     }
   }
 
@@ -48,6 +50,11 @@ class OnlineTournamentWebSocket {
     } else if (status == "error") {
       console.error(json?.message);
     }
+  }
+
+  start() {
+    this.socket.send(JSON.stringify({ action: "start" }));
+    console.log("start sent");
   }
 
   display(html) {

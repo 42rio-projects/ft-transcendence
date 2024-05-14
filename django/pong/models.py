@@ -62,7 +62,7 @@ class Tournament(models.Model):
 
     def start(self):
         if self.started:
-            return
+            raise Exception("Tournament already started.")
         if self.players.count() < LOWER_PLAYER_LIMIT:
             raise Exception("Not enough players")
         self.started = True

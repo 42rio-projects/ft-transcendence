@@ -5,6 +5,14 @@ from pong.game import LocalGame, OnlineGame
 from pong.tournament import LocalTournament, OnlineTournament
 
 
+def json_error(message):
+    return {"status": "error", "message": message}
+
+
+def json_success(message):
+    return {"status": "success", "message": message}
+
+
 class LocalGameCosumer(AsyncWebsocketConsumer):
 
     async def connect(self):
@@ -154,14 +162,29 @@ class OnlineTournamentCosumer(AsyncWebsocketConsumer):
         data = json.loads(text_data)
         try:
             action = data['action']
-            if action == 'get_status':
-                await self.send(text_data=json.dumps({"is admin": self.admin}))
+            if action == 'start':
+                await self.start_tournament()
             else:
                 raise Exception()
-        except Exception:
+        except Exception as e:
             await self.send(text_data=json.dumps(
-                {"status": "excepted", "data_received": data}
+                {
+                    "status": "excepted",
+                    "data_received": data,
+                    "exception": e.__str__()
+                }
             ))
 
     async def tournament_update(self, event):
         await self.send(text_data=json.dumps(event["json"]))
+
+    async def start_tournament(self):
+        if self.admin:
+            try:
+                await self.tournament.start()
+                return
+            except Exception as e:
+                data = json_error(e.__str__())
+        else:
+            data = json_error("You're not tournament admin.")
+        await self.send(text_data=json.dumps(data))
