@@ -4,13 +4,14 @@ import json
 from pong.game import LocalGame, OnlineGame
 from pong.tournament import LocalTournament, OnlineTournament
 
+import traceback
+import logging
+logging.basicConfig(level='INFO')
+# logging.info('hello world')
+
 
 def json_error(message):
     return {"status": "error", "message": message}
-
-
-def json_success(message):
-    return {"status": "success", "message": message}
 
 
 class LocalGameCosumer(AsyncWebsocketConsumer):
@@ -146,8 +147,9 @@ class OnlineTournamentCosumer(AsyncWebsocketConsumer):
         self.tournament_id = self.scope['url_route']['kwargs']['room_id']
         self.room_group_name = f'tournament_{self.tournament_id}'
         self.tournament = OnlineTournament(self)
+        self.user = self.scope['user']
         await self.tournament.get_tournament()
-        self.admin = self.tournament.is_admin(self.scope['user'])
+        self.admin = self.tournament.is_admin(self.user)
         await self.channel_layer.group_add(
             self.room_group_name, self.channel_name
         )
@@ -164,6 +166,8 @@ class OnlineTournamentCosumer(AsyncWebsocketConsumer):
             action = data['action']
             if action == 'start':
                 await self.start_tournament()
+            elif action == 'next_round':
+                await self.advance_tournament()
             else:
                 raise Exception()
         except Exception as e:
@@ -178,12 +182,25 @@ class OnlineTournamentCosumer(AsyncWebsocketConsumer):
     async def tournament_update(self, event):
         await self.send(text_data=json.dumps(event["json"]))
 
+    async def advance_tournament(self):
+        if self.admin:
+            try:
+                await self.tournament.next_round()
+                return
+            except Exception as e:
+                logging.info(traceback.format_exc())
+                data = json_error(e.__str__())
+        else:
+            data = json_error("You're not tournament admin.")
+        await self.send(text_data=json.dumps(data))
+
     async def start_tournament(self):
         if self.admin:
             try:
                 await self.tournament.start()
                 return
             except Exception as e:
+                logging.info(traceback.format_exc())
                 data = json_error(e.__str__())
         else:
             data = json_error("You're not tournament admin.")

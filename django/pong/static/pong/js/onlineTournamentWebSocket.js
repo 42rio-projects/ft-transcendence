@@ -16,6 +16,10 @@ class OnlineTournamentWebSocket {
       this.delInvitedPlayer(data?.["id"]);
     } else if (status == "new_player") {
       this.addPlayer(data?.["html"]);
+    } else if (status == "new_round") {
+      this.addRound(data?.["html"]);
+    } else if (status == "finished") {
+      this.addWinner(data?.["html"]);
     } else if (status == "started" || status == "cancelled") {
       this.display(data?.["html"]);
     } else if (status == "error") {
@@ -54,7 +58,10 @@ class OnlineTournamentWebSocket {
 
   start() {
     this.socket.send(JSON.stringify({ action: "start" }));
-    console.log("start sent");
+  }
+
+  advance() {
+    this.socket.send(JSON.stringify({ action: "next_round" }));
   }
 
   display(html) {
@@ -63,6 +70,14 @@ class OnlineTournamentWebSocket {
 
   addPlayer(html) {
     document.getElementById("tournament-players").innerHTML += html;
+  }
+
+  addRound(html) {
+    document.getElementById("tournament-rounds").innerHTML += html;
+  }
+
+  addWinner(html) {
+    document.getElementById("tournament-winner").innerHTML = html;
   }
 
   addInvitedPlayer(html) {

@@ -5,6 +5,11 @@ from django.core.exceptions import ValidationError
 UPPER_PLAYER_LIMIT = 16
 LOWER_PLAYER_LIMIT = 4
 TOURNAMENT_START_LIMIT = 60 * 5  # seconds
+ROUND_TIMEOUT = 60 * 5  # seconds
+
+
+class TournamentFinished(Exception):
+    pass
 
 
 class Tournament(models.Model):
@@ -28,23 +33,31 @@ class Tournament(models.Model):
 
     def new_round(self):
         if self.finished:
-            raise Exception('Tournament already over')
-        elif self.players.count() < 4:
-            raise Exception('Not enough players in the tournament.')
+            raise TournamentFinished('Tournament already over')
         elif self.rounds.count() == 0:
-            round = Round(tournament=self, number=1)
-            round.save()
-            round.first_games(self.players.iterator())
+            t_round = Round(tournament=self, number=1)
+            t_round.save()
+            try:
+                t_round.first_games(self.players.iterator())
+            except Exception:
+                t_round.delete()
+                raise
         else:
             previous = self.rounds.last()
             if previous.games.count() == 1:
-                self.winner = previous.games.last().winner()
+                self.winner = previous.games.last().winner
+                self.finished = True
                 self.save()
-                return
+                raise TournamentFinished()
             else:
-                round = Round(tournament=self, number=previous.number + 1)
-                round.save()
-                round.next_games(previous)
+                t_round = Round(tournament=self, number=previous.number + 1)
+                t_round.save()
+                try:
+                    t_round.next_games(previous)
+                except Exception:
+                    t_round.delete()
+                    raise
+        return t_round
 
     def invite(self, user):
         if self.started:
@@ -67,6 +80,7 @@ class Tournament(models.Model):
             raise Exception("Not enough players")
         self.started = True
         self.save()
+        return self.new_round()
 
     def __str__(self):
         return (self.name)
@@ -121,27 +135,28 @@ class Round(models.Model):
         on_delete=models.CASCADE
     )
     number = models.PositiveSmallIntegerField()
+    finished = models.BooleanField(default=False)
 
     def first_games(self, players):
         pair = []
         for player in players:
             pair.append(player)
             if len(pair) == 2:
-                Game(player_1=pair[0], player_2=pair[1], round=self).save()
+                Game(player1=pair[0], player2=pair[1], round=self).save()
                 pair.clear()
         if len(pair) == 1:
-            Game(player_1=pair[0], round=self).save()
+            Game(player1=pair[0], round=self).save()
 
     def next_games(self, previous):
         pair = []
         previous_games = previous.games.iterator()
         for game in previous_games:
-            pair.append(game.winner())
+            pair.append(game.winner)
             if len(pair) == 2:
-                Game(player_1=pair[0], player_2=pair[1], round=self).save()
+                Game(player1=pair[0], player2=pair[1], round=self).save()
                 pair.clear()
         if len(pair) == 1:
-            Game(player_1=pair[0], round=self).save()
+            Game(player1=pair[0], round=self).save()
 
     def __str__(self):
         return (f'{self.tournament.name} round {self.number}')

@@ -5,7 +5,6 @@ from channels.layers import get_channel_layer
 from django.template.loader import render_to_string
 from channels.db import database_sync_to_async
 
-# from pong.models import Tournament, UPPER_PLAYER_LIMIT, LOWER_PLAYER_LIMIT
 import pong.models as models
 
 
@@ -100,6 +99,7 @@ class OnlineTournament():
     channel_layer = get_channel_layer()
 
     def __init__(self, socket):
+        self.current_round = None
         self.socket = socket
         self.tournament_id = socket.tournament_id
         self.room_group_name = socket.room_group_name
@@ -110,7 +110,11 @@ class OnlineTournament():
 
     @database_sync_to_async
     def refresh_tournament(self):
-        self.tournament.refresh()
+        self.tournament.refresh_from_db()
+
+    @database_sync_to_async
+    def refresh_round(self):
+        self.current_round.refresh_from_db()
 
     @database_sync_to_async
     def save_tournament(self):
@@ -118,12 +122,36 @@ class OnlineTournament():
 
     @database_sync_to_async
     def start_tournament(self):
-        self.tournament.start()
+        return self.tournament.start()
+
+    @database_sync_to_async
+    def form_round(self):
+        return self.tournament.new_round()
 
     @database_sync_to_async
     def get_tournament(self):
         self.tournament = models.Tournament.objects.prefetch_related(
             'admin', 'players').get(pk=self.tournament_id)
+
+    @database_sync_to_async
+    def render_tournament(self):
+        return render_to_string(
+            'pong/online_tournament.html',
+            {"tournament": self.tournament, "user": self.socket.user}
+        )
+
+    @database_sync_to_async
+    def render_round(self, t_round):
+        return render_to_string(
+            'pong/tournament/online/round.html', {"round": t_round}
+        )
+
+    @database_sync_to_async
+    def render_winner(self):
+        return render_to_string(
+            'pong/tournament/online/winner.html',
+            {"tournament": self.tournament}
+        )
 
     async def send_message(self, json):
         await self.channel_layer.group_send(
@@ -133,25 +161,40 @@ class OnlineTournament():
     def get_result_html(self):
         pass
 
-    def form_round(self):
-        pass
-
     async def start(self):
-        await self.start_tournament()
-        html = render_to_string(
-            'pong/online_tournament.html', {"tournament": self.tournament}
-        )
+        await self.refresh_tournament()
+        self.current_round = await self.start_tournament()
+        asyncio.create_task(self.round_timeout(self.current_round))
+        html = await self.render_tournament()
         await self.send_message({"status": "started", "html": html})
 
-    async def timeout(self):
+    async def next_round(self):
+        try:
+            self.current_round = await self.form_round()
+            html = await self.render_round(self.current_round)
+            await self.send_message({"status": "new_round", "html": html})
+            asyncio.create_task(self.round_timeout(self.current_round))
+        except models.TournamentFinished:
+            await self.refresh_tournament()
+            html = await self.render_winner()
+            await self.send_message({"status": "finished", "html": html})
+        except Exception:
+            raise
+
+    async def tournament_timeout(self):
         await asyncio.sleep(models.TOURNAMENT_START_LIMIT)
         await self.refresh_tournament()
         if self.tournament.started is False:
             await self.cancel_tournament()
 
+    async def round_timeout(self, t_round):
+        await asyncio.sleep(models.ROUND_TIMEOUT)
+        if self.current_round.number == t_round.number:
+            await self.next_round()
+
     def set_timer(self):
         if self.tournament.started is False:
-            asyncio.create_task(self.timeout())
+            asyncio.create_task(self.tournament_timeout())
 
     def is_admin(self, user):
         if self.tournament.admin == user:

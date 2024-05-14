@@ -38,6 +38,23 @@
     {% endfor %}
   </div>
   {% else %}
-  <h2>Started</h2>
+  <div id="tournament-winner">
+    {% if tournament.finished %}
+    <h2>Winner is {{ tournament.winner }}</h2>
+    {% endif %}
+  </div>
+  {% if user == tournament.admin %}
+  <button onclick="onlineTournamentSocket.advance()">Next Round</button>
+  {% endif %}
+  <div id="tournament-rounds" class="verticalDiv">
+    {% for round in tournament.rounds.all %}
+    <div>
+      <h2>{{ round }}</h2>
+      {% for game in round.games.all %}
+      <h3>{{ game }}</h3>
+      {% endfor %}
+    </div>
+    {% endfor %}
+  </div>
   {% endif %}
 </div>
