@@ -4,11 +4,6 @@ import json
 from pong.game import LocalGame, OnlineGame
 from pong.tournament import LocalTournament, OnlineTournament
 
-import traceback
-import logging
-logging.basicConfig(level='INFO')
-# logging.info('hello world')
-
 
 def json_error(message):
     return {"status": "error", "message": message}
@@ -186,7 +181,6 @@ class OnlineTournamentCosumer(AsyncWebsocketConsumer):
                 await self.tournament.start()
                 return
             except Exception as e:
-                logging.info(traceback.format_exc())
                 data = json_error(e.__str__())
         else:
             data = json_error("You're not tournament admin.")
