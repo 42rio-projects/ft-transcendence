@@ -291,7 +291,7 @@ class Game(models.Model):
         self.finished = True
         self.save()
 
-    # Take tournament intor consideration
+    # Take tournament into consideration
     def __str__(self):
         if self.player1 is not None and self.player2 is not None:
             return (f'{self.player1.username} vs {self.player2.username}')
