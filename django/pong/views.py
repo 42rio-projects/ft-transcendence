@@ -125,18 +125,22 @@ def localTournament(request):
 
 
 def tournamentInvites(request):
-    if request.method == 'POST':
-        name = request.POST.get('tournament-name')
-        try:
-            tournament = models.Tournament(admin=request.user, name=name)
-            tournament.save()
-            return redirect('onlineTournament', tournament_id=tournament.pk)
-        except Exception as e:
-            # add 40x response that is not rendered on the front end
-            return HttpResponse(e)
     template = loader.get_template("pong/tournament_invites.html")
     context = {}
     return HttpResponse(template.render(context, request))
+
+
+def createTournament(request):
+    if request.method != 'POST':
+        return
+    name = request.POST.get('tournament-name')
+    try:
+        tournament = models.Tournament(admin=request.user, name=name)
+        tournament.save()
+        return redirect('onlineTournament', tournament_id=tournament.pk)
+    except Exception as e:
+        # add 40x response that is not rendered on the front end
+        return HttpResponse(e)
 
 
 def onlineTournament(request, tournament_id):
@@ -144,11 +148,7 @@ def onlineTournament(request, tournament_id):
         return
     tournament = get_object_or_404(models.Tournament, pk=tournament_id)
     context = {"tournament": tournament}
-    if tournament.finished:
-        template = loader.get_template(
-            'pong/online_tournament_result.html')
-    else:
-        template = loader.get_template('pong/online_tournament.html')
+    template = loader.get_template('pong/online_tournament.html')
     return HttpResponse(template.render(context, request))
 
 
@@ -165,24 +165,6 @@ def cancelTournament(request, tournament_id):
         html = render_to_string('pong/tournament/online/cancelled.html')
         tournament_update(pk, {"status": "cancelled", "html": html})
         return json_success(f"Tournament {tournament.name} cancelled.")
-    except Exception as e:
-        return json_error(e.__str__())
-
-
-def startTournament(request, tournament_id):
-    try:
-        tournament = models.Tournament.objects.get(pk=tournament_id)
-    except Exception:
-        return json_error("Tournament does not exist.")
-    if request.user != tournament.admin:
-        return json_error("You're not tournament admin.")
-    try:
-        tournament.start()
-        html = render_to_string(
-            'pong/online_tournament.html', {"tournament": tournament}
-        )
-        tournament_update(tournament.pk, {"status": "started", "html": html})
-        return json_success(f"Tournament {tournament.name} started.")
     except Exception as e:
         return json_error(e.__str__())
 
@@ -236,16 +218,3 @@ def respondTournamentInvite(request, invite_id):
             raise Exception('Invalid action')
         tournament_update(pk, {"status": "delete_invite", "id": invite_id})
     return redirect('tournamentInvites')
-
-# class TournamentViewSet(viewsets.ModelViewSet):
-#     queryset = models.Tournament.objects.all()
-#     lookup_field = 'name'
-#     serializer_class = serializers.TournamentSerializer
-#     permission_classes = [IsAuthenticated]
-#
-#     # temporary API endpoint to advance tournament
-#     @action(detail=True, methods=['GET'])
-#     def advance(self, request, name=None):
-#         tournament = self.get_object()
-#         tournament.new_round()
-#         return Response({'status': 'tournament round advanced'})
