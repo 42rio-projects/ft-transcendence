@@ -166,8 +166,6 @@ class OnlineTournamentCosumer(AsyncWebsocketConsumer):
             action = data['action']
             if action == 'start':
                 await self.start_tournament()
-            elif action == 'next_round':
-                await self.advance_tournament()
             else:
                 raise Exception()
         except Exception as e:
@@ -181,18 +179,6 @@ class OnlineTournamentCosumer(AsyncWebsocketConsumer):
 
     async def tournament_update(self, event):
         await self.send(text_data=json.dumps(event["json"]))
-
-    async def advance_tournament(self):
-        if self.admin:
-            try:
-                await self.tournament.next_round()
-                return
-            except Exception as e:
-                logging.info(traceback.format_exc())
-                data = json_error(e.__str__())
-        else:
-            data = json_error("You're not tournament admin.")
-        await self.send(text_data=json.dumps(data))
 
     async def start_tournament(self):
         if self.admin:

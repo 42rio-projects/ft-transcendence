@@ -1,6 +1,10 @@
+import asyncio
 import random
 from django.db import models
 from django.core.exceptions import ValidationError
+from channels.db import database_sync_to_async
+from django.template.loader import render_to_string
+from channels.layers import get_channel_layer
 
 
 UPPER_PLAYER_LIMIT = 16
@@ -45,6 +49,8 @@ class Tournament(models.Model):
                 raise
         else:
             previous = self.rounds.last()
+            previous.finished = True
+            previous.save()
             if previous.games.count() == 1:
                 if previous.games.last().finished is False:
                     previous.games.last().end()
@@ -83,7 +89,53 @@ class Tournament(models.Model):
             raise Exception("Not enough players")
         self.started = True
         self.save()
+
+    @database_sync_to_async
+    def a_start(self):
+        self.start()
+
+    @database_sync_to_async
+    def a_cancel(self):
+        self.cancel()
+
+    @database_sync_to_async
+    def a_new_round(self):
         return self.new_round()
+
+    @database_sync_to_async
+    def a_refresh(self):
+        self.refresh_from_db()
+
+    @database_sync_to_async
+    def render_winner(self):
+        return render_to_string(
+            'pong/tournament/online/winner.html', {"tournament": self}
+        )
+
+    async def send_channel_message(self, message):
+        channel_layer = get_channel_layer()
+        await channel_layer.group_send(
+            f'tournament_{self.pk}',
+            {"type": "tournament.update", "json": message}
+        )
+
+    async def advance(self):
+        try:
+            t_round = await self.a_new_round()
+            html = await t_round.render()
+            asyncio.create_task(t_round.timeout())
+        except TournamentFinished:
+            await self.a_refresh()
+            html = await self.render_winner()
+        await self.send_channel_message(
+            {"status": "new_round", "html": html}
+        )
+
+    async def timeout(self):
+        await asyncio.sleep(TOURNAMENT_START_LIMIT)
+        await self.a_refresh()
+        if self.started is False:
+            await self.a_cancel()
 
     def __str__(self):
         return (self.name)
@@ -164,6 +216,27 @@ class Round(models.Model):
         for pair in pairs:
             Game(player1=pair[0], player2=pair[1], round=self).save()
 
+    @database_sync_to_async
+    def render(self):
+        return render_to_string(
+            'pong/tournament/online/round.html', {"round": self}
+        )
+
+    @database_sync_to_async
+    def a_tournament(self):
+        return self.tournament
+
+    @database_sync_to_async
+    def a_refresh(self):
+        self.refresh_from_db()
+
+    async def timeout(self):
+        await asyncio.sleep(ROUND_TIMEOUT)
+        await self.a_refresh()
+        if self.finished is False:
+            tournament = await self.a_tournament()
+            await tournament.advance()
+
     def __str__(self):
         return (f'{self.tournament.name} round {self.number}')
 
@@ -218,6 +291,7 @@ class Game(models.Model):
         self.finished = True
         self.save()
 
+    # Take tournament intor consideration
     def __str__(self):
         if self.player1 is not None and self.player2 is not None:
             return (f'{self.player1.username} vs {self.player2.username}')

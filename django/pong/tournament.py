@@ -105,28 +105,8 @@ class OnlineTournament():
         self.room_group_name = socket.room_group_name
 
     @database_sync_to_async
-    def cancel_tournament(self):
-        self.tournament.cancel()
-
-    @database_sync_to_async
     def refresh_tournament(self):
         self.tournament.refresh_from_db()
-
-    @database_sync_to_async
-    def refresh_round(self):
-        self.current_round.refresh_from_db()
-
-    @database_sync_to_async
-    def save_tournament(self):
-        self.tournament.save()
-
-    @database_sync_to_async
-    def start_tournament(self):
-        return self.tournament.start()
-
-    @database_sync_to_async
-    def form_round(self):
-        return self.tournament.new_round()
 
     @database_sync_to_async
     def get_tournament(self):
@@ -140,61 +120,21 @@ class OnlineTournament():
             {"tournament": self.tournament, "user": self.socket.user}
         )
 
-    @database_sync_to_async
-    def render_round(self, t_round):
-        return render_to_string(
-            'pong/tournament/online/round.html', {"round": t_round}
-        )
-
-    @database_sync_to_async
-    def render_winner(self):
-        return render_to_string(
-            'pong/tournament/online/winner.html',
-            {"tournament": self.tournament}
-        )
-
     async def send_message(self, json):
         await self.channel_layer.group_send(
             self.room_group_name, {"type": "tournament.update", "json": json}
         )
 
-    def get_result_html(self):
-        pass
-
     async def start(self):
         await self.refresh_tournament()
-        self.current_round = await self.start_tournament()
-        asyncio.create_task(self.round_timeout(self.current_round))
+        await self.tournament.a_start()
         html = await self.render_tournament()
         await self.send_message({"status": "started", "html": html})
-
-    async def next_round(self):
-        try:
-            self.current_round = await self.form_round()
-            html = await self.render_round(self.current_round)
-            await self.send_message({"status": "new_round", "html": html})
-            asyncio.create_task(self.round_timeout(self.current_round))
-        except models.TournamentFinished:
-            await self.refresh_tournament()
-            html = await self.render_winner()
-            await self.send_message({"status": "finished", "html": html})
-        except Exception:
-            raise
-
-    async def tournament_timeout(self):
-        await asyncio.sleep(models.TOURNAMENT_START_LIMIT)
-        await self.refresh_tournament()
-        if self.tournament.started is False:
-            await self.cancel_tournament()
-
-    async def round_timeout(self, t_round):
-        await asyncio.sleep(models.ROUND_TIMEOUT)
-        if self.current_round.number == t_round.number:
-            await self.next_round()
+        await self.tournament.advance()
 
     def set_timer(self):
         if self.tournament.started is False:
-            asyncio.create_task(self.tournament_timeout())
+            asyncio.create_task(self.tournament.timeout())
 
     def is_admin(self, user):
         if self.tournament.admin == user:
