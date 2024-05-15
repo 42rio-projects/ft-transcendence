@@ -264,6 +264,11 @@ class OnlineGame(Game):
     async def send_start_message(self):
         await self.send_message({"status": "started"})
 
+    async def stop(self):
+        super().stop()
+        if self.game_model.round:
+            await self.game_model.round.try_advance()
+
     async def player_scored(self, player):
         if player == 1:
             self.info.p1_score += 1
@@ -306,7 +311,7 @@ class OnlineGame(Game):
     @database_sync_to_async
     def get_game(self):
         self.game_model = GameModel.objects.prefetch_related(
-            'player1', 'player2').get(pk=self.game_id)
+            'player1', 'player2', 'round').get(pk=self.game_id)
 
     async def update_score(self):
         self.game_model.player1_points = self.info.p1_score

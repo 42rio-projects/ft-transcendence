@@ -227,6 +227,13 @@ class Round(models.Model):
         return self.tournament
 
     @database_sync_to_async
+    def games_are_over(self):
+        for game in self.games.all():
+            if game.finished is False:
+                return False
+        return True
+
+    @database_sync_to_async
     def a_refresh(self):
         self.refresh_from_db()
 
@@ -236,6 +243,14 @@ class Round(models.Model):
         if self.finished is False:
             tournament = await self.a_tournament()
             await tournament.advance()
+
+    async def try_advance(self):
+        await self.a_refresh()
+        over = await self.games_are_over()
+        if over is False:
+            return
+        tournament = await self.a_tournament()
+        await tournament.advance()
 
     def __str__(self):
         return (f'{self.tournament.name} round {self.number}')
