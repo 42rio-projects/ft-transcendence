@@ -1,3 +1,4 @@
+import random
 from django.db import models
 from django.core.exceptions import ValidationError
 
@@ -38,13 +39,15 @@ class Tournament(models.Model):
             t_round = Round(tournament=self, number=1)
             t_round.save()
             try:
-                t_round.first_games(self.players.iterator())
+                t_round.first_games(self.players.all().order_by('?'))
             except Exception:
                 t_round.delete()
                 raise
         else:
             previous = self.rounds.last()
             if previous.games.count() == 1:
+                if previous.games.last().finished is False:
+                    previous.games.last().end()
                 self.winner = previous.games.last().winner
                 self.finished = True
                 self.save()
@@ -149,14 +152,17 @@ class Round(models.Model):
 
     def next_games(self, previous):
         pair = []
-        previous_games = previous.games.iterator()
+        players = []
+        previous_games = previous.games.all().order_by('?')
         for game in previous_games:
-            pair.append(game.winner)
-            if len(pair) == 2:
-                Game(player1=pair[0], player2=pair[1], round=self).save()
-                pair.clear()
-        if len(pair) == 1:
-            Game(player1=pair[0], round=self).save()
+            if game.finished is False:
+                game.end()
+            players.append(game.winner)
+        if len(players) % 2 != 0:
+            players.append(None)
+        pairs = list(zip(players[::2], players[1::2]))
+        for pair in pairs:
+            Game(player1=pair[0], player2=pair[1], round=self).save()
 
     def __str__(self):
         return (f'{self.tournament.name} round {self.number}')
@@ -193,6 +199,24 @@ class Game(models.Model):
     )
     date = models.DateField(auto_now_add=True)
     finished = models.BooleanField(default=False)
+
+    def end(self):
+        if self.player1 is None:
+            self.winner = self.player2
+        elif self.player2 is None:
+            self.winner = self.player1
+        else:
+            if self.player1_points > self.player2_points:
+                self.winner = self.player1
+            elif self.player2_points > self.player1_points:
+                self.winner = self.player2
+            else:
+                if bool(random.getrandbits(1)):
+                    self.winner = self.player1
+                else:
+                    self.winner = self.player2
+        self.finished = True
+        self.save()
 
     def __str__(self):
         if self.player1 is not None and self.player2 is not None:
