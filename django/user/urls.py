@@ -12,21 +12,6 @@ urlpatterns = [
     path('profile/<str:username>/', views.user_profile),
     path('edit_profile/', views.edit_profile),
 
-    path('change_password', views.change_password),
-    path('email_change/', views.email_change),
-    path(
-        'email_verify_code/',
-        views.email_verify_code,
-        name='email_verify_code'
-    ),
-    path(
-        'email_verify_check/',
-        views.email_verify_check,
-        name='email_verify_check'
-    ),
-    path(
-        'email_change_check/',
-        views.email_change_check,
-        name='email_change_check'
-    ),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    path('change_password/', views.change_password),
+    path('verify_email/', views.verify_email),
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) # For avatar images

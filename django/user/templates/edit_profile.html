@@ -11,5 +11,14 @@
   <form id="form" method="post" onsubmit="handleFormSubmit(event)">
     {% include 'edit_profile_form.html' %}
   </form>
+
+  <hr />
+
+  {% if email and not user.email_verified %}
+  <a class="button" href="/verify_email/">
+    Verify email
+  </a>
+  {% endif %}
+  <a class="button" href="/change_password/">Change password</a>
 </div>
 {% endblock %}

@@ -36,11 +36,6 @@
     placeholder="No email"
     value="{{ email }}"
   />
-  {% if email and not user.email_verified %}
-  <a href="/profile/verify_email/">
-    Verify email
-  </a>
-  {% endif %}
 </div>
 
 <button type="submit">Save</button>

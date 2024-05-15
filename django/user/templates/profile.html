@@ -23,6 +23,13 @@ Profile
     <img class="avatar" src="{{ user.avatar.url }}" alt="Avatar" />
     <span>{{ user.username }}</span>
   </div>
+  <span>
+    {% if user.email_verified %}
+    Verified
+    {% else %}
+    Not verified
+    {% endif %}
+  </span>
   {% if user == request.user %}
   <a class="button" href="/edit_profile/">Edit profile</a>
   {% else %}

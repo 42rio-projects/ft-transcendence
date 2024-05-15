@@ -1,0 +1,20 @@
+{% if success %}
+<span class="color-success">{{ success }}</span>
+{% endif %}
+
+{% if error %}
+<span class="color-error">{{ error }}</span>
+{% endif %}
+
+<form method="post" onsubmit="handleFormSubmit(event)">
+  {% csrf_token %}
+  <input type="hidden" name="user-action" value="send-code" />
+  <button type="submit">Send code</button>
+</form>
+
+<form method="post" onsubmit="handleFormSubmit(event)">
+  {% csrf_token %}
+  <input type="hidden" name="user-action" value="verify-code" />
+  <input type="text" name="code" placeholder="Code" />
+  <button type="submit">Verify code</button>
+</form>
