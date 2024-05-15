@@ -6,7 +6,10 @@ from django.contrib.auth import authenticate, login as django_login, logout as d
 from django.contrib import messages
 from django.shortcuts import render
 import os
+from django.core.paginator import Paginator
 
+from django.http import JsonResponse
+from django.http import HttpResponse
 from user.models import User
 from user.forms import EmailChangeForm
 from user.forms import ChangePasswordForm
@@ -15,6 +18,7 @@ from user.forms import UserProfileForm
 SERVICE_SID = os.environ["TWILIO_SERVICE_SID"]
 ACCOUNT_SID = os.environ["TWILIO_ACCOUNT_SID"]
 AUTH_TOKEN = os.environ["TWILIO_AUTH_TOKEN"]
+client = Client(ACCOUNT_SID, AUTH_TOKEN)
 
 
 def profile(request):
@@ -41,6 +45,15 @@ def login(request):
     if request.method == "GET":
         return render(request, "login.html")
 
+def match_history(request):
+    if request.method == "GET":
+        games_list = request.user.get_games()
+        paginator = Paginator(games_list, 10)
+
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+
+        return render(request, 'match_history/index.html', {'page_obj': page_obj})
 
 def register(request):
     if request.method == "POST":
@@ -217,6 +230,90 @@ def edit_profile(request):
             {"username": request.user.username, "email": request.user.email}
         )
 
+# @login_required
+def generate_totp_factor(request):
+    if request.method == "GET":
+        # user = request.user
+
+        # new_factor = client.verify.v2.services(
+        #     SERVICE_SID).entities(user.id).new_factors.create(
+        #     friendly_name=user.name, factor_type="totp")
+        new_factor = client.verify.v2.services(
+            SERVICE_SID).entities('ff483d1ff591898a9942916050d2ca3f').new_factors.create(
+            friendly_name='Vitinho', factor_type="totp")
+
+        serialized_factor = serialize_factor(new_factor)
+
+        return JsonResponse(serialized_factor, safe=False)
+
+
+# @login_required
+def verify_totp_factor(request):
+    if request.method == "POST":
+        # user = request.user
+
+        code = request.POST.get("code")
+        sid = request.POST.get("sid")
+
+        # factor = client.verify.v2.services(
+        #     SERVICE_SID).entities(user.id).factors(sid).update(auth_payload=code)
+        factor = client.verify.v2.services(
+            SERVICE_SID).entities('ff483d1ff591898a9942916050d2ca3f').factors(sid).update(auth_payload=code)
+
+        status = factor.status
+
+        if status == "approved":
+           return HttpResponse("Factor is valid")
+
+        return HttpResponse("Factor is invalid")
+
+def serialize_factor(factor):
+    serialized_data = {
+        'sid': factor.sid,
+        'status': factor.status,
+        'identity': factor.identity,
+        'friendly_name': factor.friendly_name,
+    }
+    return serialized_data
+
+# @login_required
+def list_totp_factors(request):
+    if request.method == "GET":
+        # user = request.user
+
+        # factors = client.verify.v2.services(
+        #     SERVICE_SID).entities(user.id).factors.list()
+        factors = client.verify.v2.services(
+            SERVICE_SID).entities('ff483d1ff591898a9942916050d2ca3f').factors.list()
+
+        serialized_factors =  [serialize_factor(factor) for factor in factors]
+
+        return JsonResponse(serialized_factors, safe=False)
+
+def validate_totp_token(request):
+    if request.method == "POST":
+        # user = request.user
+
+        token = request.POST.get("token")
+        sid = request.POST.get("sid")
+
+        # verification = client.verify.v2.services(
+        #     SERVICE_SID).entities(user.id).challenges.create(
+        #     factor_sid=sid,
+        #     code=token
+        # )
+        verification = client.verify.v2.services(
+            SERVICE_SID).entities('ff483d1ff591898a9942916050d2ca3f').challenges.create(
+            factor_sid=sid,
+            auth_payload=token
+        )
+
+        status = verification.status
+
+        if status == "approved":
+            return HttpResponse("Token is valid")
+
+        return HttpResponse("Token is invalid")
 
 def email_verify_code(request):
     if request.method == "GET":

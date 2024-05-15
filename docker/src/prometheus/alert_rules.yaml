@@ -1,0 +1,71 @@
+groups:
+- name: django
+  rules:
+  - alert: EndpointMonitoring
+    expr: sum by(view) (rate(django_http_requests_total_by_view_transport_method_total[5m])) > 10
+    for: 1m
+    labels:
+      severity: warning
+    annotations:
+      summary: Estamos tendo aumento no endpoint {{ $labels.view }}
+      description: '{{ $labels.view }} ta com request p kct.'
+  - alert: EndpointMonitoring
+    expr: sum by(view) (rate(django_http_requests_total_by_view_transport_method_total[5m])) > 25
+    for: 1m
+    labels:
+      severity: high
+    annotations:
+      summary: Estamos tendo aumento no endpoint {{ $labels.view }}
+      description: '{{ $labels.view }} ta com request p kct.'
+  - alert: EndpointMonitoring
+    expr: sum by(view) (rate(django_http_requests_total_by_view_transport_method_total[5m])) > 50
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      summary: Estamos tendo aumento no endpoint {{ $labels.view }}
+      description: '{{ $labels.view }} ta com request p kct.'
+
+  - alert: 4xxResponses
+    expr: sum by(job) (rate(django_http_responses_total_by_status_view_method_total{status=~"4.*"}[5m]))/sum by(job) (rate(django_http_responses_total_by_status_view_method_total[5m])) > bool 0.4
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      summary: A quantidade de respostas 4xx está alta {{ humanize $value }}
+      description: '{{ $labels.job }} ta torando de resposta 4xx {{ humanize $value }}.'
+
+  - alert: 5xxResponses
+    expr: sum by(job) (rate(django_http_responses_total_by_status_view_method_total{status=~"5.*"}[5m]))/sum by(job) (rate(django_http_responses_total_by_status_view_method_total[5m])) > bool 0.4
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      summary: A quantidade de respostas 5xx está alta {{ humanize $value }}
+      description: '{{ $labels.job }} ta torando de resposta 5xx {{ humanize $value }}.'
+
+  - alert: containerNotUp
+    expr: sum by(job) (up) == 0
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      summary: Este container está down {{ $labels.job }}
+      description: '{{ $labels.job }} ta caido, ajuda por favor!'
+
+  - alert: ConteinerHighCPU
+    expr: (sum(rate(container_cpu_usage_seconds_total{instance=~"$host",name=~"$container",name=~".+"}[5m])) by (name) *100) > 40
+    for: 1m
+    labels:
+      severity: high
+    annotations:
+      summary: O container {{ humanize $labels.name }} está com {{ humanize $value }} de utilização de CPU
+      description: '{{ $labels.name }} ta com a CPU explodindo, vamos subir ele na MagaluCloud?  {{ humanize $value }}.'
+  - alert: ConteinerHighCPU
+    expr: (sum(rate(container_cpu_usage_seconds_total{instance=~"$host",name=~"$container",name=~".+"}[5m])) by (name) *100) > 60
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      summary: O container {{ humanize $labels.name }} está com {{ humanize $value }} de utilização de CPU
+      description: '{{ $labels.name }} ta com a CPU explodindo, vamos subir ele na MagaluCloud?  {{ humanize $value }}.'

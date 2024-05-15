@@ -1,0 +1,15 @@
+global:
+  scrape_interval:     15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: 'django'
+    static_configs:
+      - targets: ['django:8000']  # Endereço do serviço Django
+
+  - job_name: "cadvisor"
+    static_configs:
+      - targets: ["cadvisor:8080"] # Endereço do serviço cadvisor
+
+rule_files:
+  - alert_rules.yaml

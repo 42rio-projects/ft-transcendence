@@ -1,6 +1,6 @@
 COMPOSE = cd src && docker-compose -f docker-compose.yml
 
-VOLUMES = ../postgres_data
+VOLUMES = ../postgres_data ../grafana_data ../prometheus_data
 
 all: up
 
@@ -33,6 +33,7 @@ clean: down
 	-docker rm -f $$(docker ps -aq)
 	-docker rmi -f $$(docker images -aq)
 	-docker volume rm -f $$(docker volume ls -q)
+	-rm -rf ../postgres_data ../grafana_data ../prometheus_data
 	-docker network rm -f $$(docker network ls -q)
 
 .PHONY: all up start down stop restart logs volumes clean
