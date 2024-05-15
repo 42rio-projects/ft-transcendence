@@ -13,4 +13,6 @@ urlpatterns = [
         views.respondGameInvite,
         name="respondGameInvite"
     ),
+    path('tournament-menu/', views.tournamentMenu, name='tournamentMenu'),
+    path('local-tournament/', views.localTournament, name='localTournament'),
 ]

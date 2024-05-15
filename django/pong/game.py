@@ -2,6 +2,7 @@ import json
 import asyncio
 from channels.layers import get_channel_layer
 from channels.db import database_sync_to_async
+from django.template.loader import render_to_string
 
 from pong.models import Game as GameModel
 
@@ -138,10 +139,12 @@ class Game:
         self.info.set_initial_values()
         self.interval_task = asyncio.create_task(self.countdown_and_update())
 
-    def stop(self):
-        if self.is_running():
-            self.interval_task.cancel()
-            self.interval_task = None
+    async def stop(self):
+        if not self.is_running():
+            return
+        self.interval_task.cancel()
+        self.interval_task = None
+        await self.send_message({"status": "finished"})
 
     async def update_game(self):
         while self.info.finished() is False:
@@ -225,7 +228,24 @@ class LocalGame(Game):
             self.info.p2_score += 1
         await self.send_score()
         if self.info.finished():
-            self.stop()
+            await self.stop()
+
+    async def render_result(self, player1, player2, tournament):
+        winner = (
+            player1 if self.info.p1_score > self.info.p2_score else player2
+        )
+        html = render_to_string(
+            'pong/local_game_result.html',
+            {
+                'player1': player1,
+                'player2': player2,
+                'player1_points': self.info.p1_score,
+                'player2_points': self.info.p2_score,
+                'winner': winner,
+                'tournament': tournament
+            }
+        )
+        await self.send_message({"status": "result", "html": html})
 
 
 class OnlineGame(Game):
@@ -252,7 +272,7 @@ class OnlineGame(Game):
         await self.send_score()
         await self.update_score()
         if self.info.finished():
-            self.stop()
+            await self.stop()
             await self.channel_layer.group_send(
                 self.room_group_name, {"type": "game.stopped"}
             )
@@ -273,7 +293,7 @@ class OnlineGame(Game):
             self.game_model.winner = self.game_model.player1
         self.game_model.finished = True
         await self.save_game()
-        self.stop()
+        await self.stop()
 
     @database_sync_to_async
     def delete_game(self):

@@ -2,6 +2,7 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 import json
 
 from pong.game import LocalGame, OnlineGame
+from pong.tournament import LocalTournament
 
 
 class LocalGameCosumer(AsyncWebsocketConsumer):
@@ -11,7 +12,7 @@ class LocalGameCosumer(AsyncWebsocketConsumer):
         await self.accept()
 
     async def disconnect(self, close_code):
-        self.game.stop()
+        await self.game.stop()
 
     def update_player_input(self, data):
         p1_direction = data['l']
@@ -26,18 +27,23 @@ class LocalGameCosumer(AsyncWebsocketConsumer):
             self.game.info.p2_move = p2_direction
 
     async def receive(self, text_data):
-        data_json = json.loads(text_data)
-        if 'start' in data_json:
+        data = json.loads(text_data)
+        if 'start' in data:
             self.game.start()
             return
-        elif 'stop' in data_json and self.game.is_running():
-            self.game.stop()
+        elif 'stop' in data:
+            await self.game.stop()
+            return
+        elif 'render' in data:
+            await self.game.render_result(
+                data["player1"], data["player2"], data["tournament"]
+            )
             return
         try:
-            self.update_player_input(data_json)
+            self.update_player_input(data)
         except KeyError:
             await self.send(text_data=json.dumps(
-                {"status": "invalid", "message": "Invalid JSON received"}
+                {"status": "invalid", "message": data}
             ))
 
 
@@ -98,3 +104,30 @@ class OnlineGameCosumer(AsyncWebsocketConsumer):
     async def game_stopped(self, event):
         if self.game_id in self.online_games:
             del self.online_games[self.game_id]
+
+
+class LocalTournamentCosumer(AsyncWebsocketConsumer):
+
+    async def connect(self):
+        await self.accept()
+        self.tournament = LocalTournament(self)
+
+    async def disconnect(self, close_code):
+        pass
+
+    async def receive(self, text_data):
+        data = json.loads(text_data)
+        try:
+            action = data['action']
+            if action == 'add_player':
+                await self.tournament.add_player(data['alias'])
+            elif action == 'remove_player':
+                await self.tournament.remove_player(data['alias'])
+            elif action == 'start_tournament':
+                await self.tournament.start()
+            elif action == 'next_game':
+                await self.tournament.render_next_game(data['winner'])
+        except Exception:
+            await self.send(text_data=json.dumps(
+                {"status": "excepted", "data_received": data}
+            ))

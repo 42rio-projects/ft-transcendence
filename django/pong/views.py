@@ -98,6 +98,15 @@ def respondGameInvite(request, invite_id):
     return redirect('gameInvites')
 
 
+def tournamentMenu(request):
+    if request.method == "GET":
+        return render(request, "pong/tournament_menu.html")
+
+
+def localTournament(request):
+    if request.method == "GET":
+        return render(request, "pong/local_tournament.html")
+
 # class TournamentViewSet(viewsets.ModelViewSet):
 #     queryset = models.Tournament.objects.all()
 #     lookup_field = 'name'
