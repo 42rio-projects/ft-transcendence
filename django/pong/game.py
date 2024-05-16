@@ -7,15 +7,16 @@ from django.template.loader import render_to_string
 from pong.models import Game as GameModel
 
 
-X_SPEED_LIMIT = 4
-Y_SPEED_LIMIT = 2
+X_SPEED_LIMIT = 2
+Y_SPEED_LIMIT = 4
 SPEED_COUNTER = 5
-TICK_RATE = 1 / 60
+TICK_RATE = 1 / 45
 BALL_SPEED = 1
-BAR_SPEED = 1
+BAR_SPEED = 2
 BAR_HEIGHT = 20
 GAME_HEIGHT = 100
 GAME_WIDTH = 200
+BALL_RADIUS = GAME_WIDTH / 200
 
 
 class GameInfo:
@@ -23,8 +24,8 @@ class GameInfo:
     BAR_LOWERBOUND = 0
     BALL_UPPERBOUND = GAME_HEIGHT
     BALL_LOWERBOUND = 0
-    BALL_RIGHTBOUND = GAME_WIDTH - 2
-    BALL_LEFTBOUND = 2
+    BALL_RIGHTBOUND = GAME_WIDTH - BALL_RADIUS * 2
+    BALL_LEFTBOUND = BALL_RADIUS * 2
     SCORE_LIMIT = 2
 
     def __init__(self):
@@ -81,10 +82,16 @@ class GameInfo:
         return (y > self.BALL_UPPERBOUND or y < self.BALL_LOWERBOUND)
 
     def ball_hits_p1(self, y):
-        return (y >= self.p1_pos and y <= self.p1_pos + BAR_HEIGHT)
+        return (
+            y >= self.p1_pos - BALL_RADIUS and
+            y <= self.p1_pos + BAR_HEIGHT + BALL_RADIUS
+        )
 
     def ball_hits_p2(self, y):
-        return (y >= self.p2_pos and y <= self.p2_pos + BAR_HEIGHT)
+        return (
+            y >= self.p2_pos - BALL_RADIUS and
+            y <= self.p2_pos + BAR_HEIGHT + BALL_RADIUS
+        )
 
     def ball_should_speed_up(self):
         return (
