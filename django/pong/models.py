@@ -309,6 +309,7 @@ class Game(models.Model):
     @database_sync_to_async
     def a_refresh(self):
         self.refresh_from_db()
+        self.round
 
     @database_sync_to_async
     def render(self):

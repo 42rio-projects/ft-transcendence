@@ -257,6 +257,7 @@ class OnlineGame(Game):
         self.room_group_name = socket.room_group_name
         self.p1_connected = False
         self.p2_connected = False
+        self.stopped = False
 
     async def send_message(self, json):
         await self.channel_layer.group_send(
@@ -268,7 +269,7 @@ class OnlineGame(Game):
 
     async def stop(self):
         await super().stop()
-        if self.game_model.round is not None:
+        if self.game_model.round is not None and self.stopped is False:
             await self.game_model.round.try_advance()
         await self.game_model.a_refresh()
         html = await self.game_model.render()
@@ -278,6 +279,10 @@ class OnlineGame(Game):
         )
 
     async def player_scored(self, player):
+        if await self.game_was_stopped():
+            self.stopped = True
+            await self.stop()
+            return
         if player == 1:
             self.info.p1_score += 1
         elif player == 2:
@@ -312,6 +317,10 @@ class OnlineGame(Game):
     @ database_sync_to_async
     def save_game(self):
         self.game_model.save()
+
+    async def game_was_stopped(self):
+        await self.game_model.a_refresh()
+        return self.game_model.finished
 
     @ database_sync_to_async
     def get_game(self):
