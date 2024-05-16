@@ -267,9 +267,15 @@ class OnlineGame(Game):
         await self.send_message({"status": "started"})
 
     async def stop(self):
-        super().stop()
-        if self.game_model.round:
+        await super().stop()
+        if self.game_model.round is not None:
             await self.game_model.round.try_advance()
+        await self.game_model.a_refresh()
+        html = await self.game_model.render()
+        await self.send_message({"status": "result", "html": html})
+        await self.channel_layer.group_send(
+            self.room_group_name, {"type": "game.stopped"}
+        )
 
     async def player_scored(self, player):
         if player == 1:
@@ -280,9 +286,6 @@ class OnlineGame(Game):
         await self.update_score()
         if self.info.finished():
             await self.stop()
-            await self.channel_layer.group_send(
-                self.room_group_name, {"type": "game.stopped"}
-            )
 
     def second_player_has_not_connected(self):
         return (
@@ -302,15 +305,15 @@ class OnlineGame(Game):
         await self.save_game()
         await self.stop()
 
-    @database_sync_to_async
+    @ database_sync_to_async
     def delete_game(self):
         self.game_model.delete()
 
-    @database_sync_to_async
+    @ database_sync_to_async
     def save_game(self):
         self.game_model.save()
 
-    @database_sync_to_async
+    @ database_sync_to_async
     def get_game(self):
         self.game_model = GameModel.objects.prefetch_related(
             'player1', 'player2', 'round').get(pk=self.game_id)
