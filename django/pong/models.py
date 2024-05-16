@@ -310,6 +310,8 @@ class Game(models.Model):
     def a_refresh(self):
         self.refresh_from_db()
         self.round
+        self.player1
+        self.player2
 
     @database_sync_to_async
     def render(self):
