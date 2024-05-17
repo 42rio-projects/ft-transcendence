@@ -235,7 +235,7 @@ class LocalGame(Game):
             player1 if self.info.p1_score > self.info.p2_score else player2
         )
         html = render_to_string(
-            'pong/local_game_result.html',
+            'pong/game/local/result.html',
             {
                 'player1': player1,
                 'player2': player2,
