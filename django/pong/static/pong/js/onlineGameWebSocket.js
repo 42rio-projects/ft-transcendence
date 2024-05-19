@@ -38,8 +38,9 @@ class OnlineGameWebSocket {
       console.log("Game canceled");
       this.gameRunning = false;
     } else if (data["status"] == "finished") {
-      console.log("Game Over");
       this.gameRunning = false;
+    } else if (data["status"] == "result") {
+      this.renderResult(data["html"]);
     }
   }
 
@@ -64,6 +65,11 @@ class OnlineGameWebSocket {
     } else {
       this.Direction = null;
     }
+  }
+
+  renderResult(html) {
+    const div = document.getElementById("online-game-section");
+    div.innerHTML = html;
   }
 
   handleKeyDown(event) {

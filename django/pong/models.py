@@ -306,6 +306,19 @@ class Game(models.Model):
         self.finished = True
         self.save()
 
+    @database_sync_to_async
+    def a_refresh(self):
+        self.refresh_from_db()
+        self.round
+        self.player1
+        self.player2
+
+    @database_sync_to_async
+    def render(self):
+        return render_to_string(
+            'pong/game_result.html', {"game": self}
+        )
+
     # Take tournament into consideration
     def __str__(self):
         if self.player1 is not None and self.player2 is not None:

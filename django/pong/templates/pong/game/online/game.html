@@ -1,16 +1,18 @@
-<h1>{{player1.username}} vs {{player2.username}}</h1>
-<h2>Controls</h2>
-<div class="verticalDiv">
-  W -> move up
-  <br />
-  S -> move down
-  <div>
-    <p>{{ player1.username }}</p>
-    <p id="p1-score"></p>
+<div id="online-game-section">
+  <h1>{{player1.username}} vs {{player2.username}}</h1>
+  <h2>Controls</h2>
+  <div class="verticalDiv">
+    W -> move up
+    <br />
+    S -> move down
+    <div>
+      <p>{{ player1.username }}</p>
+      <p id="p1-score"></p>
+    </div>
+    <div>
+      <p>{{ player2.username }}</p>
+      <p id="p2-score"></p>
+    </div>
   </div>
-  <div>
-    <p>{{ player2.username }}</p>
-    <p id="p2-score"></p>
-  </div>
+  <canvas id="game-screen"></canvas>
 </div>
-<canvas id="game-screen"></canvas>

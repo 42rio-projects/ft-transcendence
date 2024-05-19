@@ -7,15 +7,16 @@ from django.template.loader import render_to_string
 from pong.models import Game as GameModel
 
 
-X_SPEED_LIMIT = 4
-Y_SPEED_LIMIT = 2
+X_SPEED_LIMIT = 2
+Y_SPEED_LIMIT = 4
 SPEED_COUNTER = 5
-TICK_RATE = 1 / 60
+TICK_RATE = 1 / 45
 BALL_SPEED = 1
-BAR_SPEED = 1
+BAR_SPEED = 2
 BAR_HEIGHT = 20
 GAME_HEIGHT = 100
 GAME_WIDTH = 200
+BALL_RADIUS = GAME_WIDTH / 200
 
 
 class GameInfo:
@@ -23,8 +24,8 @@ class GameInfo:
     BAR_LOWERBOUND = 0
     BALL_UPPERBOUND = GAME_HEIGHT
     BALL_LOWERBOUND = 0
-    BALL_RIGHTBOUND = GAME_WIDTH - 2
-    BALL_LEFTBOUND = 2
+    BALL_RIGHTBOUND = GAME_WIDTH - BALL_RADIUS * 2
+    BALL_LEFTBOUND = BALL_RADIUS * 2
     SCORE_LIMIT = 2
 
     def __init__(self):
@@ -81,10 +82,16 @@ class GameInfo:
         return (y > self.BALL_UPPERBOUND or y < self.BALL_LOWERBOUND)
 
     def ball_hits_p1(self, y):
-        return (y >= self.p1_pos and y <= self.p1_pos + BAR_HEIGHT)
+        return (
+            y >= self.p1_pos - BALL_RADIUS and
+            y <= self.p1_pos + BAR_HEIGHT + BALL_RADIUS
+        )
 
     def ball_hits_p2(self, y):
-        return (y >= self.p2_pos and y <= self.p2_pos + BAR_HEIGHT)
+        return (
+            y >= self.p2_pos - BALL_RADIUS and
+            y <= self.p2_pos + BAR_HEIGHT + BALL_RADIUS
+        )
 
     def ball_should_speed_up(self):
         return (
@@ -257,6 +264,7 @@ class OnlineGame(Game):
         self.room_group_name = socket.room_group_name
         self.p1_connected = False
         self.p2_connected = False
+        self.stopped = False
 
     async def send_message(self, json):
         await self.channel_layer.group_send(
@@ -267,11 +275,21 @@ class OnlineGame(Game):
         await self.send_message({"status": "started"})
 
     async def stop(self):
-        super().stop()
-        if self.game_model.round:
+        await super().stop()
+        if self.game_model.round is not None and self.stopped is False:
             await self.game_model.round.try_advance()
+        await self.game_model.a_refresh()
+        html = await self.game_model.render()
+        await self.send_message({"status": "result", "html": html})
+        await self.channel_layer.group_send(
+            self.room_group_name, {"type": "game.stopped"}
+        )
 
     async def player_scored(self, player):
+        if await self.game_was_stopped():
+            self.stopped = True
+            await self.stop()
+            return
         if player == 1:
             self.info.p1_score += 1
         elif player == 2:
@@ -280,9 +298,6 @@ class OnlineGame(Game):
         await self.update_score()
         if self.info.finished():
             await self.stop()
-            await self.channel_layer.group_send(
-                self.room_group_name, {"type": "game.stopped"}
-            )
 
     def second_player_has_not_connected(self):
         return (
@@ -302,15 +317,19 @@ class OnlineGame(Game):
         await self.save_game()
         await self.stop()
 
-    @database_sync_to_async
+    @ database_sync_to_async
     def delete_game(self):
         self.game_model.delete()
 
-    @database_sync_to_async
+    @ database_sync_to_async
     def save_game(self):
         self.game_model.save()
 
-    @database_sync_to_async
+    async def game_was_stopped(self):
+        await self.game_model.a_refresh()
+        return self.game_model.finished
+
+    @ database_sync_to_async
     def get_game(self):
         self.game_model = GameModel.objects.prefetch_related(
             'player1', 'player2', 'round').get(pk=self.game_id)
