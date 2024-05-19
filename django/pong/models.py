@@ -107,6 +107,11 @@ class Tournament(models.Model):
         self.refresh_from_db()
 
     @database_sync_to_async
+    def notify_players(self, notification):
+        for player in self.players.all():
+            player.notify(notification)
+
+    @database_sync_to_async
     def render_winner(self):
         return render_to_string(
             'pong/tournament/online/winner.html', {"tournament": self}
@@ -124,12 +129,15 @@ class Tournament(models.Model):
             t_round = await self.a_new_round()
             html = await t_round.render()
             asyncio.create_task(t_round.timeout())
+            notification = f'New round available for tournament {self.name}.'
         except TournamentFinished:
             await self.a_refresh()
             html = await self.render_winner()
+            notification = f'Tournament {self.name} finished.'
         await self.send_channel_message(
             {"status": "new_round", "html": html}
         )
+        await self.notify_players(notification)
 
     async def timeout(self):
         await asyncio.sleep(TOURNAMENT_START_LIMIT)

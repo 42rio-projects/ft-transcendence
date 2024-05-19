@@ -1,3 +1,4 @@
+from channels.db import database_sync_to_async
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.db.models import Q
@@ -5,9 +6,17 @@ from phonenumber_field.modelfields import PhoneNumberField
 from relations.models import IsFriendsWith
 from relations.models import IsBlockedBy
 from relations.models import FriendInvite
-from chat.models import Chat
-from pong.models import Game, GameInvite, Tournament
-import sys
+from chat.models import Chat, Message
+from pong.models import Game, GameInvite
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
+
+
+@async_to_sync
+async def send_channel_message(group, message):
+    channel_layer = get_channel_layer()
+    await channel_layer.group_send(group, message,)
+
 
 class User(AbstractUser):
     email_verified = models.BooleanField(default=False)
@@ -49,12 +58,14 @@ class User(AbstractUser):
         return friends
 
     def get_games(self):
-
-        home_games = self.home_games.all().prefetch_related('player_1','player_2')
-        away_games = self.away_games.all().prefetch_related('player_1', 'player_2')
+        home_games = self.home_games.all().prefetch_related(
+            'player1', 'player2'
+        )
+        away_games = self.away_games.all().prefetch_related(
+            'player1', 'player2'
+        )
 
         return home_games.union(away_games)
-
 
     def get_blocks(self):
         blocks = IsBlockedBy.objects.filter(
@@ -124,6 +135,23 @@ class User(AbstractUser):
 
     def finished_admin_tournaments(self):
         return self.my_tournaments.filter(Q(finished=True)).all()
+
+    def notify(self, message):
+        try:
+            notifications = Chat.objects.get(starter=self, receiver=self)
+        except Exception:
+            notifications = Chat(starter=self, receiver=self)
+            notifications.save()
+        message = Message(sender=self, chat=notifications, content=message)
+        message.save()
+        send_channel_message(
+            f'chat_{notifications.pk}',
+            {'type': 'chat.message', 'id': message.pk}
+        )
+
+    @database_sync_to_async
+    def a_notify(self, message):
+        self.notify(message)
 
     def __str__(self):
         return (self.username)
