@@ -28,7 +28,9 @@ class LocalTournament():
             )
             return
         self.players.add(player)
-        html = render_to_string('pong/local_player.html', {'alias': player})
+        html = render_to_string(
+            'pong/tournament/local/player.html', {'alias': player}
+        )
         if previous_size < len(self.players):
             await self.send_message({"status": "new_player", "html": html})
 
@@ -45,7 +47,7 @@ class LocalTournament():
         final = True if len(self.players) == 2 else False
         self.currentGame = self.games.pop()
         html = render_to_string(
-            'pong/local_game.html',
+            'pong/game/local/game.html',
             {
                 'player1': self.currentGame[0],
                 'player2': self.currentGame[1],
@@ -57,7 +59,7 @@ class LocalTournament():
 
     def get_result_html(self):
         html = render_to_string(
-            'pong/tournament_result.html', {'winner': self.winner}
+            'pong/tournament/local/result.html', {'winner': self.winner}
         )
         return html
 
@@ -116,7 +118,7 @@ class OnlineTournament():
     @database_sync_to_async
     def render_tournament(self):
         return render_to_string(
-            'pong/online_tournament.html',
+            'pong/tournament/online/tournament.html',
             {"tournament": self.tournament, "user": self.socket.user}
         )
 

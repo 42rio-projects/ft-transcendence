@@ -52,16 +52,16 @@ def gameMenu(request):
 
 def localGame(request):
     if request.method == "GET":
-        return render(request, "pong/local_game.html")
+        return render(request, "pong/game/local/game.html")
 
 
 def onlineGame(request, game_id):
     game = get_object_or_404(models.Game, pk=game_id)
     if game.finished:
-        template = loader.get_template('pong/game_result.html')
+        template = loader.get_template('pong/game/online/result.html')
         context = {"game": game}
     else:
-        template = loader.get_template('pong/online_game.html')
+        template = loader.get_template('pong/game/online/game.html')
         try:
             game_invite = models.GameInvite.objects.get(game=game)
             context = {
@@ -86,7 +86,7 @@ def gameInvites(request):
         except Exception as e:
             # add 40x response that is not rendered on the front end
             return HttpResponse(e)
-    template = loader.get_template("pong/game_invites.html")
+    template = loader.get_template("pong/game/online/invites.html")
     context = {}
     return HttpResponse(template.render(context, request))
 
@@ -121,11 +121,11 @@ def tournamentMenu(request):
 
 def localTournament(request):
     if request.method == "GET":
-        return render(request, "pong/local_tournament.html")
+        return render(request, "pong/tournament/local/tournament.html")
 
 
 def tournamentInvites(request):
-    template = loader.get_template("pong/tournament_invites.html")
+    template = loader.get_template("pong/tournament/online/invites.html")
     context = {}
     return HttpResponse(template.render(context, request))
 
@@ -148,7 +148,7 @@ def onlineTournament(request, tournament_id):
         return
     tournament = get_object_or_404(models.Tournament, pk=tournament_id)
     context = {"tournament": tournament}
-    template = loader.get_template('pong/online_tournament.html')
+    template = loader.get_template('pong/tournament/online/tournament.html')
     return HttpResponse(template.render(context, request))
 
 
