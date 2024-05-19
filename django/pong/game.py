@@ -235,7 +235,7 @@ class LocalGame(Game):
             player1 if self.info.p1_score > self.info.p2_score else player2
         )
         html = render_to_string(
-            'pong/local_game_result.html',
+            'pong/game/local/result.html',
             {
                 'player1': player1,
                 'player2': player2,
@@ -255,6 +255,8 @@ class OnlineGame(Game):
         super().__init__()
         self.game_id = socket.game_id
         self.room_group_name = socket.room_group_name
+        self.p1_connected = False
+        self.p2_connected = False
 
     async def send_message(self, json):
         await self.channel_layer.group_send(
@@ -263,6 +265,11 @@ class OnlineGame(Game):
 
     async def send_start_message(self):
         await self.send_message({"status": "started"})
+
+    async def stop(self):
+        super().stop()
+        if self.game_model.round:
+            await self.game_model.round.try_advance()
 
     async def player_scored(self, player):
         if player == 1:
@@ -306,7 +313,7 @@ class OnlineGame(Game):
     @database_sync_to_async
     def get_game(self):
         self.game_model = GameModel.objects.prefetch_related(
-            'player1', 'player2').get(pk=self.game_id)
+            'player1', 'player2', 'round').get(pk=self.game_id)
 
     async def update_score(self):
         self.game_model.player1_points = self.info.p1_score
@@ -322,12 +329,13 @@ class OnlineGame(Game):
     def get_player(self, player):
         if player == self.game_model.player1:
             p = 1
+            self.p1_connected = True
         elif player == self.game_model.player2:
             p = 2
+            self.p2_connected = True
         else:
             raise Exception("Unauthorized")
-        if (self.game_model.player1 is not None and
-                self.game_model.player2 is not None):
+        if (self.p1_connected and self.p2_connected):
             asyncio.create_task(self.send_start_message())
             self.start()
         return p

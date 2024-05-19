@@ -12,4 +12,8 @@ urlpatterns = [
         r"ws/local-tournament/",
         consumers.LocalTournamentCosumer.as_asgi()
     ),
+    re_path(
+        r"ws/online-tournament/(?P<room_id>\d+)/$",
+        consumers.OnlineTournamentCosumer.as_asgi()
+    ),
 ]

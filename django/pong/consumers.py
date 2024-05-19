@@ -2,7 +2,11 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 import json
 
 from pong.game import LocalGame, OnlineGame
-from pong.tournament import LocalTournament
+from pong.tournament import LocalTournament, OnlineTournament
+
+
+def json_error(message):
+    return {"status": "error", "message": message}
 
 
 class LocalGameCosumer(AsyncWebsocketConsumer):
@@ -131,3 +135,53 @@ class LocalTournamentCosumer(AsyncWebsocketConsumer):
             await self.send(text_data=json.dumps(
                 {"status": "excepted", "data_received": data}
             ))
+
+
+class OnlineTournamentCosumer(AsyncWebsocketConsumer):
+    async def connect(self):
+        self.tournament_id = self.scope['url_route']['kwargs']['room_id']
+        self.room_group_name = f'tournament_{self.tournament_id}'
+        self.tournament = OnlineTournament(self)
+        self.user = self.scope['user']
+        await self.tournament.get_tournament()
+        self.admin = self.tournament.is_admin(self.user)
+        await self.channel_layer.group_add(
+            self.room_group_name, self.channel_name
+        )
+        await self.accept()
+        if self.admin:
+            self.tournament.set_timer()
+
+    async def disconnect(self, close_code):
+        pass
+
+    async def receive(self, text_data):
+        data = json.loads(text_data)
+        try:
+            action = data['action']
+            if action == 'start':
+                await self.start_tournament()
+            else:
+                raise Exception()
+        except Exception as e:
+            await self.send(text_data=json.dumps(
+                {
+                    "status": "excepted",
+                    "data_received": data,
+                    "exception": e.__str__()
+                }
+            ))
+
+    async def tournament_update(self, event):
+        await self.send(text_data=json.dumps(event["json"]))
+
+    async def start_tournament(self):
+        if self.admin:
+            try:
+                await self.tournament.start()
+                return
+            except Exception as e:
+                data = json_error(e.__str__())
+        else:
+            data = json_error("You're not tournament admin.")
+        await self.send(text_data=json.dumps(data))

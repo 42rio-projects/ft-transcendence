@@ -20,6 +20,9 @@
     <button onclick="render('{% url 'localTournament' %}')">
       Local Tournament
     </button>
+    <button onclick="render('{% url 'tournamentInvites' %}')">
+      Online Tournament
+    </button>
   </div>
   <div id="game-data"></div>
   {% else %}
@@ -34,10 +37,13 @@
   <script src="{% static 'pong/js/onlineGameWebSocket.js' %}"></script>
   {% load static %}
   <script src="{% static 'pong/js/localTournamentWebSocket.js' %}"></script>
+  {% load static %}
+  <script src="{% static 'pong/js/onlineTournamentWebSocket.js' %}"></script>
   <script>
     let localGameSocket;
-    let localTournamentSocket;
     let onlineGameSocket;
+    let localTournamentSocket;
+    let onlineTournamentSocket;
     let messageSocket;
     window.addEventListener("popstate", handlePopState);
     history.replaceState(
@@ -104,6 +110,11 @@
         localTournamentSocket.socket.readyState === WebSocket.OPEN
       ) {
         localTournamentSocket.socket.close();
+      } else if (
+        onlineTournamentSocket &&
+        onlineTournamentSocket.socket.readyState === WebSocket.OPEN
+      ) {
+        onlineTournamentSocket.socket.close();
       }
 
       if (url == "{% url 'friendList' %}") {
@@ -120,6 +131,10 @@
         onlineGameSocket = new OnlineGameWebSocket(match.groups.id);
       } else if (url == "{% url 'localTournament' %}") {
         localTournamentSocket = new LocalTournamentWebSocket();
+      } else if (url.includes("/online-tournament/")) {
+        const regex = /\/online-tournament\/(?<id>\d+)\//;
+        const match = url.match(regex);
+        onlineTournamentSocket = new OnlineTournamentWebSocket(match.groups.id);
       }
     }
   </script>
