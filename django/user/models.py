@@ -2,7 +2,6 @@ from channels.db import database_sync_to_async
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.db.models import Q
-from phonenumber_field.modelfields import PhoneNumberField
 from relations.models import IsFriendsWith
 from relations.models import IsBlockedBy
 from relations.models import FriendInvite
@@ -20,13 +19,12 @@ async def send_channel_message(group, message):
 
 class User(AbstractUser):
     email_verified = models.BooleanField(default=False)
-    mobile_number = PhoneNumberField(
-        blank=True, region='BR', help_text='Número de celular')
     friends = models.ManyToManyField(
         'self',
         through="relations.IsFriendsWith",
         symmetrical=True
     )
+    nickname = models.CharField(max_length=255, unique=True, null=True, blank=True)
     blocked_list = models.ManyToManyField(
         'self',
         through="relations.IsBlockedBy",
@@ -57,15 +55,26 @@ class User(AbstractUser):
                 friends.append(friendship.user2)
         return friends
 
-    def get_games(self):
-        home_games = self.home_games.all().prefetch_related(
-            'player1', 'player2'
-        )
-        away_games = self.away_games.all().prefetch_related(
-            'player1', 'player2'
-        )
+    def get_games(self, filters=None):
+        queryFilters = {}
+        if filters and 'winner' in filters:
+            queryFilters['winner'] = filters['winner']
+
+        home_games = self.home_games.filter(**queryFilters).prefetch_related('player1','player2')
+        away_games = self.away_games.filter(**queryFilters).prefetch_related('player1', 'player2')
 
         return home_games.union(away_games)
+
+    def count_wins(self):
+        filters = {'winner': self}
+        gamesWon = self.get_games(filters)
+        return gamesWon.count()
+
+    def count_losses(self):
+        filters = {'winner': self}
+        gamesWon = self.get_games(filters)
+        allGames = self.get_games()
+        return allGames.count() - gamesWon.count()
 
     def get_blocks(self):
         blocks = IsBlockedBy.objects.filter(

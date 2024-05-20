@@ -263,7 +263,6 @@ class Round(models.Model):
     def __str__(self):
         return (f'{self.tournament.name} round {self.number}')
 
-
 class Game(models.Model):
     player1 = models.ForeignKey(
         'user.User',
