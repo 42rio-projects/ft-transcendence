@@ -6,7 +6,8 @@ from relations.models import IsFriendsWith
 from relations.models import IsBlockedBy
 from relations.models import FriendInvite
 from chat.models import Chat
-
+from pong.models import Game, GameInvite
+import sys
 
 class User(AbstractUser):
     email_verified = models.BooleanField(default=False)
@@ -46,6 +47,14 @@ class User(AbstractUser):
             elif friendship.user2 != self:
                 friends.append(friendship.user2)
         return friends
+
+    def get_games(self):
+
+        home_games = self.home_games.all().prefetch_related('player_1','player_2')
+        away_games = self.away_games.all().prefetch_related('player_1', 'player_2')
+
+        return home_games.union(away_games)
+
 
     def get_blocks(self):
         blocks = IsBlockedBy.objects.filter(
@@ -87,3 +96,13 @@ class User(AbstractUser):
         block = IsBlockedBy.objects.filter(Q(blocker=self, blocked=user))
         if block.exists():
             block[0].delete()
+
+    def invite_to_game(self, user):
+        game = Game(player_1=self)
+        game.save()
+        try:
+            GameInvite(sender=self, receiver=user, game=game).save()
+            return game
+        except Exception as e:
+            game.delete()
+            raise e

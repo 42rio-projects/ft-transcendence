@@ -78,7 +78,7 @@
     }
 
     function handleSockets(url) {
-      if (url == "{% url 'friendList' %}") {
+      if (url == "/friends/") {
         statusSocket.setInitialStatus();
       } else if (url.includes("/chat/room")) {
         const regex = /\/chat\/room\/(?<id>\d+)\//;
@@ -97,8 +97,8 @@
     }
 
     function get_url(url) {
-      if (url == "{% url 'friendsIndex' %}") {
-        url = "{% url 'friendList' %}";
+      if (url == "/friends/") {
+        url = "/friends/";
       } else if (url == "{% url 'chatIndex' %}") {
         url = "{% url 'chatList' %}";
       }

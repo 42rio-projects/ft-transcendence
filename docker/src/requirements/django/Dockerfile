@@ -8,9 +8,11 @@ RUN pip install --upgrade pip && \
     pip install django \
                 psycopg[binary] \
                 django-phonenumber-field phonenumbers \
-                channels[daphne] \
-                channels_redis \
+                djangorestframework_simplejwt \
+				channels[daphne] \
+				channels_redis \
                 twilio \
+                django-prometheus \
                 Pillow
 
 # Script to wait for a host:port to be available

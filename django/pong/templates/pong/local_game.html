@@ -1,0 +1,23 @@
+<h1>Local Game</h1>
+<div class="verticalDiv">
+  <button onclick="localGameSocket.gameAction('start')">Start Game</button>
+  <button onclick="localGameSocket.gameAction('stop')">Stop Game</button>
+</div>
+<h2>Controls</h2>
+<div class="verticalDiv">
+  <div>
+    <p>Player 1</p>
+    <p id="p1-score"></p>
+    W -> move up
+    <br />
+    S -> move down
+  </div>
+  <div>
+    <p>Player 2</p>
+    <p id="p2-score"></p>
+    Arrow up -> move up
+    <br />
+    Arrow down -> move down
+  </div>
+</div>
+<canvas id="game-screen"></canvas>

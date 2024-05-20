@@ -101,7 +101,7 @@ class FriendInvite(models.Model):
 
     def clean(self):
         """
-        Custom validation to prevent sending invites to friends.
+        Custom validation to prevent sending invites to friends and blocked users.
         """
         if self.sender == self.receiver:
             raise ValidationError("You cannot send an invite to yourself")

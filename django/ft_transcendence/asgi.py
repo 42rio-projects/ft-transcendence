@@ -6,6 +6,7 @@ from django.core.asgi import get_asgi_application
 
 import chat.routing
 import relations.routing
+import pong.routing
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "ft_transcendence.settings")
 # Initialize Django ASGI application early to ensure the AppRegistry
@@ -13,7 +14,11 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "ft_transcendence.settings")
 django_asgi_app = get_asgi_application()
 
 
-url_patterns = chat.routing.urlpatterns + relations.routing.urlpatterns
+url_patterns = (
+    chat.routing.urlpatterns +
+    relations.routing.urlpatterns +
+    pong.routing.urlpatterns
+)
 
 application = ProtocolTypeRouter(
     {

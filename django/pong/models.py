@@ -1,13 +1,13 @@
 from django.db import models
-from user.models import User
+from django.core.exceptions import ValidationError
 
 
 class Tournament(models.Model):
     name = models.CharField(max_length=100, unique=True)
     date = models.DateField(auto_now_add=True)
-    players = models.ManyToManyField(User, related_name='tournaments')
+    players = models.ManyToManyField('user.User', related_name='tournaments')
     winner = models.ForeignKey(
-        User,
+        'user.User',
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
@@ -73,16 +73,24 @@ class Round(models.Model):
 
 class Game(models.Model):
     player_1 = models.ForeignKey(
-        User,
+        'user.User',
         null=True,
         on_delete=models.SET_NULL,
         related_name='home_games'
     )
     player_2 = models.ForeignKey(
-        User,
+        'user.User',
         null=True,
         on_delete=models.SET_NULL,
         related_name='away_games'
+    )
+    player1_points = models.PositiveSmallIntegerField(default=0)
+    player2_points = models.PositiveSmallIntegerField(default=0)
+    winner = models.ForeignKey(
+        'user.User',
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name='wins'
     )
     round = models.ForeignKey(
         Round,
@@ -94,14 +102,6 @@ class Game(models.Model):
     )
     date = models.DateField(auto_now_add=True)
 
-    # Placeholder method to return winner
-    def winner(self):
-        return self.player_1
-
-    # Placeholder method to return loser
-    def loser(self):
-        return self.player_2
-
     def __str__(self):
         try:
             return (f'{self.player_1.username} vs {self.player_2.username}')
@@ -109,14 +109,58 @@ class Game(models.Model):
             return (f'{self.player_1.username} vs NULL')
 
 
-class Score(models.Model):
-    p1_points = models.PositiveSmallIntegerField(default=0)
-    p2_points = models.PositiveSmallIntegerField(default=0)
+class GameInvite(models.Model):
+    sender = models.ForeignKey(
+        'user.User',
+        on_delete=models.CASCADE,
+        related_name='game_invites_sent'
+    )
+    receiver = models.ForeignKey(
+        'user.User',
+        on_delete=models.CASCADE,
+        related_name='game_invites_received'
+    )
     game = models.OneToOneField(
         Game,
-        related_name='score',
         on_delete=models.CASCADE
     )
 
-    def __str__(self):
-        return (f'{self.p1_points} - {self.p2_points}')
+    def clean(self):
+        """
+        Custom validation to prevent sending invites to friends.
+        """
+        invite = GameInvite.objects.filter(
+            sender=self.receiver, receiver=self.sender
+        )
+        if invite.exists():
+            raise ValidationError(
+                'You cannot send a game invite to someone who has invited you.'
+            )
+
+    def save(self, *args, **kwargs):
+        """
+        Overridden save method to enforce validation
+        """
+        self.clean()
+        super().save(*args, **kwargs)
+
+    def respond(self, accepted):
+        game = self.game
+        if accepted is True:
+            game.player_2 = self.receiver
+            game.save()
+        else:
+            game.delete()
+        self.delete()
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                name="%(app_label)s_%(class)s_unique_relationships",
+                fields=["sender", "receiver"]
+            ),
+            models.CheckConstraint(
+                name="%(app_label)s_%(class)s_prevent_self_invite",
+                check=~models.Q(sender=models.F("receiver")),
+            ),
+        ]
