@@ -107,6 +107,8 @@ def user_profile(request, username):
         except Exception as e:
             context['error'] = e.message
 
+        return render_component(request, 'profile.html', 'content', context)
+
     if request.method == 'GET':
         return render_component(request, 'profile.html', 'content', context)
 
