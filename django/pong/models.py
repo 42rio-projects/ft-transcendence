@@ -323,7 +323,7 @@ class Game(models.Model):
     @database_sync_to_async
     def render(self):
         return render_to_string(
-            'pong/game_result.html', {"game": self}
+            'pong/game/online/result.html', {"game": self}
         )
 
     # Take tournament into consideration
