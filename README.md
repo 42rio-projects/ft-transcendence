@@ -1,16 +1,5 @@
 # ft_transcendence
 
-├── compose
-│   ├── docker-compose.yml
-│   ├── elk
-│   │   ├── filebeat.yml
-│   │   └── logstash.conf
-│   ├── grafana
-│   │   ├── dashboard
-│   │   └── datasource
-│   └── prometheus
-│       ├── alert_rules.yaml
-│       └── prometheus.yaml
 ├── django
 │   ├── app
 │   │   ├── accounts
@@ -27,5 +16,25 @@
 │   └── tools
 │       ├── script.sh
 │       └── wait-for-it.sh
+├── docker-compose.yml
 ├── Makefile
-└── README.md
+├── README.md
+└── requirements
+    ├── elk
+    │   ├── elksetup.sh
+    │   ├── filebeat.yml
+    │   ├── kibanasetup.sh
+    │   └── logstash.conf
+    ├── grafana
+    │   ├── dashboard
+    │   └── datasource
+    ├── locust-tasks
+    │   ├── locustfile.py
+    │   └── __pycache__
+    ├── nginx
+    │   ├── dockerfile
+    │   ├── nginx.conf
+    │   └── tools
+    └── prometheus
+        ├── alert_rules.yaml
+        └── prometheus.yaml

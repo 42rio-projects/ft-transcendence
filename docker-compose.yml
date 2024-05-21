@@ -4,19 +4,19 @@ networks:
 
 volumes:
 
-  filebeatdata01:
+  filebeatdata:
     driver: local
 
   certs:
     driver: local
 
-  esdata01:
+  esdata:
     driver: local
 
   kibanadata:
     driver: local
 
-  logstashdata01:
+  logstashdata:
     driver: local
 
   postgres_data:
@@ -58,7 +58,7 @@ services:
 
   django:
     container_name: django
-    build: ../django
+    build: ./django
     env_file: .env
     restart: always
     depends_on:
@@ -68,7 +68,7 @@ services:
 
   nginx:
     container_name: nginx
-    build: ./nginx
+    build: ./requirements/nginx
     env_file: .env
     restart: always
     ports:
@@ -84,7 +84,7 @@ services:
     image: cgr.dev/chainguard/prometheus
     restart: always
     volumes:
-      - ./prometheus:/etc/prometheus
+      - ./requirements/prometheus:/etc/prometheus
       - prometheus_data:/prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yaml'
@@ -99,11 +99,11 @@ services:
       - .env
     volumes:
       - grafana_data:/var/lib/grafana
-      - ./grafana/datasource/datasource.yaml:/etc/grafana/provisioning/datasources/datasource.yaml
-      - ./grafana/dashboard/dashboard.yaml:/etc/grafana/provisioning/dashboards/dashboard.yaml
-      - ./grafana/dashboard/dashboard-overview.json:/var/lib/grafana/dashboards/dashboard-overview.json
-      - ./grafana/dashboard/dashboard-cadvisor.json:/var/lib/grafana/dashboards/dashboard-cadvisor.json
-      - ./grafana/dashboard/dashboard-requests.json:/var/lib/grafana/dashboards/dashboard-requests.json
+      - ./requirements/grafana/datasource/datasource.yaml:/etc/grafana/provisioning/datasources/datasource.yaml
+      - ./requirements/grafana/dashboard/dashboard.yaml:/etc/grafana/provisioning/dashboards/dashboard.yaml
+      - ./requirements/grafana/dashboard/dashboard-overview.json:/var/lib/grafana/dashboards/dashboard-overview.json
+      - ./requirements/grafana/dashboard/dashboard-cadvisor.json:/var/lib/grafana/dashboards/dashboard-cadvisor.json
+      - ./requirements/grafana/dashboard/dashboard-requests.json:/var/lib/grafana/dashboards/dashboard-requests.json
     networks:
       - ft_transcendence
 
@@ -123,7 +123,7 @@ services:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.7.1
     volumes:
       - certs:/usr/share/elasticsearch/config/certs
-      - ./elk/elksetup.sh:/usr/local/bin/elksetup.sh
+      - ./requirements/elk/elksetup.sh:/usr/local/bin/elksetup.sh
     user: root
     env_file:
       - .env
@@ -151,7 +151,7 @@ services:
       co.elastic.logs/module: elasticsearch
     volumes:
       - certs:/usr/share/elasticsearch/config/certs
-      - esdata01:/usr/share/elasticsearch/data
+      - esdata:/usr/share/elasticsearch/data
     environment:
       - node.name=elasticsearch
       - cluster.name=${CLUSTER_NAME}
@@ -228,8 +228,8 @@ services:
     user: root
     volumes:
       - certs:/usr/share/filebeat/certs
-      - filebeatdata01:/usr/share/filebeat/data
-      - "./elk/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro"
+      - filebeatdata:/usr/share/filebeat/data
+      - "./requirements/elk/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro"
       - "/var/lib/docker/containers:/var/lib/docker/containers:ro"
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
     environment:
@@ -257,8 +257,8 @@ services:
       - 9600:9600
     volumes:
       - certs:/usr/share/logstash/certs
-      - logstashdata01:/usr/share/logstash/data
-      - "./elk/logstash.conf:/usr/share/logstash/pipeline/logstash.conf:ro"
+      - logstashdata:/usr/share/logstash/data
+      - "./requirements/elk/logstash.conf:/usr/share/logstash/pipeline/logstash.conf:ro"
     environment:
       - xpack.monitoring.enabled=false
       - ELASTIC_USER=elastic
@@ -277,7 +277,7 @@ services:
       - ft_transcendence
     volumes:
       - certs:/usr/share/kibana/config/certs
-      - ./elk/kibanasetup.sh:/usr/local/bin/kibanasetup.sh
+      - ./requirements/elk/kibanasetup.sh:/usr/local/bin/kibanasetup.sh
     command: >
       sh -c "/usr/local/bin/kibanasetup.sh"
 
@@ -286,6 +286,6 @@ services:
     image: locustio/locust
     command: -f /mnt/locust/locustfile.py --host=http://django:8000
     volumes:
-      - ./locust-tasks:/mnt/locust
+      - ./requirements/locust-tasks:/mnt/locust
     networks:
       - ft_transcendence
