@@ -1,16 +1,22 @@
 import json
 import asyncio
 from channels.layers import get_channel_layer
+from channels.db import database_sync_to_async
+from django.template.loader import render_to_string
 
-X_SPEED_LIMIT = 4
-Y_SPEED_LIMIT = 2
+from pong.models import Game as GameModel
+
+
+X_SPEED_LIMIT = 2
+Y_SPEED_LIMIT = 4
 SPEED_COUNTER = 5
-TICK_RATE = 1 / 60
+TICK_RATE = 1 / 45
 BALL_SPEED = 1
-BAR_SPEED = 1
+BAR_SPEED = 2
 BAR_HEIGHT = 20
 GAME_HEIGHT = 100
 GAME_WIDTH = 200
+BALL_RADIUS = GAME_WIDTH / 200
 
 
 class GameInfo:
@@ -18,9 +24,9 @@ class GameInfo:
     BAR_LOWERBOUND = 0
     BALL_UPPERBOUND = GAME_HEIGHT
     BALL_LOWERBOUND = 0
-    BALL_RIGHTBOUND = GAME_WIDTH - 2
-    BALL_LEFTBOUND = 2
-    SCORE_LIMIT = 7
+    BALL_RIGHTBOUND = GAME_WIDTH - BALL_RADIUS * 2
+    BALL_LEFTBOUND = BALL_RADIUS * 2
+    SCORE_LIMIT = 2
 
     def __init__(self):
         self.set_initial_values()
@@ -52,10 +58,13 @@ class GameInfo:
             }
         )
 
-    def score_to_json(self):
-        return (
-            {"status": "score", "p1": self.p1_score, "p2": self.p2_score}
-        )
+    def score_to_json(self, nbr=None):
+        if nbr is None:
+            return (
+                {"status": "score", "p1": self.p1_score, "p2": self.p2_score}
+            )
+        else:
+            return ({"status": "score", "p1": nbr, "p2": nbr})
 
     def p1_can_move_down(self):
         return (self.p1_move == 'd' and self.p1_pos < self.BAR_UPPERBOUND)
@@ -73,10 +82,16 @@ class GameInfo:
         return (y > self.BALL_UPPERBOUND or y < self.BALL_LOWERBOUND)
 
     def ball_hits_p1(self, y):
-        return (y >= self.p1_pos and y <= self.p1_pos + BAR_HEIGHT)
+        return (
+            y >= self.p1_pos - BALL_RADIUS and
+            y <= self.p1_pos + BAR_HEIGHT + BALL_RADIUS
+        )
 
     def ball_hits_p2(self, y):
-        return (y >= self.p2_pos and y <= self.p2_pos + BAR_HEIGHT)
+        return (
+            y >= self.p2_pos - BALL_RADIUS and
+            y <= self.p2_pos + BAR_HEIGHT + BALL_RADIUS
+        )
 
     def ball_should_speed_up(self):
         return (
@@ -86,23 +101,60 @@ class GameInfo:
 
     def finished(self):
         return (
-            self.p1_score == self.SCORE_LIMIT or
-            self.p2_score == self.SCORE_LIMIT
+            self.p1_score >= self.SCORE_LIMIT or
+            self.p2_score >= self.SCORE_LIMIT
         )
 
 
 class Game:
     def __init__(self):
         self.info = GameInfo()
+        self.interval_task = None
 
-    async def send_pos(self):
+    async def send_message(self, data):
         pass
 
     async def player_scored(self, player):
         pass
 
+    async def send_pos(self):
+        data = self.info.pos_to_json()
+        await self.send_message(data)
+
+    async def send_score(self):
+        data = self.info.score_to_json()
+        await self.send_message(data)
+
+    def is_running(self):
+        return (self.interval_task is not None)
+
+    async def countdown(self, secs):
+        while secs > 0:
+            await self.send_message(self.info.score_to_json(secs))
+            secs -= 1
+            await asyncio.sleep(1)
+
+    async def countdown_and_update(self):
+        await self.send_pos()
+        await self.countdown(5)
+        await self.send_score()
+        await self.update_game()
+
+    def start(self):
+        if (self.is_running()):
+            return
+        self.info.set_initial_values()
+        self.interval_task = asyncio.create_task(self.countdown_and_update())
+
+    async def stop(self):
+        if not self.is_running():
+            return
+        self.interval_task.cancel()
+        self.interval_task = None
+        await self.send_message({"status": "finished"})
+
     async def update_game(self):
-        while True:
+        while self.info.finished() is False:
             await asyncio.sleep(TICK_RATE)
             await self.move_players()
             await self.move_ball()
@@ -171,32 +223,10 @@ class Game:
 class LocalGame(Game):
     def __init__(self, socket):
         super().__init__()
-        self.interval_task = None
         self.socket = socket
 
-    def is_running(self):
-        return (self.interval_task is not None)
-
-    async def start(self):
-        if (self.is_running()):
-            return
-        self.info.set_initial_values()
-        await self.send_pos()
-        await self.send_score()
-        self.interval_task = asyncio.create_task(self.update_game())
-
-    def stop(self):
-        if self.is_running():
-            self.interval_task.cancel()
-            self.interval_task = None
-
-    async def send_pos(self):
-        data = json.dumps(self.info.pos_to_json())
-        await self.socket.send(text_data=data)
-
-    async def send_score(self):
-        data = json.dumps(self.info.score_to_json())
-        await self.socket.send(text_data=data)
+    async def send_message(self, data):
+        await self.socket.send(text_data=json.dumps(data))
 
     async def player_scored(self, player):
         if player == 1:
@@ -205,54 +235,126 @@ class LocalGame(Game):
             self.info.p2_score += 1
         await self.send_score()
         if self.info.finished():
-            self.stop()
+            await self.stop()
+
+    async def render_result(self, player1, player2, tournament):
+        winner = (
+            player1 if self.info.p1_score > self.info.p2_score else player2
+        )
+        html = render_to_string(
+            'pong/game/local/result.html',
+            {
+                'player1': player1,
+                'player2': player2,
+                'player1_points': self.info.p1_score,
+                'player2_points': self.info.p2_score,
+                'winner': winner,
+                'tournament': tournament
+            }
+        )
+        await self.send_message({"status": "result", "html": html})
 
 
 class OnlineGame(Game):
-    interval_task = {}
     channel_layer = get_channel_layer()
 
     def __init__(self, socket):
         super().__init__()
         self.game_id = socket.game_id
         self.room_group_name = socket.room_group_name
+        self.p1_connected = False
+        self.p2_connected = False
+        self.stopped = False
 
-    def is_running(self):
-        return (self.game_id in self.interval_task)
-
-    async def start(self):
-        if self.is_running():
-            return
-        self.info.set_initial_values()
-        await self.send_start_message()
-        await self.send_pos()
-        await self.send_score()
-        self.interval_task[self.game_id] = asyncio.create_task(
-            self.update_game()
-        )
-
-    def stop(self):
-        if self.is_running():
-            self.interval_task[self.game_id].cancel()
-            del self.interval_task[self.game_id]
-
-    async def send_pos(self):
+    async def send_message(self, json):
         await self.channel_layer.group_send(
-            self.room_group_name,
-            {"type": "game.update", "json": self.info.pos_to_json()},
-        )
-
-    async def send_score(self):
-        await self.channel_layer.group_send(
-            self.room_group_name,
-            {"type": "game.update", "json": self.info.score_to_json()},
+            self.room_group_name, {"type": "game.update", "json": json}
         )
 
     async def send_start_message(self):
+        await self.send_message({"status": "started"})
+
+    async def stop(self):
+        await super().stop()
+        if self.game_model.round is not None and self.stopped is False:
+            await self.game_model.round.try_advance()
+        await self.game_model.a_refresh()
+        html = await self.game_model.render()
+        await self.send_message({"status": "result", "html": html})
         await self.channel_layer.group_send(
-            self.room_group_name,
-            {"type": "game.update", "json": {"status": "started"}},
+            self.room_group_name, {"type": "game.stopped"}
         )
 
     async def player_scored(self, player):
-        pass
+        if await self.game_was_stopped():
+            self.stopped = True
+            await self.stop()
+            return
+        if player == 1:
+            self.info.p1_score += 1
+        elif player == 2:
+            self.info.p2_score += 1
+        await self.send_score()
+        await self.update_score()
+        if self.info.finished():
+            await self.stop()
+
+    def second_player_has_not_connected(self):
+        return (
+            self.game_model.player2 is None and
+            self.game_model.finished is False
+        )
+
+    async def player_disconnected(self, player):
+        if self.second_player_has_not_connected():
+            await self.delete_game()
+            return
+        if player == 1:
+            self.game_model.winner = self.game_model.player2
+        elif player == 2:
+            self.game_model.winner = self.game_model.player1
+        self.game_model.finished = True
+        await self.save_game()
+        await self.stop()
+
+    @ database_sync_to_async
+    def delete_game(self):
+        self.game_model.delete()
+
+    @ database_sync_to_async
+    def save_game(self):
+        self.game_model.save()
+
+    async def game_was_stopped(self):
+        await self.game_model.a_refresh()
+        return self.game_model.finished
+
+    @ database_sync_to_async
+    def get_game(self):
+        self.game_model = GameModel.objects.prefetch_related(
+            'player1', 'player2', 'round').get(pk=self.game_id)
+
+    async def update_score(self):
+        self.game_model.player1_points = self.info.p1_score
+        self.game_model.player2_points = self.info.p2_score
+        if self.info.p1_score == self.info.SCORE_LIMIT:
+            self.game_model.winner = self.game_model.player1
+            self.game_model.finished = True
+        elif self.info.p2_score == self.info.SCORE_LIMIT:
+            self.game_model.winner = self.game_model.player2
+            self.game_model.finished = True
+        await self.save_game()
+
+    def get_player(self, player):
+        if player == self.game_model.player1:
+            p = 1
+            self.p1_connected = True
+        elif player == self.game_model.player2:
+            p = 2
+            self.p2_connected = True
+        else:
+            raise Exception("Unauthorized")
+        if (self.p1_connected and self.p2_connected):
+            asyncio.create_task(self.send_start_message())
+            self.start()
+        return p

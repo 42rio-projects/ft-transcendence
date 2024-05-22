@@ -1,5 +1,4 @@
 from django.db import models
-# from django.http import HttpResponseBadRequest
 from django.core.exceptions import ValidationError
 
 
@@ -22,7 +21,7 @@ class Chat(models.Model):
 
         # Verifica se o usuário está na blocklist
         # if self.starter.blocked_users.filter(username=self.receiver.username).exists():
-            # raise ValidationError("Você não pode iniciar um chat com um usuário na sua blocklist.")
+        # raise ValidationError("Você não pode iniciar um chat com um usuário na sua blocklist.")
 
         if Chat.objects.filter(
                 starter=self.receiver, receiver=self.starter
@@ -37,10 +36,6 @@ class Chat(models.Model):
             models.UniqueConstraint(
                 name="%(app_label)s_%(class)s_unique_relationships",
                 fields=["starter", "receiver"]
-            ),
-            models.CheckConstraint(
-                name="%(app_label)s_%(class)s_prevent_self_chat",
-                check=~models.Q(starter=models.F("receiver")),
             ),
         ]
 
@@ -61,7 +56,6 @@ class Message(models.Model):
     def save(self, *args, **kwargs):
         if self.sender != self.chat.starter and \
                 self.sender != self.chat.receiver:
-            # User is not in the chat don't create message
-            pass
+            return
         else:
             super().save(*args, **kwargs)

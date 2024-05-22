@@ -1,6 +1,8 @@
 class GameScreen {
   screenHeight = 600;
   screenWidth = 1200;
+  gameHeight = 100;
+  gameWidth = 200;
 
   constructor() {
     this.canvas = document.getElementById("game-screen");
@@ -23,14 +25,14 @@ class GameScreen {
     this.ctx.fillStyle = "rgb(25 140 225)";
     this.ctx.fillRect(
       0,
-      (data["p1"] / 100) * this.height,
+      (data["p1"] / this.gameHeight) * this.height,
       this.rectangleWidth,
       this.rectangleHeight,
     );
     this.ctx.fillStyle = "rgb(255 128 0)";
     this.ctx.fillRect(
       this.width - this.rectangleWidth,
-      (data["p2"] / 100) * this.height,
+      (data["p2"] / this.gameHeight) * this.height,
       this.rectangleWidth,
       this.rectangleHeight,
     );
@@ -40,8 +42,8 @@ class GameScreen {
     this.ctx.fillStyle = "rgb(255 255 255)";
     this.ctx.beginPath();
     this.ctx.arc(
-      (data["bx"] / 200) * this.width,
-      (data["by"] / 100) * this.height,
+      (data["bx"] / this.gameWidth) * this.width,
+      (data["by"] / this.gameHeight) * this.height,
       this.ballRadius,
       0,
       Math.PI * 2,

@@ -20,4 +20,4 @@ RUN curl -fsSLo /wait-for-it.sh \
                 https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh
 RUN chmod +x /wait-for-it.sh
 
-ENTRYPOINT ["/wait-for-it.sh", "postgres:5432", "--", "/script.sh"]
+ENTRYPOINT ["/wait-for-it.sh", "postgres:5432", "-t", "0", "--", "/script.sh"]

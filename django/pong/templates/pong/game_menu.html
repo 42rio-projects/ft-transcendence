@@ -18,7 +18,6 @@
   <div id="friends-menu" class="verticalDiv">
     <button onclick="render('{% url 'localGame' %}')">Local Game</button>
     <button onclick="render('{% url 'gameInvites' %}')">Online Game</button>
-    <button onclick="render('{% url 'onlineGame' game_id=1 %}')">test</button>
   </div>
   <div id="game-data"></div>
   {% else %}
@@ -65,8 +64,8 @@
 
     async function render(url, setPushState = true, isPopState = false) {
       if (url == window.location.pathname && !isPopState) return;
-      if (url == "{% url 'friendsIndex' %}") {
-        url = "{% url 'friendList' %}";
+      if (url == "/friends/") {
+        url = "/friends/";
       }
       fetch(url)
         .then((response) => response.text())

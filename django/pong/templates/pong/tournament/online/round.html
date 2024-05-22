@@ -1,0 +1,8 @@
+<div>
+  <h2>{{ round }}</h2>
+  {% for game in round.games.all %}
+  <div class="verticalDiv">
+    <h3>{{ game }}</h3>
+  </div>
+  {% endfor %}
+</div>

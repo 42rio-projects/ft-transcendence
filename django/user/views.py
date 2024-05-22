@@ -3,6 +3,8 @@ from pong.utils import render_component
 from twilio.rest import Client
 from django.contrib.auth import authenticate, login as django_login, logout as django_logout
 import os
+from django.core.paginator import Paginator
+import sys
 
 from django.core.paginator import Paginator
 from django.http import JsonResponse
@@ -114,36 +116,47 @@ def user_profile(request, username):
 
 
 def edit_profile(request):
-    user = request.user
+    if request.method == "POST":
+        user = request.user
+        username = request.POST.get("username")
+        nickname = request.POST.get("nickname")
 
-    if request.method == 'POST':
-        avatar = request.FILES.get('avatar')
-        username = request.POST.get('username')
-        email = request.POST.get('email')
+        if username and username != user.username:
+            if User.objects.filter(username=username).exists():
+                messages.error(request, "Username already in use")
+            elif len(username) < 3:
+                messages.error(
+                    request, "Username must be at least 3 characters")
+            else:
+                user.username = username
 
-        if not avatar and username == user.username and email == user.email:
-            # Nothing changed
-            return render_component(request, 'edit_profile_form.html', 'form', {
-                'username': user.username,
-                'email': user.email,
-            })
+                messages.success(request, "Username changed successfully")
 
-        errors_context = validate_update(user, username, email)
-        if errors_context:
-            errors_context['username'] = username
-            errors_context['email'] = email
+        if nickname and nickname != user.nickname:
+            if User.objects.filter(nickname=nickname).exists():
+                messages.error(request, "Nickname already in use")
+            elif len(nickname) < 3:
+                messages.error(
+                    request, "Nickname must be at least 3 characters")
+            else:
+                user.nickname =nickname
 
-            return render_component(request, 'edit_profile_form.html', 'form', errors_context, 400)
+                messages.success(request, "Nickname changed successfully")
 
-        if avatar:
-            user.avatar = avatar
+        if not user.email_verified:
+            email = request.POST.get("email")
 
-        if username != user.username:
-            user.username = username
+            if email != user.email:
+                if User.objects.filter(email=email).exists():
+                    messages.error(request, "Email already in use")
+                elif len(email) < 3:
+                    messages.error(
+                        request, "Email must be at least 3 characters")
+                else:
+                    user.email = email
+                    user.email_verified = False
 
-        if email != user.email:
-            user.email = email
-            user.email_verified = False
+                    messages.success(request, "Email changed successfully")
 
         user.save()
 
