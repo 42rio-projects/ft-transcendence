@@ -10,6 +10,7 @@ from django.core.paginator import Paginator
 from django.http import JsonResponse
 from django.http import HttpResponse
 from user.models import User
+from pong.models import Tournament
 from .utils import validate_password, validate_register, validate_update
 
 SERVICE_SID = os.environ['TWILIO_SERVICE_SID']
@@ -28,7 +29,18 @@ def match_history(request):
         page_number = request.GET.get('page')
         page_obj = paginator.get_page(page_number)
 
-        return render(request, 'match_history/index.html', {'page_obj': page_obj})
+        return render_component(request, 'match_history/index.html', 'content', {'page_obj': page_obj})
+
+def tournament_history(request):
+    if request.method == "GET":
+        tournaments_list = Tournament.get_tournaments_by_user(request.user)
+        print(tournaments_list, file=sys.stderr)
+        paginator = Paginator(tournaments_list, 10)
+
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+
+        return render_component(request, 'tournament_history/index.html', 'content', {'page_obj': page_obj})
 
 def register(request):
     if request.method == 'POST':
@@ -116,60 +128,43 @@ def user_profile(request, username):
 
 
 def edit_profile(request):
+    user = request.user
+
     if request.method == "POST":
-        user = request.user
         username = request.POST.get("username")
         nickname = request.POST.get("nickname")
+        email = request.POST.get("email")
 
-        if username and username != user.username:
-            if User.objects.filter(username=username).exists():
-                messages.error(request, "Username already in use")
-            elif len(username) < 3:
-                messages.error(
-                    request, "Username must be at least 3 characters")
-            else:
-                user.username = username
+        try:
+            if (username != user.username):
+                user.change_username(username)
 
-                messages.success(request, "Username changed successfully")
-
-        if nickname and nickname != user.nickname:
-            if User.objects.filter(nickname=nickname).exists():
-                messages.error(request, "Nickname already in use")
-            elif len(nickname) < 3:
-                messages.error(
-                    request, "Nickname must be at least 3 characters")
-            else:
-                user.nickname =nickname
-
-                messages.success(request, "Nickname changed successfully")
-
-        if not user.email_verified:
-            email = request.POST.get("email")
+            if (nickname != user.nickname):
+                user.change_nickname(nickname)
 
             if email != user.email:
-                if User.objects.filter(email=email).exists():
-                    messages.error(request, "Email already in use")
-                elif len(email) < 3:
-                    messages.error(
-                        request, "Email must be at least 3 characters")
-                else:
-                    user.email = email
-                    user.email_verified = False
+                user.change_email(email)
 
-                    messages.success(request, "Email changed successfully")
-
-        user.save()
+        except Exception as e:
+            return render_component(request, 'edit_profile.html', 'content', {
+                'error': e,
+                'username': username,
+                'email': email,
+                'nickname': nickname
+            }, 400)
 
         return render_component(request, 'edit_profile.html', 'content', {
             'success': 'Profile saved!',
             'username': user.username,
             'email': user.email,
+            'nickname': user.nickname,
         })
 
     if request.method == 'GET':
         return render_component(request, 'edit_profile.html', 'content', {
             "username": user.username,
-            "email": user.email
+            "email": user.email,
+            'nickname': user.nickname
         })
 
 # @login_required
@@ -268,7 +263,7 @@ def change_password(request):
             errors_context['password2'] = password2
 
             return render_component(request, 'change_password_form.html', 'form', errors_context, 400)
-        
+
         request.user.set_password(password)
 
         return render_component(request, 'change_password_form.html', 'form', {

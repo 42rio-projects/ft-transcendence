@@ -36,6 +36,15 @@ class Tournament(models.Model):
     started = models.BooleanField(default=False)
     finished = models.BooleanField(default=False)
 
+    def get_tournaments_by_user(user):
+        admin = Tournament.objects.filter(
+            admin=user
+        ).order_by('-date')
+        player = Tournament.objects.filter(
+            players=user
+        ).order_by('-date')
+        return admin.union(player)
+
     def new_round(self):
         if self.finished:
             raise TournamentFinished('Tournament already over')
@@ -312,6 +321,15 @@ class Game(models.Model):
                     self.winner = self.player2
         self.finished = True
         self.save()
+
+    def get_games_by_user(user, filters):
+        queryFilters = {}
+        if 'winner' in filters:
+            queryFilters['winner'] = filters['winner']
+        return Game.objects.filter(
+            models.Q(player1=user) | models.Q(player2=user),
+            **queryFilters
+        )
 
     @database_sync_to_async
     def a_refresh(self):

@@ -1,3 +1,4 @@
+import sys
 from channels.db import database_sync_to_async
 from django.db import models
 from django.contrib.auth.models import AbstractUser
@@ -9,7 +10,6 @@ from chat.models import Chat, Message
 from pong.models import Game, GameInvite
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
-
 
 @async_to_sync
 async def send_channel_message(group, message):
@@ -24,7 +24,7 @@ class User(AbstractUser):
         through="relations.IsFriendsWith",
         symmetrical=True
     )
-    nickname = models.CharField(max_length=255, unique=True, null=True, blank=True)
+    nickname = models.CharField(max_length=255, unique=True, blank=True)
     blocked_list = models.ManyToManyField(
         'self',
         through="relations.IsBlockedBy",
@@ -43,6 +43,31 @@ class User(AbstractUser):
         default='user/avatars/default.png'
     )
 
+    def change_username(self, new_username):
+        if (User.objects.filter(username=new_username).exists()):
+            raise ValueError("Username already exists")
+        if (len(new_username) < 3):
+            raise ValueError("Username is too short")
+        self.username = new_username
+        self.save()
+
+    def change_nickname(self, new_nickname):
+        if (User.objects.filter(nickname=new_nickname).exists()):
+            raise ValueError("Nickname already exists")
+        if (len(new_nickname) < 3):
+            raise ValueError("Nickname is too short")
+        self.nickname = new_nickname
+        self.save()
+
+    def change_email(self, new_email):
+        if (User.objects.filter(email=new_email).exists()):
+            raise ValueError("Email already exists")
+        if (len(new_email) < 3):
+            raise ValueError("Email is too short")
+        self.email = new_email
+        self.email_verified = False
+        self.save()
+
     def get_friends(self):
         friendships = IsFriendsWith.objects.filter(
             Q(user1=self) | Q(user2=self)
@@ -54,6 +79,11 @@ class User(AbstractUser):
             elif friendship.user2 != self:
                 friends.append(friendship.user2)
         return friends
+
+    def get_tournaments(self):
+        admin = self.my_tournaments.all()
+        player = self.tournaments.all()
+        return admin.union(player)
 
     def get_games(self, filters=None):
         queryFilters = {}
