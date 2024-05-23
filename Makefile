@@ -28,7 +28,7 @@ start:
 	@printf "\n$(YELLOW)🔀 Projeto $(NAME) iniciado 🔀$(RESET)\n\n"
 
 down: stop
-	$(COMPOSE) down
+	$(COMPOSE) down -v
 	@printf "\n$(MAGENTA)🛑 Projeto $(NAME) parado 🛑$(RESET)\n\n"
 
 re: down up

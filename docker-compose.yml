@@ -81,13 +81,19 @@ services:
 
   prometheus:
     container_name: prometheus
-    image: cgr.dev/chainguard/prometheus
+    image: prom/prometheus
     restart: always
     volumes:
       - ./requirements/prometheus:/etc/prometheus
       - prometheus_data:/prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yaml'
+    networks:
+      - ft_transcendence
+
+  node_exporter:
+    container_name: node_exporter
+    image: quay.io/prometheus/node-exporter:latest
     networks:
       - ft_transcendence
 
@@ -104,6 +110,7 @@ services:
       - ./requirements/grafana/dashboard/dashboard-overview.json:/var/lib/grafana/dashboards/dashboard-overview.json
       - ./requirements/grafana/dashboard/dashboard-cadvisor.json:/var/lib/grafana/dashboards/dashboard-cadvisor.json
       - ./requirements/grafana/dashboard/dashboard-requests.json:/var/lib/grafana/dashboards/dashboard-requests.json
+      - ./requirements/grafana/dashboard/dashboard-nodeexporter.json:/var/lib/grafana/dashboards/dashboard-nodeexporter.json
     networks:
       - ft_transcendence
 
