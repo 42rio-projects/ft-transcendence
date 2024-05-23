@@ -91,6 +91,15 @@ services:
     networks:
       - ft_transcendence
 
+  alertmanager:
+    container_name: alertmanager
+    image: prom/alertmanager
+    restart: always
+    ports:
+      - "9093:9093"
+    networks:
+      - ft_transcendence
+
   node_exporter:
     container_name: node_exporter
     image: quay.io/prometheus/node-exporter:latest
@@ -105,12 +114,14 @@ services:
       - .env
     volumes:
       - grafana_data:/var/lib/grafana
+      - ./requirements/grafana/camptocamp-prometheus-alertmanager-datasource:/var/lib/grafana/plugins/camptocamp-prometheus-alertmanager-datasource/
       - ./requirements/grafana/datasource/datasource.yaml:/etc/grafana/provisioning/datasources/datasource.yaml
       - ./requirements/grafana/dashboard/dashboard.yaml:/etc/grafana/provisioning/dashboards/dashboard.yaml
       - ./requirements/grafana/dashboard/dashboard-overview.json:/var/lib/grafana/dashboards/dashboard-overview.json
       - ./requirements/grafana/dashboard/dashboard-cadvisor.json:/var/lib/grafana/dashboards/dashboard-cadvisor.json
       - ./requirements/grafana/dashboard/dashboard-requests.json:/var/lib/grafana/dashboards/dashboard-requests.json
       - ./requirements/grafana/dashboard/dashboard-nodeexporter.json:/var/lib/grafana/dashboards/dashboard-nodeexporter.json
+      - ./requirements/grafana/dashboard/dashboard-cockpit.json:/var/lib/grafana/dashboards/dashboard-cockpit.json
     networks:
       - ft_transcendence
 

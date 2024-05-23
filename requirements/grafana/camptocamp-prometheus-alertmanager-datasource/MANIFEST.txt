@@ -1,0 +1,38 @@
+
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA512
+
+{
+  "manifestVersion": "2.0.0",
+  "signatureType": "community",
+  "signedByOrg": "camptocamp",
+  "signedByOrgName": "camptocamp",
+  "plugin": "camptocamp-prometheus-alertmanager-datasource",
+  "version": "2.0.0",
+  "time": 1699353310043,
+  "keyId": "7e4d0c6a708866e7",
+  "files": {
+    "plugin.json": "1b12871432226cbb176dbb9547a79a35361f1d3ab359425ce9d5b3d6cedf160f",
+    "LICENSE": "9a4b2ed0be524afe30376bb71435bc1b1c6cdcb058abe7206154caa92bc50cc6",
+    "module.js.map": "00a8a6300ca56197092dad579ec6991804ad28d23f51fd0d40856cd202ec6dd5",
+    "module.js": "c88708789a29b2769ab2d98f575392cf03ea9de79b321f51348360e20498a2dc",
+    "README.md": "1da74e88a13fbca5f8bf0cf941d4c2c2c2766201ba6890415083658def9ac380",
+    "img/overview.png": "2429541675a221397e910a7f19cc5cf5aa914cb6f8cb7dd341521566a9e830d1",
+    "img/logo.svg": "700a1ec4e2128abc4256ef02719f4e7f755d1a0a0375e094ef4b1fbb0fda878d",
+    "img/table.png": "a828db899e56d878307fdf61b492505248dfd9bf249479263f96e47bfccdefa5",
+    "img/singlestat-transform.png": "ba69dee78267444654c49a1caa0f1aeaa61c2580e58dd75e35313891b4c87a8b",
+    "img/singlestat-reduce.png": "00be2e8da052d79d4c75d2b5b34fb78f817fc56e8af0451c36d36605dd022858",
+    "CHANGELOG.md": "99e4c1476467492c8dbdb42d872342db390c3ae1b371ef090ab9decbbb297258"
+  }
+}
+-----BEGIN PGP SIGNATURE-----
+Version: OpenPGP.js v4.10.10
+Comment: https://openpgpjs.org
+
+wrgEARMKAAYFAmVKEt4AIQkQfk0ManCIZucWIQTzOyW2kQdOhGNlcPN+TQxq
+cIhm50qcAgkBpvhg4WOUEPSwX7yN/o+nSB0tJw5ji/I9ZC/mXZUGGiXrT8Z0
+habl9aSMghNTSJMwjEjmys9kygH307C1jfHygLECBAplTq8H0XfgWXXyaxj+
+Mupr/2kzCF9a+2lXk7qg0mrg6dDZqbm9JfM6t6SlHDZi60vnNbAZb6+RYcT0
+cejCZMpU
+=5y+5
+-----END PGP SIGNATURE-----

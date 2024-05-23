@@ -8,3 +8,13 @@ datasources:
     basicAuth: false
     isDefault: false
     editable: true
+
+  - name: alertmanager
+    type: camptocamp-prometheus-alertmanager-datasource
+    access: server
+    url: http://alertmanager:9093
+    jsonData:
+      severity_critical: "4"
+      severity_high: "3"
+      severity_warning: "2"
+      severity_info: "1"
