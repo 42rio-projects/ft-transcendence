@@ -1,0 +1,33 @@
+{% extends 'index.html' %} 
+
+{% block title %} Pong {% endblock %}
+
+{% block content %}
+<div>
+  <a class="button" href="/pong/local-game/">Play local</a>
+  <div>
+    <h2 class="neon">Invites received</h2>
+    <ul>
+      {% for invite in user.game_invites_received.all %}
+      <li class="game-invite">
+        <span>{{ invite.sender }}</span>
+        <div class="game-invite-actions">
+          <form method="post" onsubmit="handleFormSubmit(event)">
+            {% csrf_token %}
+            <button type="submit">Accept</button>
+            <input type="hidden" name="user-action" value="accept" />
+            <input type="hidden" name="invite-id" value="{{ invite.id }}" />
+          </form>
+          <form method="post" onsubmit="handleFormSubmit(event)">
+            {% csrf_token %}
+            <button type="submit">Reject</button>
+            <input type="hidden" name="user-action" value="reject" />
+            <input type="hidden" name="invite-id" value="{{ invite.id }}" />
+          </form>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+{% endblock %}

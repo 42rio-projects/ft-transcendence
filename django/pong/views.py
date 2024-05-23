@@ -48,9 +48,29 @@ def index(request):
         return render_component(request, 'index.html', 'content')
 
 
-def gameMenu(request):
+def pong(request):
+    if request.method == 'POST':
+        user_action = request.POST.get('user-action')
+        invite_id = request.POST.get('invite-id')
+
+        invite = get_object_or_404(models.GameInvite, pk=invite_id)
+        if invite.receiver != request.user:
+            raise PermissionDenied
+
+        if user_action == 'accept':
+            invite.respond(accepted=True)
+            return redirect('/pong/online-game/' + str(invite_id) + '/')
+        elif user_action == 'reject':
+            send_channel_message(
+                f'game_{invite.game.pk}',
+                {'type': 'game.update', 'json': {'status': 'canceled'}},
+            )
+            invite.respond(accepted=False)
+        else:
+            raise Exception('Invalid action')
+
     if request.method == 'GET':
-        return render_component(request, 'pong/game_menu.html', 'content')
+        return render_component(request, 'pong/pong.html', 'content')
 
 
 def localGame(request):
@@ -95,25 +115,6 @@ def gameInvites(request):
 
 
 def respondGameInvite(request, invite_id):
-    invite = get_object_or_404(
-        models.GameInvite,
-        pk=invite_id,
-    )
-    if invite.receiver != request.user:
-        raise PermissionDenied
-    if request.method == 'POST':
-        action = request.POST.get('action')
-        if action == 'accept':
-            invite.respond(accepted=True)
-            return redirect('onlineGame', game_id=invite.game.pk)
-        elif action == 'reject':
-            send_channel_message(
-                f'game_{invite.game.pk}',
-                {'type': 'game.update', 'json': {'status': 'canceled'}},
-            )
-            invite.respond(accepted=False)
-        else:
-            raise Exception('Invalid action')
     return redirect('gameInvites')
 
 

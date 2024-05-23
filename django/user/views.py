@@ -103,6 +103,9 @@ def user_profile(request, username):
             if user_action == 'friend-invite':
                 request.user.add_friend(user)
                 context['success'] = 'Friend invite sent'
+            elif user_action == 'game-invite':
+                request.user.invite_to_game(user)
+                context['success'] = 'Game invite sent'
             elif user_action == 'block':
                 request.user.block_user(user)
                 context['success'] = 'User blocked'

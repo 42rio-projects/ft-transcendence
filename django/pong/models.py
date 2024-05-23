@@ -358,13 +358,12 @@ class GameInvite(models.Model):
         """
         Custom validation to prevent sending invites to friends.
         """
-        invite = GameInvite.objects.filter(
-            sender=self.receiver, receiver=self.sender
-        )
-        if invite.exists():
-            raise ValidationError(
-                'You cannot send a game invite to someone who has invited you.'
-            )
+        if GameInvite.objects.filter(sender=self.sender, receiver=self.receiver).exists():
+            raise ValidationError('You have already sent a game invite to this user.')
+
+        if GameInvite.objects.filter(sender=self.receiver, receiver=self.sender).exists():
+            raise ValidationError('You cannot send a game invite to someone who has invited you.')
+
 
     def save(self, *args, **kwargs):
         """

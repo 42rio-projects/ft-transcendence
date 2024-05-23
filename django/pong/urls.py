@@ -2,10 +2,10 @@ from django.urls import path
 from pong import views
 
 urlpatterns = [
-    path('', views.index, name='index'),
-    path('game-menu/', views.gameMenu, name='gameMenu'),
-    path('local-game/', views.localGame, name='localGame'),
-    path('online-game/<int:game_id>/', views.onlineGame, name='onlineGame'),
+    path('', views.index),
+    path('pong/', views.pong),
+    path('pong/local-game/', views.localGame),
+    path('pong/online-game/<int:game_id>/', views.onlineGame),
     path("game-invites/", views.gameInvites, name="gameInvites"),
     path(
         "game-invites/respond-invite/<int:invite_id>/",
