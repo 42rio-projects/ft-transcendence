@@ -1,129 +1,53 @@
-from django.http import HttpResponse
-from django.template import loader
+from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect
 from django.core.exceptions import PermissionDenied
-
-import relations.models as models
-from user.models import User
+from pong.utils import render_component
+from user.models import User, FriendInvite
 
 
 def friends(request):
-    template = loader.get_template('relations/index.html')
-    context = {}
-    return HttpResponse(template.render(context, request))
-
-
-def friendlist(request):
-    template = loader.get_template("relations/friendlist.html")
-    context = {}
-    return HttpResponse(template.render(context, request))
-
-
-def friendInvitesSent(request):
-    template = loader.get_template("relations/invites_sent.html")
-    context = {}
-    return HttpResponse(template.render(context, request))
-
-
-def friendInvitesReceived(request):
-    template = loader.get_template("relations/invites_received.html")
-    context = {}
-    return HttpResponse(template.render(context, request))
-
-
-def blocklist(request):
-    template = loader.get_template("relations/blocklist.html")
-    context = {}
-    return HttpResponse(template.render(context, request))
-
-
-def sendFriendInvites(request):
     if request.method == 'POST':
-        name = request.POST.get('username')
-        user = get_object_or_404(
-            User,
-            username=name,
-        )
-        try:
-            request.user.add_friend(user)
-            # add 201 response that is not rendered on the front end
-        except Exception as e:
-            # add 40x response that is not rendered on the front end
-            return HttpResponse(e)
-    template = loader.get_template("relations/send_invites.html")
-    context = {}
-    return HttpResponse(template.render(context, request))
+        # Remove friend
+        user_id = request.POST.get('user-id')
+        user = get_object_or_404(User, pk=user_id)
+        request.user.del_friend(user)
+
+    return render_component(request, 'friends.html', 'content')
 
 
-def blockUser(request):
+def friend_invites_sent(request):
     if request.method == 'POST':
-        name = request.POST.get('username')
-        user = get_object_or_404(
-            User,
-            username=name,
-        )
-        try:
-            request.user.block_user(user)
-            # add 201 response that is not rendered on the front end
-        except Exception as e:
-            # add 40x response that is not rendered on the front end
-            return HttpResponse(e)
-    template = loader.get_template("relations/block_user.html")
-    context = {}
-    return HttpResponse(template.render(context, request))
-
-
-def excludeFriend(request, user_id):
-    if request.method == 'POST':
-        user = get_object_or_404(
-            User,
-            pk=user_id,
-        )
-        try:
-            request.user.del_friend(user)
-        except Exception as e:
-            return HttpResponse(e)
-    return redirect('friendList')
-
-
-def unblockUser(request, user_id):
-    if request.method == 'POST':
-        user = get_object_or_404(
-            User,
-            pk=user_id,
-        )
-        try:
-            request.user.unblock_user(user)
-        except Exception as e:
-            return HttpResponse(e)
-    return redirect('blockList')
-
-
-def respondFriendInvite(request, invite_id):
-    invite = get_object_or_404(
-        models.FriendInvite,
-        pk=invite_id,
-    )
-    if invite.receiver != request.user:
-        raise PermissionDenied
-    if request.method == 'POST':
-        action = request.POST.get('action')
-        if action == 'accept':
-            invite.respond(accepted=True)
-        elif action == 'reject':
-            invite.respond(accepted=False)
-        else:
-            raise Exception('Invalid action')
-    return redirect('friendInvitesReceived')
-
-
-def cancelFriendInvite(request, invite_id):
-    if request.method == 'POST':
-        invite = get_object_or_404(
-            models.FriendInvite,
-            pk=invite_id,
-        )
+        # Cancel friend invite
+        invite_id = request.POST.get('invite-id')
+        invite = get_object_or_404(FriendInvite, pk=invite_id)
         if invite.sender != request.user:
             raise PermissionDenied
         invite.delete()
-    return redirect('friendInvitesSent')
+
+    return render_component(request, 'friend_invites_sent.html', 'content')
+
+
+def friend_invites_received(request):
+    if request.method == 'POST':
+        # Accept/Reject friend invite
+        invite_id = request.POST.get('invite-id')
+        invite = get_object_or_404(FriendInvite, pk=invite_id)
+        if invite.receiver != request.user:
+            raise PermissionDenied
+        user_action = request.POST.get('user-action')
+        if user_action == 'accept':
+            invite.respond(accepted=True)
+        elif user_action == 'reject':
+            invite.respond(accepted=False)
+
+    return render_component(request, 'friend_invites_received.html', 'content')
+
+
+def block_list(request):
+    if request.method == 'POST':
+        # Unblock user
+        user_id = request.POST.get('user-id')
+        user = get_object_or_404(User, pk=user_id)
+        request.user.unblock_user(user)
+
+    return render_component(request, 'block_list.html', 'content')

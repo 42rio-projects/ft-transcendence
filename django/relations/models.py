@@ -61,11 +61,17 @@ class IsBlockedBy(models.Model):
     )
 
     def save(self, *args, **kwargs):
-        friendship = IsFriendsWith.objects.filter(
-            user1=self.blocker, user2=self.blocked
-        )
-        if friendship.exists():
-            friendship[0].delete()
+        if self.blocker == self.blocked:
+            raise ValidationError("You cannot block yourself")
+        if IsBlockedBy.objects.filter(
+            blocker=self.blocker, blocked=self.blocked
+        ).exists():
+            raise ValidationError("User already blocked")
+        if IsFriendsWith.objects.filter(
+            Q(user1=self.blocker, user2=self.blocked) |
+            Q(user1=self.blocked, user2=self.blocker)
+        ).exists():
+            self.blocker.del_friend(self.blocked)
         super().save(*args, **kwargs)
 
     class Meta:
@@ -97,6 +103,12 @@ class FriendInvite(models.Model):
         """
         Custom validation to prevent sending invites to friends and blocked users.
         """
+        if self.sender == self.receiver:
+            raise ValidationError("You cannot send an invite to yourself")
+        if FriendInvite.objects.filter(
+            sender=self.sender, receiver=self.receiver
+        ).exists():
+            raise ValidationError("Invite already sent")
         if IsBlockedBy.objects.filter(
             Q(blocker=self.sender, blocked=self.receiver) |
             Q(blocked=self.receiver, blocker=self.sender)

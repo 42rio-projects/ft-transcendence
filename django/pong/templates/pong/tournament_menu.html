@@ -78,8 +78,8 @@
 
     async function render(url, setPushState = true, isPopState = false) {
       if (url == window.location.pathname && !isPopState) return;
-      if (url == "{% url 'friendsIndex' %}") {
-        url = "{% url 'friendList' %}";
+      if (url == "/friends/") {
+        url = "/friends/";
       }
       fetch(url)
         .then((response) => response.text())

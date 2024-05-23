@@ -1,14 +1,10 @@
-import pong.models as models
 from user.models import User
-from django.template import loader
-from django.http import HttpResponse
-from django.shortcuts import get_object_or_404, redirect
-from django.core.exceptions import PermissionDenied
-from channels.layers import get_channel_layer
-from django.shortcuts import render
+from django.shortcuts import redirect, render, get_object_or_404
+from .utils import render_component
 from asgiref.sync import async_to_sync
 from django.http import JsonResponse
 from django.template.loader import render_to_string
+from . import models
 
 
 def json_error(message):
@@ -34,34 +30,41 @@ def tournament_update(pk, json):
         f'tournament_{pk}', {"type": "tournament.update", "json": json}
     )
 
+# Create your views here.
+
 
 def index(request):
-    if request.method == "GET":
-        return render(request, "pong/index.html")
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        if User.objects.filter(username=username).exists():
+            return redirect('/profile/' + username + '/')
+        else:
+            return render_component(request, 'search_user_form.html', 'form', {
+                'error': 'User not found',
+                'username': username # So user doesn't have to re-type
+            }, status=404)
 
-
-def main(request):
-    if request.method == "GET":
-        return render(request, "pong/main.html")
+    if request.method == 'GET':
+        return render_component(request, 'index.html', 'content')
 
 
 def gameMenu(request):
-    if request.method == "GET":
-        return render(request, "pong/game_menu.html")
+    if request.method == 'GET':
+        return render_component(request, 'pong/game_menu.html', 'content')
 
 
 def localGame(request):
-    if request.method == "GET":
-        return render(request, "pong/game/local/game.html")
+    if request.method == 'GET':
+        return render_component(request, 'pong/game/local/game.html', 'content')
 
 
 def onlineGame(request, game_id):
     game = get_object_or_404(models.Game, pk=game_id)
     if game.finished:
-        template = loader.get_template('pong/game/online/result.html')
-        context = {"game": game}
+        return render_component(request, 'pong/game/online/result.html', 'content', {
+            "game": game
+        })
     else:
-        template = loader.get_template('pong/game/online/game.html')
         try:
             game_invite = models.GameInvite.objects.get(game=game)
             context = {
@@ -70,7 +73,9 @@ def onlineGame(request, game_id):
             }
         except Exception:
             context = {"player1": game.player1, "player2": game.player2}
-    return HttpResponse(template.render(context, request))
+        
+        return render_component(request, 'pong/game/online/game.html', 'content', context)
+        
 
 
 def gameInvites(request):
@@ -86,9 +91,7 @@ def gameInvites(request):
         except Exception as e:
             # add 40x response that is not rendered on the front end
             return HttpResponse(e)
-    template = loader.get_template("pong/game/online/invites.html")
-    context = {}
-    return HttpResponse(template.render(context, request))
+    return render_component(request, "pong/game/online/invites.html", 'content')
 
 
 def respondGameInvite(request, invite_id):
@@ -106,7 +109,7 @@ def respondGameInvite(request, invite_id):
         elif action == 'reject':
             send_channel_message(
                 f'game_{invite.game.pk}',
-                {"type": "game.update", "json": {"status": "canceled"}},
+                {'type': 'game.update', 'json': {'status': 'canceled'}},
             )
             invite.respond(accepted=False)
         else:
@@ -116,18 +119,17 @@ def respondGameInvite(request, invite_id):
 
 def tournamentMenu(request):
     if request.method == "GET":
-        return render(request, "pong/tournament_menu.html")
+        return render_component(request, "pong/tournament_menu.html", "content")
 
 
 def localTournament(request):
     if request.method == "GET":
-        return render(request, "pong/tournament/local/tournament.html")
+        return render_component(request, "pong/tournament/local/tournament.html", "content")
 
 
 def tournamentInvites(request):
-    template = loader.get_template("pong/tournament/online/invites.html")
-    context = {}
-    return HttpResponse(template.render(context, request))
+    if request.method == "GET":
+        return render_component(request, "pong/tournament/online/invites.html", "content")
 
 
 def createTournament(request):
@@ -147,9 +149,7 @@ def onlineTournament(request, tournament_id):
     if request.method != 'GET':
         return
     tournament = get_object_or_404(models.Tournament, pk=tournament_id)
-    context = {"tournament": tournament}
-    template = loader.get_template('pong/tournament/online/tournament.html')
-    return HttpResponse(template.render(context, request))
+    return render_component(request, "pong/tournament/online/tournament.html", "content", {"tournament": tournament})
 
 
 def cancelTournament(request, tournament_id):

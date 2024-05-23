@@ -47,7 +47,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'rest_framework',
 	'django_prometheus',
 ]
 
@@ -69,11 +68,6 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 	'django_prometheus.middleware.PrometheusAfterMiddleware'
 ]
-
-REST_FRAMEWORK = {
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 10
-}
 
 ROOT_URLCONF = 'ft_transcendence.urls'
 
@@ -99,13 +93,13 @@ WSGI_APPLICATION = 'ft_transcendence.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 DATABASES = {
-    "default": {
-        "ENGINE": "django_prometheus.db.backends.postgresql",
-        "NAME": "postgres",
-        "HOST": "postgres",
-        "OPTIONS": {
-            "service": "admin",
-        },
+    'default': {
+        'ENGINE': 'django_prometheus.db.backends.postgresql',
+        'NAME': os.environ.get('POSTGRES_NAME'),
+        'USER': os.environ.get('POSTGRES_USER'),
+        'PASSWORD': os.environ.get('POSTGRES_PASSWORD'),
+        'HOST': 'postgres',
+        'PORT': '5432',
     }
 }
 

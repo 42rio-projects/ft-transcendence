@@ -31,9 +31,6 @@
   {% load static %}
   <script src="{% static 'pong/js/onlineGameWebSocket.js' %}"></script>
   <script>
-    let localGameSocket;
-    let onlineGameSocket;
-    let messageSocket;
     window.addEventListener("popstate", handlePopState);
     history.replaceState(
       { view: "{% url 'gameMenu' %}" },
@@ -67,8 +64,8 @@
 
     async function render(url, setPushState = true, isPopState = false) {
       if (url == window.location.pathname && !isPopState) return;
-      if (url == "{% url 'friendsIndex' %}") {
-        url = "{% url 'friendList' %}";
+      if (url == "/friends/") {
+        url = "/friends/";
       }
       fetch(url)
         .then((response) => response.text())
@@ -81,34 +78,5 @@
       handleSockets(url);
     }
 
-    function handleSockets(url) {
-      if (messageSocket && messageSocket.socket.readyState === WebSocket.OPEN) {
-        messageSocket.socket.close();
-      } else if (
-        localGameSocket &&
-        localGameSocket.socket.readyState === WebSocket.OPEN
-      ) {
-        localGameSocket.socket.close();
-      } else if (
-        onlineGameSocket &&
-        onlineGameSocket.socket.readyState === WebSocket.OPEN
-      ) {
-        onlineGameSocket.socket.close();
-      }
-
-      if (url == "{% url 'friendList' %}") {
-        statusSocket.setInitialStatus();
-      } else if (url.includes("/chat/room")) {
-        const regex = /\/chat\/room\/(?<id>\d+)\//;
-        const match = url.match(regex);
-        messageSocket = new MessageWebSocket(match.groups.id);
-      } else if (url == "{% url 'localGame' %}") {
-        localGameSocket = new LocalGameWebSocket();
-      } else if (url.includes("/online-game/")) {
-        const regex = /\/online-game\/(?<id>\d+)\//;
-        const match = url.match(regex);
-        onlineGameSocket = new OnlineGameWebSocket(match.groups.id);
-      }
-    }
   </script>
 </body>
