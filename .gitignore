@@ -7,8 +7,8 @@ db.sqlite3
 media
 **/migrations/**
 postgres_data
-grafana_data
 prometheus_data
+grafana_data
 # Don't ignore __init__.py
 !**/__init__.py
 
