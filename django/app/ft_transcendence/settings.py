@@ -181,6 +181,8 @@ CHANNEL_LAYERS = {
     },
 }
 
+CSRF_TRUSTED_ORIGINS = ["https://endgame.42.rio", "https://endgame.42.rio"]
+
 # LOGIN_URL = 'login'
 # LOGIN_REDIRECT_URL = 'menu'
 # LOGOUT_REDIRECT_URL = '/'
