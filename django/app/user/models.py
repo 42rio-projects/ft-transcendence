@@ -24,7 +24,11 @@ class User(AbstractUser):
         through="relations.IsFriendsWith",
         symmetrical=True
     )
-    nickname = models.CharField(max_length=255, unique=True, blank=True)
+    nickname = models.CharField(
+        max_length=255,
+        null=True,
+        unique=True
+    )
     blocked_list = models.ManyToManyField(
         'self',
         through="relations.IsBlockedBy",
