@@ -1,0 +1,41 @@
+<div id="local-game-section">
+  {% if tournament %}
+  <div class="verticalDiv">
+    <button onclick="localTournamentSocket.startGame()">Start Game</button>
+  </div>
+  {% if final %}
+  <h2>!!Final!!</h2>
+  {% endif %} {% else %}
+  <h1>Local Game</h1>
+  <div class="verticalDiv">
+    <button onclick="localGameSocket.gameAction('start')">Start Game</button>
+    <button onclick="localGameSocket.gameAction('stop')">Stop Game</button>
+  </div>
+  {% endif %}
+  <h2>Controls</h2>
+  <div class="verticalDiv">
+    <div>
+      {% if player1 %}
+      <p id="p1-alias">{{ player1 }}</p>
+      {% else %}
+      <p id="p1-alias">Player1</p>
+      {% endif %}
+      <p id="p1-score"></p>
+      W -> move up
+      <br />
+      S -> move down
+    </div>
+    <div>
+      {% if player2 %}
+      <p id="p2-alias">{{ player2 }}</p>
+      {% else %}
+      <p id="p2-alias">Player2</p>
+      {% endif %}
+      <p id="p2-score"></p>
+      Arrow up -> move up
+      <br />
+      Arrow down -> move down
+    </div>
+  </div>
+  <canvas id="game-screen"></canvas>
+</div>

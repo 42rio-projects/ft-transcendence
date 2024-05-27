@@ -1,0 +1,18 @@
+{% extends 'friends.html' %}
+
+{% block friends_title %}Block list{% endblock %}
+
+{% block friends_content %}
+<ul class="user-list">
+  {% for user in user.get_blocks %}
+  <li>
+    <span>{{ user.username }}</span>
+    <form method="post" onsubmit="handleFormSubmit(event)">
+      {% csrf_token %}
+      <input type="hidden" name="user-id" value="{{ user.id }}" />
+      <button type="submit">Unblock</button>
+    </form>
+  </li>
+  {% endfor %}
+</ul>
+{% endblock %}

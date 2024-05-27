@@ -1,41 +1,203 @@
+import asyncio
+import random
 from django.db import models
-from user.models import User
+from django.core.exceptions import ValidationError
+from channels.db import database_sync_to_async
+from django.template.loader import render_to_string
+from channels.layers import get_channel_layer
+
+
+UPPER_PLAYER_LIMIT = 16
+LOWER_PLAYER_LIMIT = 4
+TOURNAMENT_START_LIMIT = 60 * 5  # seconds
+ROUND_TIMEOUT = 60 * 5  # seconds
+
+
+class TournamentFinished(Exception):
+    pass
 
 
 class Tournament(models.Model):
     name = models.CharField(max_length=100, unique=True)
+    admin = models.ForeignKey(
+        'user.User',
+        on_delete=models.CASCADE,
+        related_name='my_tournaments'
+    )
     date = models.DateField(auto_now_add=True)
-    players = models.ManyToManyField(User, related_name='tournaments')
+    players = models.ManyToManyField('user.User', related_name='tournaments')
     winner = models.ForeignKey(
-        User,
+        'user.User',
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
         related_name='championships'
     )
+    started = models.BooleanField(default=False)
+    finished = models.BooleanField(default=False)
+
+    def get_tournaments_by_user(user):
+        admin = Tournament.objects.filter(
+            admin=user
+        ).order_by('-date')
+        player = Tournament.objects.filter(
+            players=user
+        ).order_by('-date')
+        return admin.union(player)
 
     def new_round(self):
-        if self.winner is not None:
-            raise Exception('Tournament already over')
-        elif self.players.count() < 4:
-            raise Exception('Not enough players in the tournament.')
+        if self.finished:
+            raise TournamentFinished('Tournament already over')
         elif self.rounds.count() == 0:
-            round = Round(tournament=self, number=1)
-            round.save()
-            round.first_games(self.players.iterator())
+            t_round = Round(tournament=self, number=1)
+            t_round.save()
+            try:
+                t_round.first_games(self.players.all().order_by('?'))
+            except Exception:
+                t_round.delete()
+                raise
         else:
             previous = self.rounds.last()
+            previous.finished = True
+            previous.save()
             if previous.games.count() == 1:
-                self.winner = previous.games.last().winner()
+                if previous.games.last().finished is False:
+                    previous.games.last().end()
+                self.winner = previous.games.last().winner
+                self.finished = True
                 self.save()
-                return
+                raise TournamentFinished()
             else:
-                round = Round(tournament=self, number=previous.number + 1)
-                round.save()
-                round.next_games(previous)
+                t_round = Round(tournament=self, number=previous.number + 1)
+                t_round.save()
+                try:
+                    t_round.next_games(previous)
+                except Exception:
+                    t_round.delete()
+                    raise
+        return t_round
+
+    def invite(self, user):
+        if self.started:
+            raise Exception("Tournament already started.")
+        if self.players.count() + self.invites_sent.count() >= UPPER_PLAYER_LIMIT:
+            raise Exception("Player limit reached")
+        invite = TournamentInvite(tournament=self, receiver=user)
+        invite.save()
+        return invite
+
+    def cancel(self):
+        if self.started:
+            raise Exception("Tournament already started.")
+        self.delete()
+
+    def start(self):
+        if self.started:
+            raise Exception("Tournament already started.")
+        if self.players.count() < LOWER_PLAYER_LIMIT:
+            raise Exception("Not enough players")
+        self.started = True
+        self.save()
+
+    @database_sync_to_async
+    def a_start(self):
+        self.start()
+
+    @database_sync_to_async
+    def a_cancel(self):
+        self.cancel()
+
+    @database_sync_to_async
+    def a_new_round(self):
+        return self.new_round()
+
+    @database_sync_to_async
+    def a_refresh(self):
+        self.refresh_from_db()
+
+    @database_sync_to_async
+    def notify_players(self, notification):
+        for player in self.players.all():
+            player.notify(notification)
+
+    @database_sync_to_async
+    def render_winner(self):
+        return render_to_string(
+            'pong/tournament/online/winner.html', {"tournament": self}
+        )
+
+    async def send_channel_message(self, message):
+        channel_layer = get_channel_layer()
+        await channel_layer.group_send(
+            f'tournament_{self.pk}',
+            {"type": "tournament.update", "json": message}
+        )
+
+    async def advance(self):
+        try:
+            t_round = await self.a_new_round()
+            html = await t_round.render()
+            asyncio.create_task(t_round.timeout())
+            notification = f'New round available for tournament {self.name}.'
+        except TournamentFinished:
+            await self.a_refresh()
+            html = await self.render_winner()
+            notification = f'Tournament {self.name} finished.'
+        await self.send_channel_message(
+            {"status": "new_round", "html": html}
+        )
+        await self.notify_players(notification)
+
+    async def timeout(self):
+        await asyncio.sleep(TOURNAMENT_START_LIMIT)
+        await self.a_refresh()
+        if self.started is False:
+            await self.a_cancel()
 
     def __str__(self):
         return (self.name)
+
+
+class TournamentInvite(models.Model):
+    tournament = models.ForeignKey(
+        Tournament,
+        on_delete=models.CASCADE,
+        related_name='invites_sent'
+    )
+    receiver = models.ForeignKey(
+        'user.User',
+        on_delete=models.CASCADE,
+        related_name='tournament_invites_received'
+    )
+
+    def respond(self, accepted):
+        tournament = self.tournament
+        if accepted is True and tournament.started is False:
+            tournament.players.add(self.receiver)
+            tournament.save()
+        self.delete()
+
+    def clean(self):
+        if self.receiver in self.tournament.players.all():
+            raise ValidationError(
+                'You cannot send a invite to someone who is already in\
+                the tournament.'
+            )
+
+    def save(self, *args, **kwargs):
+        """
+        Overridden save method to enforce validation
+        """
+        self.clean()
+        super().save(*args, **kwargs)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                name="%(app_label)s_%(class)s_unique_relationships",
+                fields=["tournament", "receiver"]
+            ),
+        ]
 
 
 class Round(models.Model):
@@ -45,44 +207,91 @@ class Round(models.Model):
         on_delete=models.CASCADE
     )
     number = models.PositiveSmallIntegerField()
+    finished = models.BooleanField(default=False)
 
     def first_games(self, players):
         pair = []
         for player in players:
             pair.append(player)
             if len(pair) == 2:
-                Game(player_1=pair[0], player_2=pair[1], round=self).save()
+                Game(player1=pair[0], player2=pair[1], round=self).save()
                 pair.clear()
         if len(pair) == 1:
-            Game(player_1=pair[0], round=self).save()
+            Game(player1=pair[0], round=self).save()
 
     def next_games(self, previous):
         pair = []
-        previous_games = previous.games.iterator()
+        players = []
+        previous_games = previous.games.all().order_by('?')
         for game in previous_games:
-            pair.append(game.winner())
-            if len(pair) == 2:
-                Game(player_1=pair[0], player_2=pair[1], round=self).save()
-                pair.clear()
-        if len(pair) == 1:
-            Game(player_1=pair[0], round=self).save()
+            if game.finished is False:
+                game.end()
+            players.append(game.winner)
+        if len(players) % 2 != 0:
+            players.append(None)
+        pairs = list(zip(players[::2], players[1::2]))
+        for pair in pairs:
+            Game(player1=pair[0], player2=pair[1], round=self).save()
+
+    @database_sync_to_async
+    def render(self):
+        return render_to_string(
+            'pong/tournament/online/round.html', {"round": self}
+        )
+
+    @database_sync_to_async
+    def a_tournament(self):
+        return self.tournament
+
+    @database_sync_to_async
+    def games_are_over(self):
+        for game in self.games.all():
+            if game.finished is False:
+                return False
+        return True
+
+    @database_sync_to_async
+    def a_refresh(self):
+        self.refresh_from_db()
+
+    async def timeout(self):
+        await asyncio.sleep(ROUND_TIMEOUT)
+        await self.a_refresh()
+        if self.finished is False:
+            tournament = await self.a_tournament()
+            await tournament.advance()
+
+    async def try_advance(self):
+        await self.a_refresh()
+        over = await self.games_are_over()
+        if over is False:
+            return
+        tournament = await self.a_tournament()
+        await tournament.advance()
 
     def __str__(self):
         return (f'{self.tournament.name} round {self.number}')
 
-
 class Game(models.Model):
-    player_1 = models.ForeignKey(
-        User,
+    player1 = models.ForeignKey(
+        'user.User',
         null=True,
         on_delete=models.SET_NULL,
         related_name='home_games'
     )
-    player_2 = models.ForeignKey(
-        User,
+    player2 = models.ForeignKey(
+        'user.User',
         null=True,
         on_delete=models.SET_NULL,
         related_name='away_games'
+    )
+    player1_points = models.PositiveSmallIntegerField(default=0)
+    player2_points = models.PositiveSmallIntegerField(default=0)
+    winner = models.ForeignKey(
+        'user.User',
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name='wins'
     )
     round = models.ForeignKey(
         Round,
@@ -93,30 +302,112 @@ class Game(models.Model):
         related_name='games'
     )
     date = models.DateField(auto_now_add=True)
+    finished = models.BooleanField(default=False)
 
-    # Placeholder method to return winner
-    def winner(self):
-        return self.player_1
+    def end(self):
+        if self.player1 is None:
+            self.winner = self.player2
+        elif self.player2 is None:
+            self.winner = self.player1
+        else:
+            if self.player1_points > self.player2_points:
+                self.winner = self.player1
+            elif self.player2_points > self.player1_points:
+                self.winner = self.player2
+            else:
+                if bool(random.getrandbits(1)):
+                    self.winner = self.player1
+                else:
+                    self.winner = self.player2
+        self.finished = True
+        self.save()
 
-    # Placeholder method to return loser
-    def loser(self):
-        return self.player_2
+    def get_games_by_user(user, filters):
+        queryFilters = {}
+        if 'winner' in filters:
+            queryFilters['winner'] = filters['winner']
+        return Game.objects.filter(
+            models.Q(player1=user) | models.Q(player2=user),
+            **queryFilters
+        )
 
+    @database_sync_to_async
+    def a_refresh(self):
+        self.refresh_from_db()
+        self.round
+        self.player1
+        self.player2
+
+    @database_sync_to_async
+    def render(self):
+        return render_to_string(
+            'pong/game/online/result.html', {"game": self}
+        )
+
+    # Take tournament into consideration
     def __str__(self):
-        try:
-            return (f'{self.player_1.username} vs {self.player_2.username}')
-        except Exception:
-            return (f'{self.player_1.username} vs NULL')
+        if self.player1 is not None and self.player2 is not None:
+            return (f'{self.player1.username} vs {self.player2.username}')
+        elif self.player1 is not None and self.player2 is None:
+            return (f'{self.player1.username} vs "Deleted User"')
+        elif self.player1 is None and self.player2 is not None:
+            return (f'"Deleted User" vs {self.player2.username}')
+        else:
+            return ('"Deleted User" vs "Deleted User"')
 
 
-class Score(models.Model):
-    p1_points = models.PositiveSmallIntegerField(default=0)
-    p2_points = models.PositiveSmallIntegerField(default=0)
+class GameInvite(models.Model):
+    sender = models.ForeignKey(
+        'user.User',
+        on_delete=models.CASCADE,
+        related_name='game_invites_sent'
+    )
+    receiver = models.ForeignKey(
+        'user.User',
+        on_delete=models.CASCADE,
+        related_name='game_invites_received'
+    )
     game = models.OneToOneField(
         Game,
-        related_name='score',
         on_delete=models.CASCADE
     )
 
-    def __str__(self):
-        return (f'{self.p1_points} - {self.p2_points}')
+    def clean(self):
+        """
+        Custom validation to prevent sending invites to friends.
+        """
+        invite = GameInvite.objects.filter(
+            sender=self.receiver, receiver=self.sender
+        )
+        if invite.exists():
+            raise ValidationError(
+                'You cannot send a game invite to someone who has invited you.'
+            )
+
+    def save(self, *args, **kwargs):
+        """
+        Overridden save method to enforce validation
+        """
+        self.clean()
+        super().save(*args, **kwargs)
+
+    def respond(self, accepted):
+        game = self.game
+        if accepted is True:
+            game.player2 = self.receiver
+            game.save()
+        else:
+            game.delete()
+        self.delete()
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                name="%(app_label)s_%(class)s_unique_relationships",
+                fields=["sender", "receiver"]
+            ),
+            models.CheckConstraint(
+                name="%(app_label)s_%(class)s_prevent_self_invite",
+                check=~models.Q(sender=models.F("receiver")),
+            ),
+        ]

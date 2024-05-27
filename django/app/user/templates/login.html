@@ -1,10 +1,27 @@
-{% include 'messages.html' %}
+{% extends 'index.html' %}
 
-<form method="post" action="login/" onsubmit="fetchHTMLForm('main', event)">
-    {% csrf_token %}
-    <input type="text" name="username" placeholder="username" value="{{ username }}" />
-    <input type="password" name="password" placeholder="password" value="{{ password }}" />
-    <button type="submit">Login</button>
-</form>
+{% block title %}Login{% endblock %}
 
-<p>Don't have an account? <button onclick="fetchHTML('main', 'register/')">Register</button></p>
+{% block content %}
+<div>
+  <div>
+    <h2 class="neon text-3xl">{% block auth_title %}Login{% endblock %}</h2>
+    <h3 class="text-xl font-normal">
+      {% block auth_subtitle %}Enter your account:{% endblock %}
+    </h3>
+  </div>
+
+  <form id="form" method="post" onsubmit="handleFormSubmit(event)">
+    {% block auth_form %} {% include 'login_form.html' %} {% endblock %}
+  </form>
+
+  <hr />
+
+  <div class="auth-footer">
+    {% block auth_footer %}
+    <p>Don't have an account?</p>
+    <a href="/register/">Register</a>
+    {% endblock %}
+  </div>
+</div>
+{% endblock %}

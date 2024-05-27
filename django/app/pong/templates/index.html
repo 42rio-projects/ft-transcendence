@@ -1,48 +1,38 @@
-<!DOCTYPE html>
-<html lang="en">
+<header class="header">
+  <h1 class="neon text-2xl">
+    ft_transcendence - {% block title %}Home{% endblock %}
+  </h1>
+  <nav class="header-section">
+    {% if user.is_authenticated %}
+    <div class="header-section">
+      <a href="/">Home</a>
+      <a href="/pong/">Pong</a>
+      <a href="/friends/">Friends</a>
+      <a href="/chats/">Chats</a>
+      <a href="/tournament_history/">Tournament History</a>
+    </div>
+    <span class="vertical-line"></span>
+    <div class="header-section">
+      <a href="/profile/">
+        <img class="header-avatar" src="{{ user.avatar.url }}" alt="Avatar" />
+      </a>
+      <a href="/logout/">Logout</a>
+    </div>
+    {% else %}
+    <a href="/register/">Register</a>
+    <span class="vertical-line"></span>
+    <a href="/login/">Login</a>
+    {% endif %}
+  </nav>
+</header>
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ft_transcendence</title>
-</head>
-
-<body>
-    <header>
-        <h1>ft_transcendence</h1>
-    </header>
-
-    <main id="main"></main>
-</body>
-
-<script>
-    function fetchHTML(elementId, url) {
-        fetch(url)
-            .then(response => response.text())
-            .then(data => {
-                document.getElementById(elementId).innerHTML = data;
-            });
-    }
-
-    function fetchHTMLForm(elementId, event) {
-        event.preventDefault();
-
-        const form = event.target;
-        const data = new FormData(form);
-
-        fetch(form.action, {
-            method: form.method,
-            body: data
-        })
-            .then(response => response.text())
-            .then(data => {
-                document.getElementById(elementId).innerHTML = data;
-            });
-    }
-
-    window.onload = function () {
-        fetchHTML("main", "main/");
-    };
-</script>
-
-</html>
+<main class="main-container">
+  {% block content %}
+  <div class="home">
+    <h1 class="neon">Search user</h1>
+    <form id="form" method="post" onsubmit="handleFormSubmit(event)">
+      {% include 'search_user_form.html' %}
+    </form>
+  </div>
+  {% endblock %}
+</main>

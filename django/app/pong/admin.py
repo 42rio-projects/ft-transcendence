@@ -4,6 +4,7 @@ import pong.models as models
 # Register your models here.
 
 admin.site.register(models.Game)
+admin.site.register(models.GameInvite)
 admin.site.register(models.Tournament)
 admin.site.register(models.Round)
-admin.site.register(models.Score)
+admin.site.register(models.TournamentInvite)

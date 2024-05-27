@@ -1,0 +1,59 @@
+<h2>Create Tournament</h2>
+<form
+  method="post"
+  action="{% url 'tournamentInvites' %}"
+  onsubmit="handleForm(event)"
+>
+  {% csrf_token %}
+  <label for="tournament-name">Tournament name:</label>
+  <input type="text" name="tournament-name" id="tournament-name" required />
+  <input type="hidden" name="url" value="{% url 'createTournament' %}" />
+  <button type="submit">Create</button>
+</form>
+<div id="current-tournaments">
+  <h2>Current Tournaments</h2>
+  <ul>
+    {% for tournament in user.all_tournaments %}
+    <div id="tournament-{{ tournament.name }}" class="verticalDiv">
+      <button onclick="render('{% url 'onlineTournament' tournament.id %}')">
+        {{tournament.name}}
+      </button>
+      {% if tournament.admin == user %}
+      <p>Admin</p>
+      {% endif %} {% if user in tournament.players.all %}
+      <p>Player</p>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </ul>
+</div>
+<div id="tournaments-invites">
+  <h2>Invites Received</h2>
+  {% for invite in user.tournament_invites_received.all %}
+  <div id="tournament-invite-{{ tournament.name }}">
+    {{ invite.tournament }}
+    <div class="verticalDiv">
+      <form method="POST" onsubmit="handleForm(event)">
+        {% csrf_token %}
+        <button type="submit">Accept request</button>
+        <input type="hidden" name="action" value="accept" />
+        <input
+          type="hidden"
+          name="url"
+          value="{% url 'respondTournamentInvite' invite.id %}"
+        />
+      </form>
+      <form method="POST" onsubmit="handleForm(event)">
+        {% csrf_token %}
+        <button type="submit">Reject request</button>
+        <input type="hidden" name="action" value="reject" />
+        <input
+          type="hidden"
+          name="url"
+          value="{% url 'respondTournamentInvite' invite.id %}"
+        />
+      </form>
+    </div>
+  </div>
+  {% endfor %}
+</div>

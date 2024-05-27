@@ -3,6 +3,7 @@ from django.contrib.auth.password_validation import validate_password
 from .models import User
 from django.contrib import messages
 
+
 class ChangePasswordForm(forms.Form):
 	current_password = forms.CharField(label="Current password", widget=forms.PasswordInput)
 	new_password = forms.CharField(label="New password", widget=forms.PasswordInput, validators=[validate_password])
@@ -31,9 +32,3 @@ class EmailChangeForm(forms.Form):
             if new_email != confirm_email:
                 raise forms.ValidationError("Os novos e-mails não correspondem.")
         return cleaned_data
-
-
-class UserProfileForm(forms.ModelForm):
-    class Meta:
-        model = User
-        fields = ['avatar']

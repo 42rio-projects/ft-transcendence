@@ -10,6 +10,7 @@
 <div class="embranceForms">
 <div class="inviteToPlay">
   <form class="inviteToPlayForm" method="post" onsubmit="inviteToPlay.invite(event)">
+    {% csrf_token %}
     <!-- Criar logica para o invite dos jogadores -->
     <!-- <input type="hidden" name="url" value="{% url 'chatRoom' id=chat.id %}" /> -->
     <button type="submit" class="input-button">Convidar para jogar</button>

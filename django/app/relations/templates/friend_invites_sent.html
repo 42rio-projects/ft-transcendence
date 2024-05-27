@@ -1,0 +1,18 @@
+{% extends 'friends.html' %}
+
+{% block friends_title %}Invites sent{% endblock %}
+
+{% block friends_content %}
+<ul class="user-list">
+  {% for invite in user.friend_invites_sent.all %}
+  <li>
+    <span>{{ invite.receiver }}</span>
+    <form method="post" onsubmit="handleFormSubmit(event)">
+      {% csrf_token %}
+      <input type="hidden" name="invite-id" value="{{ invite.id }}" />
+      <button type="submit">Cancel invite</button>
+    </form>
+  </li>
+  {% endfor %}
+</ul>
+{% endblock %}

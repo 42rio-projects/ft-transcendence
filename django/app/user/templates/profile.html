@@ -1,40 +1,52 @@
-{% include 'messages.html' %}
+{% extends 'index.html' %}
 
-<ul>
-    <li>
-        <label>Username:</label>
-        <span>{{ user.username }}</span>
-    </li>
-    {% if user.email %}
-    <li>
-        <label>Email:</label>
-        <span>{{ user.email }}</span>
-        {% if user.email_verified %}
-        <span>Email verified</span>
-        {% else %}
-        <button onclick="fetchHTML('main', 'email_verify_code/')">Verify email</button>
-        {% endif %}
-    </li>
-    {% else %}
-    <li>
-        No email
-    </li>
-    {% endif %}
-    <li>
-        <label>Avatar:</label>
-        {% if user.avatar %}
-        <img src="{{ user.avatar.url}}" alt="Avatar" style="width: 100px; height: 100px;"/>
-        {% else %}
-        <span>No avatar</span>
-        {% endif %}
-    </li>
-</ul>
-
-{% if user.email and user.email_verified %}
-<button onclick="fetchHTML('main', 'email_change/')">Change email</button>
+{% block title %}
+{% if user == request.user %}
+{{ user.username }}
+{% else %}
+Profile
 {% endif %}
+{% endblock %}
 
-<button onclick="fetchHTML('main', 'edit_profile/')">Edit profile</button>
+{% block content %}
+<div class="profile">
+  <h1 class="neon">Profile</h1>
 
-<button onclick="fetchHTML('main', 'change_password')">Change password</button>
-<button onclick="fetchHTML('main', 'upload_avatar')">Update avatar</button>
+  <hr />
+
+  {% if success %}
+  <span class="color-success">{{ success }}</span>
+  {% endif %} {% if error %}
+  <span class="color-error">{{ error }}</span>
+  {% endif %}
+  <div>
+    <img class="avatar" src="{{ user.avatar.url }}" alt="Avatar" />
+    <span>{{ user.username }}</span>
+  </div>
+  <span>
+    {% if user.email_verified %}
+    Verified
+    {% else %}
+    Not verified
+    {% endif %}
+  </span>
+  {% if user == request.user %}
+  <a class="button" href="/edit_profile/">Edit profile</a>
+  {% else %}
+  <div class="profile-buttons">
+    <form method="post" onsubmit="handleFormSubmit(event)">
+      {% csrf_token %}
+      <input type="hidden" name="user-id" value="{{ user.id }}" />
+      <input type="hidden" name="user-action" value="friend-invite" />
+      <button type="submit">Friend invite</button>
+    </form>
+    <form method="post" onsubmit="handleFormSubmit(event)">
+      {% csrf_token %}
+      <input type="hidden" name="user-id" value="{{ user.id }}" />
+      <input type="hidden" name="user-action" value="block" />
+      <button type="submit">Block</button>
+    </form>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
