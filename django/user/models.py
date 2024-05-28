@@ -1,4 +1,3 @@
-import sys
 from channels.db import database_sync_to_async
 from django.db import models
 from django.contrib.auth.models import AbstractUser
@@ -10,6 +9,7 @@ from chat.models import Chat, Message
 from pong.models import Game, GameInvite
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
+
 
 @async_to_sync
 async def send_channel_message(group, message):
@@ -94,8 +94,10 @@ class User(AbstractUser):
         if filters and 'winner' in filters:
             queryFilters['winner'] = filters['winner']
 
-        home_games = self.home_games.filter(**queryFilters).prefetch_related('player1','player2')
-        away_games = self.away_games.filter(**queryFilters).prefetch_related('player1', 'player2')
+        home_games = self.home_games.filter(
+            **queryFilters).prefetch_related('player1', 'player2')
+        away_games = self.away_games.filter(
+            **queryFilters).prefetch_related('player1', 'player2')
 
         return home_games.union(away_games)
 
@@ -118,6 +120,15 @@ class User(AbstractUser):
         for block in blocks:
             blocked_users.append(block.blocked)
         return blocked_users
+
+    def users_invited_to_friend(self):
+        invites = FriendInvite.objects.filter(
+            Q(sender=self)
+        ).prefetch_related('receiver')
+        invited_users = []
+        for invite in invites:
+            invited_users.append(invite.receiver)
+        return invited_users
 
     def get_chats(self):
         blocked_users = self.get_blocks()
@@ -150,6 +161,11 @@ class User(AbstractUser):
         block = IsBlockedBy.objects.filter(Q(blocker=self, blocked=user))
         if block.exists():
             block[0].delete()
+
+    def cancel_friend_invite(self, user):
+        invite = FriendInvite.objects.filter(Q(sender=self, receiver=user))
+        if invite.exists():
+            invite[0].delete()
 
     def invite_to_game(self, user):
         game = Game(player1=self)

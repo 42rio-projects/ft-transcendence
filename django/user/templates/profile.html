@@ -37,14 +37,24 @@ Profile
     <form method="post" onsubmit="handleFormSubmit(event)">
       {% csrf_token %}
       <input type="hidden" name="user-id" value="{{ user.id }}" />
-      <input type="hidden" name="user-action" value="friend-invite" />
-      <button type="submit">Friend invite</button>
+	  {% if user in request.user.users_invited_to_friend %}
+      <input type="hidden" name="user-action" value="cancel-friend-invite" />
+      <button type="submit">Cancel friend invite</button>
+	  {% else %}
+      <input type="hidden" name="user-action" value="send-friend-invite" />
+      <button type="submit">Send friend invite</button>
+	  {% endif %}
     </form>
     <form method="post" onsubmit="handleFormSubmit(event)">
       {% csrf_token %}
       <input type="hidden" name="user-id" value="{{ user.id }}" />
+	  {% if user in request.user.get_blocks %}
+      <input type="hidden" name="user-action" value="unblock" />
+      <button type="submit">Unblock</button>
+	  {% else %}
       <input type="hidden" name="user-action" value="block" />
       <button type="submit">Block</button>
+	  {% endif %}
     </form>
   </div>
   {% endif %}
