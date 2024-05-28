@@ -2,7 +2,7 @@ class MessageWebSocket {
   constructor(id) {
     this.onlineUsers = [];
     this.socket = new WebSocket(
-      "ws://" + window.location.host + "/ws/chat/" + id + "/",
+      "wss://" + window.location.host + "/ws/chat/" + id + "/",
     );
     this.socket.onmessage = this.onMessage.bind(this);
     this.socket.onclose = this.onClose.bind(this);

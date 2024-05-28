@@ -1,7 +1,7 @@
 class OnlineTournamentWebSocket {
   constructor(id) {
     this.socket = new WebSocket(
-      "ws://" + window.location.host + "/ws/online-tournament/" + id + "/",
+      "wss://" + window.location.host + "/ws/online-tournament/" + id + "/",
     );
     this.socket.onmessage = this.onMessage.bind(this);
     this.socket.onclose = this.onClose.bind(this);
