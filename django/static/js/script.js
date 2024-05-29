@@ -1,13 +1,14 @@
 let localGameSocket;
 let onlineGameSocket;
 let messageSocket;
+let localTournamentSocket;
 
 // Fetches with X-Transcendence header
 // inserts response HTML into target element
 // returns response URL for history navigation
 async function fetchData(
   url,
-  { method, body } = { method: "GET", body: null }
+  { method, body } = { method: "GET", body: null },
 ) {
   const response = await fetch(url, {
     headers: {
@@ -38,7 +39,7 @@ function handleFormSubmit(event) {
   })
     .then((response_url) => {
       // If the form returns a different URL, update the history
-      console.log(response_url)
+      console.log(response_url);
       if (response_url !== form.action) {
         history.pushState({ url: response_url }, null, response_url);
       }
@@ -87,9 +88,14 @@ function handleSockets(url) {
     onlineGameSocket.socket.readyState === WebSocket.OPEN
   ) {
     onlineGameSocket.socket.close();
+  } else if (
+    localTournamentSocket &&
+    localTournamentSocket.socket.readyState === WebSocket.OPEN
+  ) {
+    localTournamentSocket.socket.close();
   }
 
-  console.log("Url: " + url)
+  console.log("Url: " + url);
 
   if (url == "/friends/") {
     statusSocket.setInitialStatus();
@@ -104,6 +110,9 @@ function handleSockets(url) {
     const regex = /\/online-game\/(?<id>\d+)\//;
     const match = url.match(regex);
     onlineGameSocket = new OnlineGameWebSocket(match.groups.id);
+  } else if (url.includes("/local-tournament/")) {
+    console.log("Creating localGameSocket");
+    localTournamentSocket = new LocalTournamentWebSocket();
   }
 }
 

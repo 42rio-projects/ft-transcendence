@@ -122,7 +122,7 @@ class LocalTournamentCosumer(AsyncWebsocketConsumer):
     async def receive(self, text_data):
         data = json.loads(text_data)
         try:
-            action = data['action']
+            action = data['user_action']
             if action == 'add_player':
                 await self.tournament.add_player(data['alias'])
             elif action == 'remove_player':

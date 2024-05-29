@@ -3,7 +3,7 @@
   <form onsubmit="localTournamentSocket.playerAction(event)">
     {% csrf_token %}
     <input type="hidden" name="alias" value="{{ alias }}" />
-    <input type="hidden" name="action" value="remove_player" />
+    <input type="hidden" name="user_action" value="remove_player" />
     <button type="submit" class="input-button">Remove</button>
   </form>
 </div>

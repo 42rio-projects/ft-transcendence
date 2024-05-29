@@ -8,6 +8,9 @@ urlpatterns = [
     path(
         'pong/online-game/<int:game_id>/', views.onlineGame, name='onlineGame'
     ),
+    path(
+        'pong/local-tournament/', views.localTournament, name='localTournament'
+    ),
     path("game-invites/", views.gameInvites, name="gameInvites"),
     path(
         "game-invites/respond-invite/<int:invite_id>/",
@@ -15,7 +18,6 @@ urlpatterns = [
         name="respondGameInvite"
     ),
     path('tournament-menu/', views.tournamentMenu, name='tournamentMenu'),
-    path('local-tournament/', views.localTournament, name='localTournament'),
     path(
         "tournament-invites/",
         views.tournamentInvites,
