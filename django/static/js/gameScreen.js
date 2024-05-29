@@ -1,6 +1,6 @@
 class GameScreen {
-  screenHeight = 600;
-  screenWidth = 1200;
+  screenHeight = 300;
+  screenWidth = 600;
   gameHeight = 100;
   gameWidth = 200;
 
