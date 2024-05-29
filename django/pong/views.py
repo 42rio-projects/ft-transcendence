@@ -1,9 +1,12 @@
 from user.models import User
-from django.shortcuts import redirect, render, get_object_or_404
+from django.shortcuts import redirect,  get_object_or_404
 from .utils import render_component
 from asgiref.sync import async_to_sync
 from django.http import JsonResponse
 from django.template.loader import render_to_string
+from channels.layers import get_channel_layer
+from django.http import HttpResponse
+from django.core.exceptions import PermissionDenied
 from . import models
 
 
@@ -41,7 +44,7 @@ def index(request):
         else:
             return render_component(request, 'search_user_form.html', 'form', {
                 'error': 'User not found',
-                'username': username # So user doesn't have to re-type
+                'username': username  # So user doesn't have to re-type
             }, status=404)
 
     if request.method == 'GET':
@@ -93,9 +96,8 @@ def onlineGame(request, game_id):
             }
         except Exception:
             context = {"player1": game.player1, "player2": game.player2}
-        
+
         return render_component(request, 'pong/game/online/game.html', 'content', context)
-        
 
 
 def gameInvites(request):
