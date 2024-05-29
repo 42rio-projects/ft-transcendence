@@ -64,16 +64,16 @@ def pong(request):
             invite.respond(accepted=True)
             return redirect('onlineGame', game_id=invite.game.pk)
         elif user_action == 'reject':
+            html = render_to_string('pong/game/online/canceled.html',)
             send_channel_message(
                 f'game_{invite.game.pk}',
-                {'type': 'game.update', 'json': {'status': 'canceled'}},
+                {
+                    'type': 'game.update',
+                    'json': {'status': 'canceled', 'html': html}
+                },
             )
             invite.respond(accepted=False)
-        else:
-            raise Exception('Invalid action')
-
-    if request.method == 'GET':
-        return render_component(request, 'pong/pong.html', 'content')
+    return render_component(request, 'pong/pong.html', 'content')
 
 
 def localGame(request):

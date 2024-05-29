@@ -35,8 +35,8 @@ class OnlineGameWebSocket {
       this.unsetKeyListeners();
       this.gameRunning = false;
     } else if (data["status"] == "canceled") {
-      console.log("Game canceled");
       this.gameRunning = false;
+      this.renderResult(data["html"]);
     } else if (data["status"] == "finished") {
       this.gameRunning = false;
     } else if (data["status"] == "result") {
