@@ -22,7 +22,7 @@ class LocalTournamentWebSocket {
     } else if (status == "start_game") {
       this.startGame();
     } else if (status == "warning") {
-      console.log(data["content"]);
+      this.displayWarning(data["content"]);
     }
   }
 
@@ -94,5 +94,15 @@ class LocalTournamentWebSocket {
   nextGame(winner) {
     const message = { user_action: "next_game", winner: winner };
     this.socket.send(JSON.stringify(message));
+  }
+
+  displayWarning(warning) {
+    const warningElement = document.getElementById("local-tournament-warning");
+    if (warningElement.textContent === "") {
+      warningElement.textContent = warning;
+      setTimeout(() => {
+        warningElement.textContent = "";
+      }, 2000);
+    }
   }
 }

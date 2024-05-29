@@ -6,6 +6,7 @@
 <div>
   <div id="formation-menu">
     <div class="verticalDiv">
+	<span id="local-tournament-warning" class="color-error"></span>
       <form onsubmit="localTournamentSocket.playerAction(event)">
         {% csrf_token %}
         <input
