@@ -8,6 +8,9 @@ urlpatterns = [
     path('login/', views.login),
     path('logout/', views.logout),
 
+    path('tournament_history/', views.tournament_history),
+    path('match_history/', views.match_history),
+
     path('profile/', views.my_profile),
     path('profile/<str:username>/', views.user_profile),
     path('edit_profile/', views.edit_profile),
@@ -35,4 +38,5 @@ urlpatterns = [
     views.validate_totp_token,
     name='validate_totp_token'
     ),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) # For avatar images
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) # For Hentai images
+

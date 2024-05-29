@@ -1,5 +1,4 @@
-from django.http import Http404
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404
 from django.core.exceptions import PermissionDenied
 from pong.utils import render_component
 from user.models import User, FriendInvite

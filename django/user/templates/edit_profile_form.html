@@ -1,40 +1,31 @@
-{% csrf_token %}
-
-{% if success %}
+{% csrf_token %} {% if success %}
 <span class="color-success text-sm">{{ success }}</span>
+{% endif %} {% if error %}
+<span class="color-error">{{ error }}</span>
 {% endif %}
 
 <div>
   <label for="avatar">Avatar:</label>
-  <input
-    class="button"
-    type="file"
-    name="avatar"
-  />
+  <input class="button" type="file" name="avatar" />
 </div>
 
 <div>
-  {% if username_error %}
-  <span class="error">{{ username_error }}</span>
-  {% endif %}
   <label for="username">Username:</label>
-  <input
-    type="text"
-    name="username"
-    value="{{ username }}"
-  />
+  <input type="text" name="username" value="{{ username }}" />
 </div>
 
 <div>
-  {% if email_error %}
-  <span class="error">{{ email_error }}</span>
-  {% endif %}
   <label for="email">Email:</label>
+  <input type="email" name="email" placeholder="No email" value="{{ email }}" />
+</div>
+
+<div>
+  <label for="nickname">Nickname:</label>
   <input
-    type="email"
-    name="email"
-    placeholder="No email"
-    value="{{ email }}"
+    type="nickname"
+    name="nickname"
+    placeholder="No nickname"
+    value="{{ nickname }}"
   />
 </div>
 

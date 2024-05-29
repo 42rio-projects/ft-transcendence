@@ -6,11 +6,11 @@ import os
 from django.core.paginator import Paginator
 import sys
 
-from django.core.paginator import Paginator
 from django.http import JsonResponse
 from django.http import HttpResponse
 from user.models import User
-from .utils import validate_password, validate_register, validate_update
+from pong.models import Tournament
+from .utils import validate_password, validate_register
 
 SERVICE_SID = os.environ['TWILIO_SERVICE_SID']
 ACCOUNT_SID = os.environ['TWILIO_ACCOUNT_SID']
@@ -28,7 +28,20 @@ def match_history(request):
         page_number = request.GET.get('page')
         page_obj = paginator.get_page(page_number)
 
-        return render(request, 'match_history/index.html', {'page_obj': page_obj})
+        return render_component(request, 'match_history/index.html', 'content', {'page_obj': page_obj})
+
+
+def tournament_history(request):
+    if request.method == "GET":
+        tournaments_list = Tournament.get_tournaments_by_user(request.user)
+        print(tournaments_list, file=sys.stderr)
+        paginator = Paginator(tournaments_list, 10)
+
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+
+        return render_component(request, 'tournament_history/index.html', 'content', {'page_obj': page_obj})
+
 
 def register(request):
     if request.method == 'POST':
@@ -95,20 +108,26 @@ def user_profile(request, username):
         return redirect('/profile/')
 
     user = get_object_or_404(User, username=username)
-    context = { 'user': user }
+    context = {'user': user}
 
     if request.method == 'POST':
         user_action = request.POST.get('user-action')
         try:
-            if user_action == 'friend-invite':
+            if user_action == 'send-friend-invite':
                 request.user.add_friend(user)
                 context['success'] = 'Friend invite sent'
+            elif user_action == 'cancel-friend-invite':
+                request.user.cancel_friend_invite(user)
+                context['success'] = 'Friend invite canceled'
             elif user_action == 'game-invite':
                 request.user.invite_to_game(user)
                 context['success'] = 'Game invite sent'
             elif user_action == 'block':
                 request.user.block_user(user)
                 context['success'] = 'User blocked'
+            elif user_action == 'unblock':
+                request.user.unblock_user(user)
+                context['success'] = 'User unblocked'
         except Exception as e:
             context['error'] = e.message
 
@@ -119,63 +138,46 @@ def user_profile(request, username):
 
 
 def edit_profile(request):
+    user = request.user
+
     if request.method == "POST":
-        user = request.user
         username = request.POST.get("username")
         nickname = request.POST.get("nickname")
+        email = request.POST.get("email")
 
-        if username and username != user.username:
-            if User.objects.filter(username=username).exists():
-                messages.error(request, "Username already in use")
-            elif len(username) < 3:
-                messages.error(
-                    request, "Username must be at least 3 characters")
-            else:
-                user.username = username
+        try:
+            if (username != user.username):
+                user.change_username(username)
 
-                messages.success(request, "Username changed successfully")
-
-        if nickname and nickname != user.nickname:
-            if User.objects.filter(nickname=nickname).exists():
-                messages.error(request, "Nickname already in use")
-            elif len(nickname) < 3:
-                messages.error(
-                    request, "Nickname must be at least 3 characters")
-            else:
-                user.nickname =nickname
-
-                messages.success(request, "Nickname changed successfully")
-
-        if not user.email_verified:
-            email = request.POST.get("email")
+            if (nickname != user.nickname):
+                user.change_nickname(nickname)
 
             if email != user.email:
-                if User.objects.filter(email=email).exists():
-                    messages.error(request, "Email already in use")
-                elif len(email) < 3:
-                    messages.error(
-                        request, "Email must be at least 3 characters")
-                else:
-                    user.email = email
-                    user.email_verified = False
+                user.change_email(email)
 
-                    messages.success(request, "Email changed successfully")
-
-        user.save()
+        except Exception as e:
+            return render_component(request, 'edit_profile.html', 'content', {
+                'error': e,
+                'username': username,
+                'email': email,
+                'nickname': nickname
+            }, 400)
 
         return render_component(request, 'edit_profile.html', 'content', {
             'success': 'Profile saved!',
             'username': user.username,
             'email': user.email,
+            'nickname': user.nickname,
         })
 
     if request.method == 'GET':
         return render_component(request, 'edit_profile.html', 'content', {
             "username": user.username,
-            "email": user.email
+            "email": user.email,
+            'nickname': user.nickname
         })
 
-# @login_required
+
 def generate_totp_factor(request):
     if request.method == "GET":
         # user = request.user
@@ -192,7 +194,6 @@ def generate_totp_factor(request):
         return JsonResponse(serialized_factor, safe=False)
 
 
-# @login_required
 def verify_totp_factor(request):
     if request.method == "POST":
         # user = request.user
@@ -208,9 +209,10 @@ def verify_totp_factor(request):
         status = factor.status
 
         if status == "approved":
-           return HttpResponse("Factor is valid")
+            return HttpResponse("Factor is valid")
 
         return HttpResponse("Factor is invalid")
+
 
 def serialize_factor(factor):
     serialized_data = {
@@ -221,7 +223,7 @@ def serialize_factor(factor):
     }
     return serialized_data
 
-# @login_required
+
 def list_totp_factors(request):
     if request.method == "GET":
         # user = request.user
@@ -231,9 +233,10 @@ def list_totp_factors(request):
         factors = client.verify.v2.services(
             SERVICE_SID).entities('ff483d1ff591898a9942916050d2ca3f').factors.list()
 
-        serialized_factors =  [serialize_factor(factor) for factor in factors]
+        serialized_factors = [serialize_factor(factor) for factor in factors]
 
         return JsonResponse(serialized_factors, safe=False)
+
 
 def validate_totp_token(request):
     if request.method == "POST":
@@ -260,6 +263,7 @@ def validate_totp_token(request):
 
         return HttpResponse("Token is invalid")
 
+
 def change_password(request):
     if request.method == 'POST':
         password = request.POST.get('password')
@@ -271,7 +275,7 @@ def change_password(request):
             errors_context['password2'] = password2
 
             return render_component(request, 'change_password_form.html', 'form', errors_context, 400)
-        
+
         request.user.set_password(password)
 
         return render_component(request, 'change_password_form.html', 'form', {
@@ -289,7 +293,8 @@ def verify_email(request):
 
         if user_action == 'send-code':
             client = Client(ACCOUNT_SID, AUTH_TOKEN)
-            client.verify.services(SERVICE_SID).verifications.create(to=user.email, channel='email')
+            client.verify.services(SERVICE_SID).verifications.create(
+                to=user.email, channel='email')
 
             return render_component(request, 'verify_email_forms.html', 'forms', {
                 'success': 'Verification code sent to your email'
@@ -298,7 +303,8 @@ def verify_email(request):
             code = request.POST.get('code')
 
             client = Client(ACCOUNT_SID, AUTH_TOKEN)
-            verification_check = client.verify.services(SERVICE_SID).verification_checks.create(to=user.email, code=code)
+            verification_check = client.verify.services(
+                SERVICE_SID).verification_checks.create(to=user.email, code=code)
 
             if verification_check.status != 'approved':
                 return render_component(request, 'verify_email_forms.html', 'forms', {

@@ -24,7 +24,11 @@ class User(AbstractUser):
         through="relations.IsFriendsWith",
         symmetrical=True
     )
-    nickname = models.CharField(max_length=255, unique=True, null=True, blank=True)
+    nickname = models.CharField(
+        max_length=255,
+        null=True,
+        unique=True
+    )
     blocked_list = models.ManyToManyField(
         'self',
         through="relations.IsBlockedBy",
@@ -43,6 +47,31 @@ class User(AbstractUser):
         default='user/avatars/default.png'
     )
 
+    def change_username(self, new_username):
+        if (User.objects.filter(username=new_username).exists()):
+            raise ValueError("Username already exists")
+        if (len(new_username) < 3):
+            raise ValueError("Username is too short")
+        self.username = new_username
+        self.save()
+
+    def change_nickname(self, new_nickname):
+        if (User.objects.filter(nickname=new_nickname).exists()):
+            raise ValueError("Nickname already exists")
+        if (len(new_nickname) < 3):
+            raise ValueError("Nickname is too short")
+        self.nickname = new_nickname
+        self.save()
+
+    def change_email(self, new_email):
+        if (User.objects.filter(email=new_email).exists()):
+            raise ValueError("Email already exists")
+        if (len(new_email) < 3):
+            raise ValueError("Email is too short")
+        self.email = new_email
+        self.email_verified = False
+        self.save()
+
     def get_friends(self):
         friendships = IsFriendsWith.objects.filter(
             Q(user1=self) | Q(user2=self)
@@ -55,13 +84,20 @@ class User(AbstractUser):
                 friends.append(friendship.user2)
         return friends
 
+    def get_tournaments(self):
+        admin = self.my_tournaments.all()
+        player = self.tournaments.all()
+        return admin.union(player)
+
     def get_games(self, filters=None):
         queryFilters = {}
         if filters and 'winner' in filters:
             queryFilters['winner'] = filters['winner']
 
-        home_games = self.home_games.filter(**queryFilters).prefetch_related('player1','player2')
-        away_games = self.away_games.filter(**queryFilters).prefetch_related('player1', 'player2')
+        home_games = self.home_games.filter(
+            **queryFilters).prefetch_related('player1', 'player2')
+        away_games = self.away_games.filter(
+            **queryFilters).prefetch_related('player1', 'player2')
 
         return home_games.union(away_games)
 
@@ -84,6 +120,15 @@ class User(AbstractUser):
         for block in blocks:
             blocked_users.append(block.blocked)
         return blocked_users
+
+    def users_invited_to_friend(self):
+        invites = FriendInvite.objects.filter(
+            Q(sender=self)
+        ).prefetch_related('receiver')
+        invited_users = []
+        for invite in invites:
+            invited_users.append(invite.receiver)
+        return invited_users
 
     def get_chats(self):
         blocked_users = self.get_blocks()
@@ -116,6 +161,11 @@ class User(AbstractUser):
         block = IsBlockedBy.objects.filter(Q(blocker=self, blocked=user))
         if block.exists():
             block[0].delete()
+
+    def cancel_friend_invite(self, user):
+        invite = FriendInvite.objects.filter(Q(sender=self, receiver=user))
+        if invite.exists():
+            invite[0].delete()
 
     def invite_to_game(self, user):
         game = Game(player1=self)
