@@ -272,6 +272,7 @@ class Round(models.Model):
     def __str__(self):
         return (f'{self.tournament.name} round {self.number}')
 
+
 class Game(models.Model):
     player1 = models.ForeignKey(
         'user.User',
@@ -339,9 +340,9 @@ class Game(models.Model):
         self.player2
 
     @database_sync_to_async
-    def render(self):
+    def raw_render(self):
         return render_to_string(
-            'pong/game/online/result.html', {"game": self}
+            'pong/game/online/raw_result.html', {"game": self}
         )
 
     # Take tournament into consideration
@@ -377,11 +378,12 @@ class GameInvite(models.Model):
         Custom validation to prevent sending invites to friends.
         """
         if GameInvite.objects.filter(sender=self.sender, receiver=self.receiver).exists():
-            raise ValidationError('You have already sent a game invite to this user.')
+            raise ValidationError(
+                'You have already sent a game invite to this user.')
 
         if GameInvite.objects.filter(sender=self.receiver, receiver=self.sender).exists():
-            raise ValidationError('You cannot send a game invite to someone who has invited you.')
-
+            raise ValidationError(
+                'You cannot send a game invite to someone who has invited you.')
 
     def save(self, *args, **kwargs):
         """

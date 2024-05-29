@@ -1,3 +1,8 @@
+{% extends 'index.html' %}
+
+{% block title %} Local Game {% endblock %}
+
+{% block content %}
 <div id="local-game-section">
   {% if tournament %}
   <div class="verticalDiv">
@@ -39,3 +44,4 @@
   </div>
   <canvas id="game-screen"></canvas>
 </div>
+{% endblock %}

@@ -62,7 +62,7 @@ def pong(request):
 
         if user_action == 'accept':
             invite.respond(accepted=True)
-            return redirect('/pong/online-game/' + str(invite_id) + '/')
+            return redirect('onlineGame', game_id=invite.game.pk)
         elif user_action == 'reject':
             send_channel_message(
                 f'game_{invite.game.pk}',

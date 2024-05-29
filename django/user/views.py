@@ -120,8 +120,8 @@ def user_profile(request, username):
                 request.user.cancel_friend_invite(user)
                 context['success'] = 'Friend invite canceled'
             elif user_action == 'game-invite':
-                request.user.invite_to_game(user)
-                context['success'] = 'Game invite sent'
+                game = request.user.invite_to_game(user)
+                return redirect('onlineGame', game_id=game.pk)
             elif user_action == 'block':
                 request.user.block_user(user)
                 context['success'] = 'User blocked'
