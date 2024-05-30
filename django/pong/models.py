@@ -83,7 +83,10 @@ class Tournament(models.Model):
         if self.players.count() + self.invites_sent.count() >= UPPER_PLAYER_LIMIT:
             raise Exception("Player limit reached")
         invite = TournamentInvite(tournament=self, receiver=user)
-        invite.save()
+        try:
+            invite.save()
+        except Exception:
+            raise Exception("Invite already sent")
         return invite
 
     def cancel(self):

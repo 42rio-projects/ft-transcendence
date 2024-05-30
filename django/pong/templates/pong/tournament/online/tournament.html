@@ -6,6 +6,8 @@
 <div id="tournament-display">
   <h1>{{ tournament }}</h1>
   {% if tournament.started == False %}
+	<span id="online-tournament-success" class="color-success"></span>
+	<span id="online-tournament-warning" class="color-error"></span>
 	{% if user == tournament.admin %}
   	  <div id="admin-pannel">
   		  <form method="post" onsubmit="onlineTournamentSocket.form(event)">

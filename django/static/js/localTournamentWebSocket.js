@@ -102,7 +102,7 @@ class LocalTournamentWebSocket {
       warningElement.textContent = warning;
       setTimeout(() => {
         warningElement.textContent = "";
-      }, 2000);
+      }, 1500);
     }
   }
 }
