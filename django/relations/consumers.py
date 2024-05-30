@@ -2,6 +2,12 @@ import json
 
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
+from user.models import User
+
+
+@database_sync_to_async
+def get_user(pk):
+    return User.objects.get(pk=pk)
 
 
 @database_sync_to_async
@@ -13,13 +19,13 @@ def set_user_status(user, status):
 class statusConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         """Accept connection and broadcast user online status"""
-        user = self.scope['user']
-
-        if not user.is_authenticated:
+        if not self.scope['user'].is_authenticated:
             return
 
         await self.accept()
         await self.channel_layer.group_add('status', self.channel_name)
+
+        user = await get_user(self.scope['session'].get('_auth_user_id'))
 
         await set_user_status(user, 'Online')
         await self.channel_layer.group_send('status', {
@@ -30,7 +36,7 @@ class statusConsumer(AsyncWebsocketConsumer):
 
     async def disconnect(self, close_code):
         """Broadcast user offline status"""
-        user = self.scope['user']
+        user = await get_user(self.scope['session'].get('_auth_user_id'))
 
         await set_user_status(user, 'Offline')
         await self.channel_layer.group_send('status', {
