@@ -16,7 +16,13 @@
       <a href="/profile/">
         <img class="header-avatar" src="{{ user.avatar.url }}" alt="Avatar" />
       </a>
-      <a href="/logout/">Logout</a>
+      <button
+        class="link"
+        type="submit"
+        onclick="handleLogout(event)"
+      >
+        Logout
+      </button>
     </div>
     {% else %}
     <a href="/register/">Register</a>

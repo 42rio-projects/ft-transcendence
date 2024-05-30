@@ -69,6 +69,33 @@ document.addEventListener("click", (event) => {
   }
 });
 
+async function handleLogin(event) {
+  event.preventDefault();
+
+  const form = event.target;
+
+  const response = await fetchData(form.action, {
+    method: form.method,
+    body: new FormData(form),
+  });
+
+  if (response.status === 200) {
+    statusSocket = new StatusWebSocket();
+  }
+}
+
+async function handleLogout(event) {
+  event.preventDefault();
+
+  const response = await fetch("/logout/")
+
+  if (response.status === 200) {
+    statusSocket.close();
+    await fetchData("/");
+    history.pushState({ url: "/" }, null, "/");
+  }
+}
+
 let localGameSocket;
 let onlineGameSocket;
 let messageSocket;

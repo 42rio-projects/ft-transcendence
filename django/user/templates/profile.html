@@ -22,6 +22,7 @@ Profile
   <div>
     <img class="avatar" src="{{ user.avatar.url }}" alt="Avatar" />
     <span>{{ user.username }}</span>
+    <span id="{{ user.pk }}-status">{{ user.status }}</span>
   </div>
   <span>
     {% if user.email_verified %}
