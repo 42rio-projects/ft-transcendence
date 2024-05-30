@@ -1,0 +1,20 @@
+<div id="tournament-display">
+  <h1>{{ tournament }}</h1>
+  <div id="tournament-rounds" style="display: flex;">
+    {% for round in tournament.rounds.all %}
+    <div>
+      <h2>{{ round }}</h2>
+	  <div style="padding: 15px; display: flex; flex-direction: column;">
+		{% for game in round.games.all %}
+	  	  <a class="button" href='{% url 'onlineGame' game.id %}'>
+      	    {{ game }}
+	  	  </a>
+      	{% endfor %}
+	  </div>
+    </div>
+    {% endfor %}
+	{% if tournament.finished %}
+	<h2>Tournament winner is {{ tournament.winner }}</h2>
+    {% endif %}
+  </div>
+</div>

@@ -2,6 +2,7 @@ let localGameSocket;
 let onlineGameSocket;
 let messageSocket;
 let localTournamentSocket;
+let onlineTournamentSocket;
 
 // Fetches with X-Transcendence header
 // inserts response HTML into target element
@@ -93,6 +94,11 @@ function handleSockets(url) {
     localTournamentSocket.socket.readyState === WebSocket.OPEN
   ) {
     localTournamentSocket.socket.close();
+  } else if (
+    onlineTournamentSocket &&
+    onlineTournamentSocket.socket.readyState === WebSocket.OPEN
+  ) {
+    onlineTournamentSocket.socket.close();
   }
 
   console.log("Url: " + url);
@@ -104,15 +110,18 @@ function handleSockets(url) {
     const match = url.match(regex);
     messageSocket = new MessageWebSocket(match.groups.id);
   } else if (url.includes("/local-game/")) {
-    console.log("Creating localGameSocket");
     localGameSocket = new LocalGameWebSocket();
   } else if (url.includes("/online-game/")) {
     const regex = /\/online-game\/(?<id>\d+)\//;
     const match = url.match(regex);
     onlineGameSocket = new OnlineGameWebSocket(match.groups.id);
   } else if (url.includes("/local-tournament/")) {
-    console.log("Creating localGameSocket");
     localTournamentSocket = new LocalTournamentWebSocket();
+  } else if (url.includes("/online-tournament/")) {
+    const regex = /\/online-tournament\/(?<id>\d+)\//;
+    const match = url.match(regex);
+    if (!match) return;
+    onlineTournamentSocket = new OnlineTournamentWebSocket(match.groups.id);
   }
 }
 

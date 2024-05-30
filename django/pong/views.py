@@ -33,8 +33,6 @@ def tournament_update(pk, json):
         f'tournament_{pk}', {"type": "tournament.update", "json": json}
     )
 
-# Create your views here.
-
 
 def index(request):
     if request.method == 'POST':
@@ -116,36 +114,49 @@ def gameInvites(request):
     return render_component(request, "pong/game/online/invites.html", 'content')
 
 
-def respondGameInvite(request, invite_id):
-    return redirect('gameInvites')
-
-
-def tournamentMenu(request):
-    if request.method == "GET":
-        return render_component(request, "pong/tournament_menu.html", "content")
-
-
 def localTournament(request):
     if request.method == "GET":
         return render_component(request, "pong/tournament/local/tournament.html", "content")
 
 
-def tournamentInvites(request):
-    if request.method == "GET":
-        return render_component(request, "pong/tournament/online/invites.html", "content")
+def tournamentMenu(request):
+    context = {}
+    if request.method == 'POST':
+        user_action = request.POST.get('user_action')
+        if 'invite' in user_action:
+            invite_id = request.POST.get('invite-id')
+            try:
+                invite = models.TournamentInvite.objects.get(pk=invite_id)
+                pk = invite.tournament.pk
+            except Exception:
+                context['error'] = 'Invite no longer exists'
+                user_action = ''
+        if user_action == 'create-tournament':
+            name = request.POST.get('tournament-name')
+            try:
+                tournament = models.Tournament(admin=request.user, name=name)
+                tournament.save()
+                return redirect(
+                    'onlineTournament', tournament_id=tournament.pk
+                )
+            except Exception:
+                context['error'] = 'Tournament with this name already exists'
+        elif user_action == 'accept-invite':
+            invite.respond(accepted=True)
+            context['success'] = 'Invite accepted'
+            html = render_to_string(
+                'pong/tournament/online/player.html', {'player': request.user}
+            )
+            tournament_update(pk, {"status": "new_player", "html": html})
+            tournament_update(pk, {"status": "delete_invite", "id": invite_id})
+        elif user_action == 'reject-invite':
+            invite.respond(accepted=False)
+            context['success'] = 'Invite rejected'
+            tournament_update(pk, {"status": "delete_invite", "id": invite_id})
 
-
-def createTournament(request):
-    if request.method != 'POST':
-        return
-    name = request.POST.get('tournament-name')
-    try:
-        tournament = models.Tournament(admin=request.user, name=name)
-        tournament.save()
-        return redirect('onlineTournament', tournament_id=tournament.pk)
-    except Exception as e:
-        # add 40x response that is not rendered on the front end
-        return HttpResponse(e)
+    return render_component(
+        request, "pong/tournament/online/menu.html", "content", context
+    )
 
 
 def onlineTournament(request, tournament_id):
@@ -197,27 +208,3 @@ def inviteToTournament(request, tournament_id):
         return json_success(f"Invite sent to {name}")
     except Exception as e:
         return json_error(e.__str__())
-
-
-def respondTournamentInvite(request, invite_id):
-    invite = get_object_or_404(
-        models.TournamentInvite,
-        pk=invite_id,
-    )
-    if invite.receiver != request.user:
-        raise PermissionDenied
-    if request.method == 'POST':
-        action = request.POST.get('action')
-        if action == 'accept':
-            pk = invite.tournament.pk
-            invite.respond(accepted=True)
-            html = render_to_string(
-                'pong/tournament/online/player.html', {'player': request.user}
-            )
-            tournament_update(pk, {"status": "new_player", "html": html})
-        elif action == 'reject':
-            invite.respond(accepted=False)
-        else:
-            raise Exception('Invalid action')
-        tournament_update(pk, {"status": "delete_invite", "id": invite_id})
-    return redirect('tournamentInvites')

@@ -118,7 +118,7 @@ class OnlineTournament():
     @database_sync_to_async
     def render_tournament(self):
         return render_to_string(
-            'pong/tournament/online/tournament.html',
+            'pong/tournament/online/raw_tournament.html',
             {"tournament": self.tournament, "user": self.socket.user}
         )
 
