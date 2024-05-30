@@ -58,10 +58,10 @@ def pong(request):
         if invite.receiver != request.user:
             raise PermissionDenied
 
-        if user_action == 'accept':
+        if user_action == 'accept-game':
             invite.respond(accepted=True)
             return redirect('onlineGame', game_id=invite.game.pk)
-        elif user_action == 'reject':
+        elif user_action == 'reject-game':
             html = render_to_string('pong/game/online/canceled.html',)
             send_channel_message(
                 f'game_{invite.game.pk}',
