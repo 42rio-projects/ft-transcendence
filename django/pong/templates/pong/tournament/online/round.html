@@ -1,8 +1,10 @@
 <div>
   <h2>{{ round }}</h2>
-  {% for game in round.games.all %}
-  <div class="verticalDiv">
-    <h3>{{ game }}</h3>
+  <div style="padding: 15px; display: flex; flex-direction: column;">
+	{% for game in round.games.all %}
+  	  <a class="button" href='{% url 'onlineGame' game.id %}'>
+  	    {{ game }}
+  	  </a>
+  	{% endfor %}
   </div>
-  {% endfor %}
 </div>

@@ -279,7 +279,7 @@ class OnlineGame(Game):
         if self.game_model.round is not None and self.stopped is False:
             await self.game_model.round.try_advance()
         await self.game_model.a_refresh()
-        html = await self.game_model.render()
+        html = await self.game_model.raw_render()
         await self.send_message({"status": "result", "html": html})
         await self.channel_layer.group_send(
             self.room_group_name, {"type": "game.stopped"}

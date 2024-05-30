@@ -1,59 +1,72 @@
+{% extends 'index.html' %}
+
+{% block title %} Online Tournament {% endblock %}
+
+{% block content %}
 <div id="tournament-display">
   <h1>{{ tournament }}</h1>
-  {% if tournament.started == False %} {% if user == tournament.admin %}
-  <div id="admin-pannel" class="verticalDiv">
-    <form method="post" onsubmit="onlineTournamentSocket.form(event)">
-      {% csrf_token %}
-      <label for="username">Invite user:</label>
-      <input type="text" name="username" id="username" required />
-      <input
-        type="hidden"
-        name="url"
-        value="{% url 'inviteToTournament' tournament.id %}"
-      />
-      <button type="submit">Invite</button>
-    </form>
-    <form method="post" onsubmit="onlineTournamentSocket.form(event)">
-      {% csrf_token %}
-      <input
-        type="hidden"
-        name="url"
-        value="{% url 'cancelTournament' tournament.id %}"
-      />
-      <button type="submit">Cancel Tournament</button>
-    </form>
-    <button onclick="onlineTournamentSocket.start()">Start Tournament</button>
-  </div>
-  {% endif %}
-  <div id="tournament-players">
-    <h2>Players</h2>
-    {% for player in tournament.players.all %}
-    <p id="player-{{ player.pk }}">{{ player.username }}</p>
-    {% endfor %}
-  </div>
-  <div id="invited-players">
-    <h2>Invites Sent</h2>
-    {% for invite in tournament.invites_sent.all %}
-    <p id="invite-{{ invite.pk }}">{{ invite.receiver }}</p>
-    {% endfor %}
-  </div>
+  {% if tournament.started == False %}
+	<span id="online-tournament-success" class="color-success"></span>
+	<span id="online-tournament-warning" class="color-error"></span>
+	{% if user == tournament.admin %}
+  	  <div id="admin-pannel">
+  		  <form method="post" onsubmit="onlineTournamentSocket.form(event)">
+  		    {% csrf_token %}
+  		    <input type="text"
+				   name="username"
+				   class="chat-input"
+				   placeholder="username to invite"
+				   required
+			/>
+  		    <input
+  		      type="hidden"
+  		      name="url"
+  		      value="{% url 'inviteToTournament' tournament.id %}"
+  		    />
+  		    <button type="submit">Invite</button>
+  		  </form>
+  		  <form method="post" onsubmit="onlineTournamentSocket.form(event)">
+  		    {% csrf_token %}
+  		    <input
+  		      type="hidden"
+  		      name="url"
+  		      value="{% url 'cancelTournament' tournament.id %}"
+  		    />
+  		    <button type="submit">Cancel Tournament</button>
+  		  </form>
+  		  <button onclick="onlineTournamentSocket.start()">Start Tournament</button>
+  		</div>
+  	{% endif %}
+	<div id="tournament-players">
+  	  <h2>Players</h2>
+  	  {% for player in tournament.players.all %}
+  	  <p id="player-{{ player.pk }}">{{ player.username }}</p>
+  	  {% endfor %}
+  	</div>
+  	<div id="invited-players">
+  	  <h2>Invites Sent</h2>
+  	  {% for invite in tournament.invites_sent.all %}
+  	  <p id="invite-{{ invite.pk }}">{{ invite.receiver }}</p>
+  	  {% endfor %}
+  	</div>
   {% else %}
-  <div id="tournament-rounds" class="verticalDiv">
+  <div id="tournament-rounds" style="display: flex;">
     {% for round in tournament.rounds.all %}
     <div>
       <h2>{{ round }}</h2>
-      {% for game in round.games.all %}
-      <div class="verticalDiv">
-        <h3>{{ game }}</h3>
-        {% if user == game.player1 or user == game.player2 %}
-        <button onclick="render('{% url 'onlineGame' game.id %}')">Play</button>
-        {% endif %}
-      </div>
-      {% endfor %}
+	  <div style="padding: 15px; display: flex; flex-direction: column;">
+		{% for game in round.games.all %}
+	  	  <a class="button" href='{% url 'onlineGame' game.id %}'>
+      	    {{ game }}
+	  	  </a>
+      	{% endfor %}
+	  </div>
     </div>
-    {% endfor %} {% if tournament.finished %}
-    <h2>Winner is {{ tournament.winner }}</h2>
+    {% endfor %}
+	{% if tournament.finished %}
+	<h2>Tournament winner is {{ tournament.winner }}</h2>
     {% endif %}
   </div>
   {% endif %}
 </div>
+{% endblock %}
