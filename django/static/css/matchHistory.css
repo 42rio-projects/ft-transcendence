@@ -1,0 +1,14 @@
+.table {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+
+.headRow {
+  display: flex;
+  gap: 4rem;
+  align-items: center;
+  justify-content: center;
+  color: red;
+}
