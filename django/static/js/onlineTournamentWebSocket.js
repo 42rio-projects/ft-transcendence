@@ -21,7 +21,7 @@ class OnlineTournamentWebSocket {
     } else if (status == "started" || status == "cancelled") {
       this.display(data?.["html"]);
     } else if (status == "error") {
-      console.error(data?.message);
+      this.displayWarning(data?.message);
     }
   }
 
@@ -44,13 +44,13 @@ class OnlineTournamentWebSocket {
     try {
       status = json["status"];
     } catch {
-      console.error("Invalid Json response");
+      this.displayWarning("Invalid Json response");
       return;
     }
     if (status == "success") {
-      console.log(json?.message);
+      this.displaySuccess(json?.message);
     } else if (status == "error") {
-      console.error(json?.message);
+      this.displayWarning(json?.message);
     }
   }
 
@@ -80,5 +80,25 @@ class OnlineTournamentWebSocket {
 
   delInvitedPlayer(id) {
     document.getElementById(`invite-${id}`).remove();
+  }
+
+  displaySuccess(success) {
+    const successElement = document.getElementById("online-tournament-success");
+    if (successElement.textContent === "") {
+      successElement.textContent = success;
+      setTimeout(() => {
+        successElement.textContent = "";
+      }, 1500);
+    }
+  }
+
+  displayWarning(warning) {
+    const warningElement = document.getElementById("online-tournament-warning");
+    if (warningElement.textContent === "") {
+      warningElement.textContent = warning;
+      setTimeout(() => {
+        warningElement.textContent = "";
+      }, 1500);
+    }
   }
 }

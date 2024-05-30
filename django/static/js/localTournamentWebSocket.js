@@ -22,7 +22,7 @@ class LocalTournamentWebSocket {
     } else if (status == "start_game") {
       this.startGame();
     } else if (status == "warning") {
-      console.log(data["content"]);
+      this.displayWarning(data["content"]);
     }
   }
 
@@ -38,7 +38,10 @@ class LocalTournamentWebSocket {
 
       const form = event.target;
       const data = new FormData(form);
-      const message = { action: data.get("action"), alias: data.get("alias") };
+      const message = {
+        user_action: data.get("user_action"),
+        alias: data.get("alias"),
+      };
       form.reset();
       this.socket.send(JSON.stringify(message));
     } catch (error) {
@@ -52,7 +55,7 @@ class LocalTournamentWebSocket {
 
       const form = event.target;
       const data = new FormData(form);
-      const message = { action: data.get("action") };
+      const message = { user_action: data.get("user_action") };
       this.socket.send(JSON.stringify(message));
     } catch (error) {
       console.log(error);
@@ -89,7 +92,17 @@ class LocalTournamentWebSocket {
   }
 
   nextGame(winner) {
-    const message = { action: "next_game", winner: winner };
+    const message = { user_action: "next_game", winner: winner };
     this.socket.send(JSON.stringify(message));
+  }
+
+  displayWarning(warning) {
+    const warningElement = document.getElementById("local-tournament-warning");
+    if (warningElement.textContent === "") {
+      warningElement.textContent = warning;
+      setTimeout(() => {
+        warningElement.textContent = "";
+      }, 1500);
+    }
   }
 }
