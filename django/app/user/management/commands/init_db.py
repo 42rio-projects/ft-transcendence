@@ -6,8 +6,9 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         sql_commands = [
-            "UPDATE pong_game SET finished = true;",
-            "UPDATE pong_tournament SET finished = true;"
+            "DELETE FROM pong_game WHERE finished = false;",
+            "DELETE FROM pong_tournament_players WHERE tournament_id IN (SELECT id FROM pong_tournament WHERE finished = false);",
+            "DELETE FROM pong_tournament WHERE finished = false;"
         ]
 
         with connection.cursor() as cursor:
