@@ -3,6 +3,8 @@ networks:
     name: ft_transcendence
 
 volumes:
+  staticVolume:
+    driver: local
 
   filebeatdata:
     driver: local
@@ -43,6 +45,7 @@ services:
     restart: always
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./requirements/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - ft_transcendence
 
@@ -61,8 +64,12 @@ services:
     build: ./django
     env_file: .env
     restart: always
+    ports:
+      - "8000:8000"
     depends_on:
       - postgres
+    volumes:
+      - staticVolume:/static
     networks:
       - ft_transcendence
 
@@ -76,6 +83,8 @@ services:
       - "443:443"
     depends_on:
       - django
+    volumes:
+      - staticVolume:/var/www
     networks:
       - ft_transcendence
 

@@ -24,7 +24,18 @@ echo "Gunicorn config updated!"
 
 echo "MakeMigrations"
 python manage.py makemigrations
+
 echo "Migrate"
 python manage.py migrate --run-syncdb
+
+echo "CollectStatic"
+yes | python manage.py collectstatic
+
+echo "CreateSuperUser"
+python manage.py createsuperuser \
+  --noinput \
+  --username "$SUPERUSERNAME" \
+  --email "$SUPEREMAIL"
+
 echo "Runserver"
 gunicorn -c gunicorn_config.py ft_transcendence.wsgi:application
