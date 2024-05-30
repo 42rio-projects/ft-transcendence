@@ -23,12 +23,12 @@ client = Client(ACCOUNT_SID, AUTH_TOKEN)
 def match_history(request):
     if request.method == "GET":
         games_list = request.user.get_games()
-        paginator = Paginator(games_list, 10)
+        # paginator = Paginator(games_list, 10)
 
-        page_number = request.GET.get('page')
-        page_obj = paginator.get_page(page_number)
+        # page_number = request.GET.get('page')
+        # page_obj = paginator.get_page(page_number)
 
-        return render_component(request, 'match_history/index.html', 'content', {'page_obj': page_obj})
+        return render_component(request, 'match_history/index.html', 'content', {'page_obj': games_list})
 
 
 def tournament_history(request):
