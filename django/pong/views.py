@@ -98,22 +98,6 @@ def onlineGame(request, game_id):
         return render_component(request, 'pong/game/online/game.html', 'content', context)
 
 
-def gameInvites(request):
-    if request.method == 'POST':
-        name = request.POST.get('username')
-        user = get_object_or_404(
-            User,
-            username=name,
-        )
-        try:
-            game = request.user.invite_to_game(user)
-            return redirect('onlineGame', game_id=game.pk)
-        except Exception as e:
-            # add 40x response that is not rendered on the front end
-            return HttpResponse(e)
-    return render_component(request, "pong/game/online/invites.html", 'content')
-
-
 def localTournament(request):
     if request.method == "GET":
         return render_component(request, "pong/tournament/local/tournament.html", "content")
@@ -160,8 +144,6 @@ def tournamentMenu(request):
 
 
 def onlineTournament(request, tournament_id):
-    if request.method != 'GET':
-        return
     tournament = get_object_or_404(models.Tournament, pk=tournament_id)
     return render_component(request, "pong/tournament/online/tournament.html", "content", {"tournament": tournament})
 
@@ -185,7 +167,7 @@ def cancelTournament(request, tournament_id):
 
 def inviteToTournament(request, tournament_id):
     if request.method != 'POST':
-        return
+        return redirect('pongMenu')
     try:
         tournament = models.Tournament.objects.get(pk=tournament_id)
     except Exception:
