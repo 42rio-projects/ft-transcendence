@@ -20,7 +20,7 @@ async function fetchData(
 
   handleSockets(response.url);
 
-  return response.url;
+  return response;
 }
 
 function handleFormSubmit(event) {
@@ -32,10 +32,10 @@ function handleFormSubmit(event) {
     method: form.method,
     body: new FormData(form),
   })
-    .then((response_url) => {
+    .then((response) => {
       // If the form returns a different URL, update the history
-      if (response_url !== form.action) {
-        history.pushState({ url: response_url }, null, response_url);
+      if (response.url !== form.action) {
+        history.pushState({ url: response.url }, null, response.url);
       }
     })
     .catch((error) => console.error(error));
@@ -57,8 +57,8 @@ function handleLinkClick(event) {
   const url = event.target.href;
 
   fetchData(url)
-    .then((response_url) => {
-      history.pushState({ url: response_url }, null, response_url);
+    .then((response) => {
+      history.pushState({ url: response.url }, null, response.url);
     })
     .catch((error) => console.error(error));
 }
@@ -80,7 +80,7 @@ async function handleLogin(event) {
   });
 
   if (response.status === 200) {
-    statusSocket = new StatusWebSocket();
+    statusSocket.connect();
   }
 }
 
