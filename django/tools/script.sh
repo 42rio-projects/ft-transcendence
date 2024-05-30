@@ -28,14 +28,14 @@ python manage.py makemigrations
 echo "Migrate"
 python manage.py migrate --run-syncdb
 
+echo "Initialize database"
+python manage.py init_db
+
 echo "CollectStatic"
-yes | python manage.py collectstatic
+python manage.py collectstatic --noinput
 
 echo "CreateSuperUser"
-python manage.py createsuperuser \
-  --noinput \
-  --username "$SUPERUSERNAME" \
-  --email "$SUPEREMAIL"
+python manage.py createsuperuser --noinput
 
 echo "Runserver"
 gunicorn -c gunicorn_config.py ft_transcendence.wsgi:application

@@ -45,7 +45,6 @@ services:
     restart: always
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./requirements/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - ft_transcendence
 
