@@ -46,6 +46,7 @@ class User(AbstractUser):
         blank=True,
         default='user/avatars/default.png'
     )
+    status = models.CharField(max_length=16, default='Offline')
 
     def change_username(self, new_username):
         if (User.objects.filter(username=new_username).exists()):

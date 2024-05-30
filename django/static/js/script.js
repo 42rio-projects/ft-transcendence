@@ -26,7 +26,7 @@ async function fetchData(
 
   handleSockets(response.url);
 
-  return response.url;
+  return response;
 }
 
 function handleFormSubmit(event) {
@@ -38,11 +38,10 @@ function handleFormSubmit(event) {
     method: form.method,
     body: new FormData(form),
   })
-    .then((response_url) => {
+    .then((response) => {
       // If the form returns a different URL, update the history
-      console.log(response_url);
-      if (response_url !== form.action) {
-        history.pushState({ url: response_url }, null, response_url);
+      if (response.url !== form.action) {
+        history.pushState({ url: response.url }, null, response.url);
       }
     })
     .catch((error) => console.error(error));
@@ -64,8 +63,8 @@ function handleLinkClick(event) {
   const url = event.target.href;
 
   fetchData(url)
-    .then((response_url) => {
-      history.pushState({ url: response_url }, null, response_url);
+    .then((response) => {
+      history.pushState({ url: response.url }, null, response.url);
     })
     .catch((error) => console.error(error));
 }
@@ -75,6 +74,33 @@ document.addEventListener("click", (event) => {
     handleLinkClick(event);
   }
 });
+
+async function handleLogin(event) {
+  event.preventDefault();
+
+  const form = event.target;
+
+  const response = await fetchData(form.action, {
+    method: form.method,
+    body: new FormData(form),
+  });
+
+  if (response.status === 200) {
+    statusSocket.connect();
+  }
+}
+
+async function handleLogout(event) {
+  event.preventDefault();
+
+  const response = await fetch("/logout/")
+
+  if (response.status === 200) {
+    statusSocket.close();
+    await fetchData("/");
+    history.pushState({ url: "/" }, null, "/");
+  }
+}
 
 function handleSockets(url) {
   if (messageSocket && messageSocket.socket.readyState === WebSocket.OPEN) {
