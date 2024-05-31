@@ -1,7 +1,7 @@
 {% extends 'index.html' %}
 
 {% block title %} 
-	{% if chat.sender == chat.receiver%}
+	{% if chat.starter == chat.receiver %}
 		Notifications
 	{% else %}
 		Chat
@@ -11,15 +11,19 @@
 {% block content %}
 <div>
   <div class="embranceForms">
-	<h2> {{other_user.username}} </h2>
     <img class="avatar" src="{{ other_user.avatar.url }}" alt="Avatar" />
-    <div class="inviteToPlay">
-      <form method="post" onsubmit="handleFormSubmit(event)">
-        {% csrf_token %}
-        <input type="hidden" name="user-id" value="{{ user.id }}" />
-        <button type="submit">Invite to Game</button>
-      </form>
-    </div>
+	{% if chat.starter != chat.receiver %}
+		<h2>{{other_user.username}}</h2>
+		<div class="inviteToPlay">
+    	  <form method="post" onsubmit="handleFormSubmit(event)">
+    	    {% csrf_token %}
+    	    <input type="hidden" name="user-id" value="{{ user.id }}" />
+    	    <button type="submit">Invite to Game</button>
+    	  </form>
+    	</div>
+	{% else %}
+		<h2>Notifications</h2>
+	{% endif %}
     <div class="renderChat" style="height: 250px; overflow: auto;">
       {% for message in chat.messages.all %}
 		{% if user == message.sender %}
@@ -30,12 +34,14 @@
       {% endfor %}
     </div>
 	<span id="chat-warning" class="color-error"></span>
-    <form class="chatform" method="post" onsubmit="messageSocket.sendMessage(event)">
-      {% csrf_token %}
-      <input type="text" name="content" id="content" class="chat-input" placeholder="Digite sua mensagem" required />
-      <input type="hidden" name="url" value="{% url 'sendMessage' id=chat.id %}" />
-      <button type="submit" class="input-button">Enviar</button>
-    </form>
+	{% if chat.starter != chat.receiver %}
+      <form class="chatform" method="post" onsubmit="messageSocket.sendMessage(event)">
+        {% csrf_token %}
+        <input type="text" name="content" id="content" class="chat-input" placeholder="Digite sua mensagem" required />
+        <input type="hidden" name="url" value="{% url 'sendMessage' id=chat.id %}" />
+        <button type="submit" class="input-button">Enviar</button>
+      </form>
+	{% endif %}
   </div>
 </div>
 {% endblock %}

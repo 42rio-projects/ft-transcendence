@@ -5,7 +5,6 @@ from django.shortcuts import get_object_or_404, redirect
 from django.http import HttpResponseForbidden
 from pong.utils import render_component
 
-from user.models import User
 import chat.models as models
 
 
@@ -16,18 +15,6 @@ def check_permissions_and_get_other_user(chat, user):
     if other_user in user.get_blocks():
         raise Exception('This user was blocked')
     return other_user
-
-
-def chatIndex(request):
-    template = loader.get_template('chat/index.html')
-    context = {}
-    return HttpResponse(template.render(context, request))
-
-
-def chatList(request):
-    template = loader.get_template('chat/chatlist.html')
-    context = {}
-    return HttpResponse(template.render(context, request))
 
 
 def chatRoom(request, id):
@@ -46,6 +33,8 @@ def chatRoom(request, id):
 
 
 def sendMessage(request, id):
+    if request.method == 'GET':
+        return redirect('chatRoom', id=id)
     try:
         chat = models.Chat.objects.get(pk=id)
     except Exception:
@@ -73,27 +62,14 @@ def sendMessage(request, id):
             )
 
 
-def startChat(request):
-    if request.method == 'POST':
-        name = request.POST.get('username')
-        user = get_object_or_404(
-            User,
-            username=name,
-        )
-        try:
-            models.Chat(starter=request.user, receiver=user).save()
-            # add 201 response that is not rendered on the front end
-        # except ValidationError as e:
-            # return HttpResponse(e)
-        except Exception as e:
-            return HttpResponse(e)
-    template = loader.get_template("chat/start_chat.html")
-    context = {}
-    return HttpResponse(template.render(context, request))
-
-
 def message(request, id):
     message = get_object_or_404(models.Message, pk=id)
     template = loader.get_template('chat/message.html')
     context = {"message": message}
     return HttpResponse(template.render(context, request))
+
+
+def notifications(request):
+    chat = request.user.get_or_create_notifications()
+    context = {"chat": chat, "other_user": request.user}
+    return render_component(request, 'chat/chat.html', 'content', context)
