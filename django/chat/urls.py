@@ -7,5 +7,10 @@ urlpatterns = [
     path("chat/list/", views.chatList, name="chatList"),
     path("chat/new-chat/", views.startChat, name="startChat"),
     path("chat/room/<int:id>/", views.chatRoom, name="chatRoom"),
+    path(
+        "chat/room/<int:id>/send-message",
+        views.sendMessage,
+        name="sendMessage"
+    ),
     path("message/<int:id>/", views.message, name="message"),
 ]

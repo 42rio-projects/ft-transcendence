@@ -32,7 +32,7 @@
     <form class="chatform" method="post" onsubmit="messageSocket.sendMessage(event)">
       {% csrf_token %}
       <input type="text" name="content" id="content" class="chat-input" placeholder="Digite sua mensagem" required />
-      <input type="hidden" name="url" value="{% url 'chatRoom' id=chat.id %}" />
+      <input type="hidden" name="url" value="{% url 'sendMessage' id=chat.id %}" />
       <button type="submit" class="input-button">Enviar</button>
     </form>
   </div>
