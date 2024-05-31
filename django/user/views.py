@@ -119,6 +119,9 @@ def user_profile(request, username):
             elif user_action == 'cancel-friend-invite':
                 request.user.cancel_friend_invite(user)
                 context['success'] = 'Friend invite canceled'
+            elif user_action == 'remove-friend':
+                request.user.del_friend(user)
+                context['success'] = 'Friendship removed!'
             elif user_action == 'game-invite':
                 game = request.user.invite_to_game(user)
                 return redirect('onlineGame', game_id=game.pk)

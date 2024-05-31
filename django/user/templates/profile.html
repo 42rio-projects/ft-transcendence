@@ -41,9 +41,12 @@ Profile
 	  {% if user in request.user.users_invited_to_friend %}
       <input type="hidden" name="user-action" value="cancel-friend-invite" />
       <button type="submit">Cancel friend invite</button>
-	  {% else %}
+	  {% elif user not in request.user.get_friends %}
       <input type="hidden" name="user-action" value="send-friend-invite" />
       <button type="submit">Send friend invite</button>
+    {% else %}
+      <input type="hidden" name="user-action" value="remove-friend" />
+      <button type="submit">Remove friend</button>
 	  {% endif %}
     </form>
     <form method="post" onsubmit="handleFormSubmit(event)">
