@@ -55,6 +55,9 @@ services:
     depends_on:
       - postgres
     env_file: .env
+    volumes:
+      - ./requirements/pgadmin/servers.json:/pgadmin4/servers.json # preconfigured servers/connections
+      - ./requirements/pgadmin/pgpass:/pgpass # passwords for the connections in this file
     networks:
       - ft_transcendence
 
