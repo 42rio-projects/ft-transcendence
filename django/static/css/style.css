@@ -274,11 +274,18 @@ form div {
   gap: 10px;
 }
 
-.offline-circle {
+.offline-icon {
   width: 10px;
   height: 10px;
   border-radius: 50%;
   background-color: var(--error-color);
+}
+
+.online-icon {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: var(--success-color);
 }
 
 .profile div {

@@ -25,7 +25,11 @@
     <li>
       <div>
         <span>{{ user.username }}</span>
-        <div id="{{ user.username }}" class="offline-circle"></div>
+        {% if user.status == 'Online' %}
+          <div id="{{ user.pk }}-status-icon" class="online-icon"></div>
+        {% else %}
+          <div id="{{ user.pk }}-status-icon" class="offline-icon"></div>
+        {% endif %}
       </div>
       <div>
         <a class="button" href="/profile/{{ user.username }}/">See profile</a>
