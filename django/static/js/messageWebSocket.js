@@ -13,8 +13,7 @@ class MessageWebSocket {
     const message_id = data.id;
     const response = await fetch("/message/" + message_id + "/");
     const html = await response.text();
-    // modifiquei para renderizar na div direto do chat
-    const container = document.querySelector('.renderChat');
+    const container = document.querySelector(".renderChat");
     container.innerHTML += html;
   }
 
@@ -27,17 +26,28 @@ class MessageWebSocket {
       const url = data.get("url");
       form.reset();
       let response = await fetch(url, { method: form.method, body: data });
-      if (!response.ok) {
-        console.error("failed to send message");
+      const jsonResponse = await response.json();
+      const status = jsonResponse["status"];
+      if (status == "success") {
+        const jsonString = JSON.stringify(jsonResponse);
+        this.socket.send(jsonString);
       } else {
-        const json = await response.json();
-        const json_string = JSON.stringify(json);
-        this.socket.send(json_string);
+        this.displayWarning(jsonResponse["msg"]);
       }
-    }
-    catch (error) {
+    } catch (error) {
       console.log(error);
     }
   }
-    onClose(event) { }
+  onClose(event) {}
+
+  displayWarning(warning) {
+    const warningElement = document.getElementById("chat-warning");
+    if (warningElement.textContent === "") {
+      warningElement.textContent = warning;
+      setTimeout(() => {
+        warningElement.textContent = "";
+      }, 1500);
+    }
   }
+}
+

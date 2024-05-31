@@ -45,26 +45,32 @@ def chatRoom(request, id):
     return render_component(request, 'chat/chat.html', 'content', context)
 
 
-# Colocar para retornar JSON
 def sendMessage(request, id):
-    chat = get_object_or_404(models.Chat, pk=id)
+    try:
+        chat = models.Chat.objects.get(pk=id)
+    except Exception:
+        return JsonResponse({"status": "error", "msg": "Chat does not exist"})
     try:
         other_user = check_permissions_and_get_other_user(chat, request.user)
     except Exception as e:
-        return HttpResponseForbidden(e.__str__())
+        return JsonResponse({"status": "error", "msg": e.__str__()})
 
     if request.method == 'POST':
         if request.user in other_user.get_blocks():
-            return HttpResponseForbidden('This user blocked you')
+            return JsonResponse(
+                {"status": "error", "msg": "This user blocked you"}
+            )
         content = request.POST.get('content')
         try:
             message = models.Message(
                 content=content, sender=request.user, chat=chat
             )
             message.save()
-            return JsonResponse({"id": message.id})
-        except Exception as e:
-            return HttpResponse(e)
+            return JsonResponse({"status": "success", "id": message.id})
+        except Exception:
+            return JsonResponse(
+                {"status": "error", "msg": "Failed to send message"}
+            )
 
 
 def startChat(request):

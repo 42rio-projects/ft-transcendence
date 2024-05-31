@@ -29,6 +29,7 @@
       	{% endif %}
       {% endfor %}
     </div>
+	<span id="chat-warning" class="color-error"></span>
     <form class="chatform" method="post" onsubmit="messageSocket.sendMessage(event)">
       {% csrf_token %}
       <input type="text" name="content" id="content" class="chat-input" placeholder="Digite sua mensagem" required />
