@@ -58,10 +58,10 @@ class StatusWebSocket {
     if (element) {
       element.innerHTML = data.user_status;
     }
-    const circle = document.getElementById(`${data.user_pk}-circle`);
+    const circle = document.getElementById(`${data.user_pk}-status-icon`);
     if (circle) {
         data.user_status === "Online" ? circle.className = "online-icon" : circle.className = "offline-icon";
-    }
+      }
   }
 }
 
