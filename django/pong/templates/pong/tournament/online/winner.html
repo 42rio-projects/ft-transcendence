@@ -1,1 +1,5 @@
+{% if tournament.winner.nickname %}
+<h2>Tournament winner is {{ tournament.winner.nickname }}</h2>
+{% else %}
 <h2>Tournament winner is {{ tournament.winner }}</h2>
+{% endif %}

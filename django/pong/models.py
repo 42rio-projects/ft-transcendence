@@ -348,16 +348,20 @@ class Game(models.Model):
             'pong/game/online/raw_result.html', {"game": self}
         )
 
-    # Take tournament into consideration
     def __str__(self):
-        if self.player1 is not None and self.player2 is not None:
-            return (f'{self.player1.username} vs {self.player2.username}')
-        elif self.player1 is not None and self.player2 is None:
-            return (f'{self.player1.username} vs "Deleted User"')
-        elif self.player1 is None and self.player2 is not None:
-            return (f'"Deleted User" vs {self.player2.username}')
+        if self.player1 is None:
+            p1 = 'Deleted User'
+        elif self.player1.nickname and self.round:
+            p1 = self.player1.nickname
         else:
-            return ('"Deleted User" vs "Deleted User"')
+            p1 = self.player1.username
+        if self.player2 is None:
+            p2 = 'Deleted User'
+        elif self.player2.nickname and self.round:
+            p2 = self.player2.nickname
+        else:
+            p2 = self.player2.username
+        return (f'{p1} vs {p2}')
 
 
 class GameInvite(models.Model):
