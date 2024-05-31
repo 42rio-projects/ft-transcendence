@@ -14,7 +14,7 @@ class StatusWebSocket {
 
   onOpen() {
     this.loggedIn = true;
-    console.log("Status WebSocket connected")
+    console.log("Status WebSocket connected");
   }
 
   onMessage(event) {
@@ -23,7 +23,7 @@ class StatusWebSocket {
     console.log(data);
 
     if (data.type === "user.status") {
-      this.setUserStatus(data)
+      this.setUserStatus(data);
     }
   }
 
@@ -35,7 +35,9 @@ class StatusWebSocket {
       console.log(`Trying to reconnect... Attempt ${retries}`);
 
       setTimeout(() => {
-        this.socket = new WebSocket("ws://" + window.location.host + "/ws/status/");
+        this.socket = new WebSocket(
+          "ws://" + window.location.host + "/ws/status/"
+        );
         this.bind();
       }, retries * 3000); // 3s
     }
@@ -55,6 +57,10 @@ class StatusWebSocket {
     const element = document.getElementById(`${data.user_pk}-status`);
     if (element) {
       element.innerHTML = data.user_status;
+    }
+    const circle = document.getElementById(`${data.user_pk}-circle`);
+    if (circle) {
+        data.user_status === "Online" ? circle.className = "online-icon" : circle.className = "offline-icon";
     }
   }
 }
