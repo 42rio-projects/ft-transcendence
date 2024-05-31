@@ -1,1 +1,4 @@
-<p id="player-{{ player.pk }}">{{ player.username }}</p>
+<p id="player-{{ player.pk }}">
+  {% if player.nickname %} {{ player.nickname}} {% else %} {{ player.username }}
+  {% endif %}
+</p>

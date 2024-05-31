@@ -40,7 +40,13 @@
 	<div id="tournament-players">
   	  <h2>Players</h2>
   	  {% for player in tournament.players.all %}
-  	  <p id="player-{{ player.pk }}">{{ player.username }}</p>
+  	  <p id="player-{{ player.pk }}">
+	  {% if player.nickname %}
+		{{ player.nickname}}
+	  {% else %}
+		{{ player.username }}
+	  {% endif %}
+	  </p>
   	  {% endfor %}
   	</div>
   	<div id="invited-players">
@@ -64,7 +70,11 @@
     </div>
     {% endfor %}
 	{% if tournament.finished %}
-	<h2>Tournament winner is {{ tournament.winner }}</h2>
+		{% if tournament.winner.nickname %}
+		<h2>Tournament winner is {{ tournament.winner.nickname }}</h2>
+		{% else %}
+		<h2>Tournament winner is {{ tournament.winner }}</h2>
+		{% endif %}
     {% endif %}
   </div>
   {% endif %}

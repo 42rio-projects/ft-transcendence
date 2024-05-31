@@ -23,14 +23,6 @@ class LocalGameWebSocket {
     this.pressedKeys[this.P2_DOWN] = false;
   }
 
-  gameAction(action) {
-    if (action == "start") {
-      this.start();
-    } else if (action == "stop") {
-      this.stop();
-    }
-  }
-
   onMessage(event) {
     const data = JSON.parse(event.data);
     if (this.gameRunning && !("status" in data)) {
@@ -52,6 +44,7 @@ class LocalGameWebSocket {
   }
 
   start() {
+    document.getElementById("local-game-start").remove();
     this.setKeyListeners();
     this.gameRunning = true;
     this.gameScreen = new GameScreen();
