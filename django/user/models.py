@@ -209,6 +209,17 @@ class User(AbstractUser):
             {'type': 'chat.message', 'id': message.pk}
         )
 
+    def get_or_create_chat(self, user):
+        chat = self.get_chats().filter(
+            (Q(starter=self, receiver=user) | Q(starter=user, receiver=self))
+        )
+        if chat.exists():
+            return chat[0]
+        else:
+            chat = Chat(starter=self, receiver=user)
+            chat.save()
+            return chat
+
     @database_sync_to_async
     def a_notify(self, message):
         self.notify(message)

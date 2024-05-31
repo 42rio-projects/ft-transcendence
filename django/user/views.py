@@ -10,6 +10,7 @@ from django.http import JsonResponse
 from django.http import HttpResponse
 from user.models import User
 from pong.models import Tournament
+from chat.models import Chat
 from .utils import validate_password, validate_register
 
 SERVICE_SID = os.environ['TWILIO_SERVICE_SID']
@@ -131,6 +132,9 @@ def user_profile(request, username):
             elif user_action == 'unblock':
                 request.user.unblock_user(user)
                 context['success'] = 'User unblocked'
+            elif user_action == 'send-message':
+                chat = request.user.get_or_create_chat(user)
+                return redirect('chatRoom', id=chat.pk)
         except Exception as e:
             context['error'] = e.message
 

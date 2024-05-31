@@ -1,12 +1,21 @@
-from django.forms import ValidationError
 from django.template import loader
-from django.http import HttpResponse, HttpResponseBadRequest
+from django.http import HttpResponse
 from django.http import JsonResponse
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
 from django.http import HttpResponseForbidden
+from pong.utils import render_component
 
 from user.models import User
 import chat.models as models
+
+
+def check_permissions_and_get_other_user(chat, user):
+    if chat.starter != user and chat.receiver != user:
+        raise Exception('Not your chat')
+    other_user = chat.receiver if chat.starter == user else chat.starter
+    if other_user in user.get_blocks():
+        raise Exception('This user was blocked')
+    return other_user
 
 
 def chatIndex(request):
@@ -23,11 +32,27 @@ def chatList(request):
 
 def chatRoom(request, id):
     chat = get_object_or_404(models.Chat, pk=id)
-    if chat.starter != request.user and chat.receiver != request.user:
-        return HttpResponseForbidden('Not your chat')
-    other_user = chat.receiver if chat.starter == request.user else chat.starter
-    if other_user in request.user.get_blocks():
-        return HttpResponseForbidden('This user was blocked')
+    try:
+        other_user = check_permissions_and_get_other_user(chat, request.user)
+    except Exception as e:
+        return HttpResponseForbidden(e.__str__())
+
+    if request.method == 'POST':
+        game = request.user.invite_to_game(other_user)
+        return redirect('onlineGame', game_id=game.pk)
+
+    context = {"chat": chat, "other_user": other_user}
+    return render_component(request, 'chat/chat.html', 'content', context)
+
+
+# Colocar para retornar JSON
+def sendMessage(request, id):
+    chat = get_object_or_404(models.Chat, pk=id)
+    try:
+        other_user = check_permissions_and_get_other_user(chat, request.user)
+    except Exception as e:
+        return HttpResponseForbidden(e.__str__())
+
     if request.method == 'POST':
         if request.user in other_user.get_blocks():
             return HttpResponseForbidden('This user blocked you')
@@ -40,9 +65,6 @@ def chatRoom(request, id):
             return JsonResponse({"id": message.id})
         except Exception as e:
             return HttpResponse(e)
-    template = loader.get_template('chat/chat.html')
-    context = {"chat": chat}
-    return HttpResponse(template.render(context, request))
 
 
 def startChat(request):
