@@ -40,19 +40,25 @@
 	<div id="tournament-players">
   	  <h2>Players</h2>
   	  {% for player in tournament.players.all %}
-  	  <p id="player-{{ player.pk }}">
-	  {% if player.nickname %}
-		{{ player.nickname}}
-	  {% else %}
-		{{ player.username }}
-	  {% endif %}
-	  </p>
+	  <div id="player--{{player.pk}}">
+	    <a href="{% url 'userProfile' player.username %}">
+	      {% if player.nickname %}
+	        {{ player.nickname}}
+	      {% else %}
+	        {{ player.username }}
+	      {% endif %}
+	    </a>
+	  </div>
   	  {% endfor %}
   	</div>
   	<div id="invited-players">
   	  <h2>Invites Sent</h2>
   	  {% for invite in tournament.invites_sent.all %}
-  	  <p id="invite-{{ invite.pk }}">{{ invite.receiver }}</p>
+  	  <div id="invite-{{ invite.pk }}">
+	    <a href="{% url 'userProfile' invite.receiver.username %}">
+		  {{ invite.receiver }}
+	    </a>
+	  </div>
   	  {% endfor %}
   	</div>
   {% else %}
@@ -70,11 +76,24 @@
     </div>
     {% endfor %}
 	{% if tournament.finished %}
-		{% if tournament.winner.nickname %}
-		<h2>Tournament winner is {{ tournament.winner.nickname }}</h2>
-		{% else %}
-		<h2>Tournament winner is {{ tournament.winner }}</h2>
-		{% endif %}
+	  <div>
+	    <h2>Tournament Winner</h2>
+	    <div style="padding: 15px; display: flex; flex-direction: column;">
+	      {% if tournament.winner is not None %}
+	      	{% if tournament.winner.nickname %}
+	      		<a class="button" href="{% url 'userProfile' tournament.winner.username %}">
+	      			{{ tournament.winner.nickname }}
+	      		</a>
+	      	{% else %}
+	      		<a class="button" href="{% url 'userProfile' tournament.winner.username %}">
+	      			{{ tournament.winner.username }}
+	      		</a>
+	      	{% endif %}
+	      {% else %}
+	      	<p>"Deleted User"</p>
+	      {% endif %}
+	    </div>
+	  </div>
     {% endif %}
   </div>
   {% endif %}
