@@ -86,6 +86,11 @@ async function handleLogin(event) {
   });
 
   if (response.status === 200) {
+    const params = new URLSearchParams(window.location.search);
+    const next = params.get("next") || "/";
+
+    history.pushState({ url: next }, null, next);
+
     statusSocket.connect();
   }
 }
