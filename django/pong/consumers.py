@@ -65,14 +65,22 @@ class OnlineGameCosumer(AsyncWebsocketConsumer):
         await self.game.get_game()
         if self.game.game_model.finished:
             del self.online_games[self.game_id]
-            return
-        self.player = self.game.get_player(self.scope['user'])
+            self.close(True)
+        try:
+            self.player = self.game.get_player(self.scope['user'])
+        except Exception:
+            self.close(True)
         await self.channel_layer.group_add(
             self.room_group_name, self.channel_name
         )
         await self.accept()
 
-    async def disconnect(self, close_code):
+    async def disconnect(self, simple_disconnect=False):
+        if simple_disconnect:
+            await self.channel_layer.group_discard(
+                self.room_group_name, self.channel_name
+            )
+            return
         if self.game_id in self.online_games:
             await self.game.player_disconnected(self.player)
             del self.online_games[self.game_id]
