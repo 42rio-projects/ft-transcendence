@@ -6,6 +6,9 @@ volumes:
   staticVolume:
     driver: local
 
+  mediaVolume:
+    driver: local
+
   filebeatdata:
     driver: local
 
@@ -72,6 +75,7 @@ services:
       - postgres
     volumes:
       - staticVolume:/static
+      - mediaVolume:/media
     networks:
       - ft_transcendence
 
@@ -87,6 +91,7 @@ services:
       - django
     volumes:
       - staticVolume:/var/www
+      - mediaVolume:/media
     networks:
       - ft_transcendence
 
