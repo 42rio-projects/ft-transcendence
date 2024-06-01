@@ -24,6 +24,8 @@ def chatRoom(request, id):
     except Exception as e:
         return HttpResponseForbidden(e.__str__())
 
+    if other_user == request.user:
+        return redirect('notifications')
     if request.method == 'POST':
         game = request.user.invite_to_game(other_user)
         return redirect('onlineGame', game_id=game.pk)
