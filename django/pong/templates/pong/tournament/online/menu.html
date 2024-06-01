@@ -25,7 +25,7 @@
   <div id="current-tournaments">
     <h2>Current Tournaments</h2>
     <ul>
-      {% for tournament in user.all_tournaments %}
+      {% for tournament in user.current_tournaments %}
 		<div id="tournament-{{ tournament.name }}" style="display: flex; padding: 5px;">
 	  	  <a class="button" href='{% url 'onlineTournament' tournament.id %}'>
       	    {{tournament.name}}

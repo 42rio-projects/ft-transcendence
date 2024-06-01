@@ -85,21 +85,13 @@ class User(AbstractUser):
                 friends.append(friendship.user2)
         return friends
 
-    def get_tournaments(self):
-        admin = self.my_tournaments.all()
-        player = self.tournaments.all()
-        return admin.union(player)
-
     def get_games(self, filters=None):
-        queryFilters = {}
-        if filters and 'winner' in filters:
-            queryFilters['winner'] = filters['winner']
-
         home_games = self.home_games.filter(
-            **queryFilters).prefetch_related('player1', 'player2')
+            finished=True
+        ).prefetch_related('player1', 'player2')
         away_games = self.away_games.filter(
-            **queryFilters).prefetch_related('player1', 'player2')
-
+            finished=True
+        ).prefetch_related('player1', 'player2')
         return home_games.union(away_games)
 
     def count_wins(self):
@@ -178,23 +170,37 @@ class User(AbstractUser):
             game.delete()
             raise e
 
-    def all_tournaments(self):
-        admin = self.my_tournaments.filter(Q(finished=False))
-        player = self.tournaments.filter(Q(finished=False))
+    def finished_tournaments(self):
+        admin = self.finished_admin_tournaments()
+        player = self.finished_player_tournaments()
+        tournaments = player.union(admin).all()
+        return tournaments
+
+    def current_tournaments(self):
+        admin = self.current_admin_tournaments()
+        player = self.current_player_tournaments()
         tournaments = player.union(admin).all()
         return tournaments
 
     def current_player_tournaments(self):
-        return self.tournaments.filter(Q(finished=False)).all()
+        return (
+            self.tournaments.filter(Q(finished=False)).order_by('-date').all()
+        )
 
     def current_admin_tournaments(self):
-        return self.my_tournaments.filter(Q(finished=False)).all()
+        return (self.my_tournaments.filter(
+            Q(finished=False)
+        ).order_by('-date').all())
 
     def finished_player_tournaments(self):
-        return self.my_tournaments.filter(Q(finished=True)).all()
+        return (self.my_tournaments.filter(
+            Q(finished=True)
+        ).order_by('-date').all())
 
     def finished_admin_tournaments(self):
-        return self.my_tournaments.filter(Q(finished=True)).all()
+        return (self.my_tournaments.filter(
+            Q(finished=True)
+        ).order_by('-date').all())
 
     def notify(self, message):
         notifications = self.get_or_create_notifications()
