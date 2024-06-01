@@ -263,7 +263,7 @@ services:
     volumes:
       - certs:/usr/share/filebeat/certs
       - filebeatdata:/usr/share/filebeat/data
-      - "./requirements/elk/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro"
+      - "./requirements/elk/filebeat.yml:/usr/share/filebeat/filebeat.yml"
       - "/var/lib/docker/containers:/var/lib/docker/containers:ro"
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
     environment:
