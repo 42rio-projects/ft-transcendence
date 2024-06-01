@@ -197,17 +197,32 @@ class User(AbstractUser):
         return self.my_tournaments.filter(Q(finished=True)).all()
 
     def notify(self, message):
-        try:
-            notifications = Chat.objects.get(starter=self, receiver=self)
-        except Exception:
-            notifications = Chat(starter=self, receiver=self)
-            notifications.save()
+        notifications = self.get_or_create_notifications()
         message = Message(sender=self, chat=notifications, content=message)
         message.save()
         send_channel_message(
             f'chat_{notifications.pk}',
             {'type': 'chat.message', 'id': message.pk}
         )
+
+    def get_or_create_notifications(self):
+        try:
+            notifications = Chat.objects.get(starter=self, receiver=self)
+        except Exception:
+            notifications = Chat(starter=self, receiver=self)
+            notifications.save()
+        return notifications
+
+    def get_or_create_chat(self, user):
+        chat = self.get_chats().filter(
+            (Q(starter=self, receiver=user) | Q(starter=user, receiver=self))
+        )
+        if chat.exists():
+            return chat[0]
+        else:
+            chat = Chat(starter=self, receiver=user)
+            chat.save()
+            return chat
 
     @database_sync_to_async
     def a_notify(self, message):
