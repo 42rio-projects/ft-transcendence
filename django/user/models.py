@@ -91,15 +91,12 @@ class User(AbstractUser):
         return admin.union(player)
 
     def get_games(self, filters=None):
-        queryFilters = {}
-        if filters and 'winner' in filters:
-            queryFilters['winner'] = filters['winner']
-
         home_games = self.home_games.filter(
-            **queryFilters).prefetch_related('player1', 'player2')
+            finished=True
+        ).prefetch_related('player1', 'player2')
         away_games = self.away_games.filter(
-            **queryFilters).prefetch_related('player1', 'player2')
-
+            finished=True
+        ).prefetch_related('player1', 'player2')
         return home_games.union(away_games)
 
     def count_wins(self):

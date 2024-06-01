@@ -29,12 +29,11 @@ def history(request, username):
 
 def match_history(request, username):
     user = get_object_or_404(User, username=username)
-    games_list = user.get_games()
     return render_component(
         request,
         'history/match.html',
         'content',
-        {'page_obj': games_list}
+        {'user': user}
     )
 
 
