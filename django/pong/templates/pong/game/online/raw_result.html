@@ -1,26 +1,27 @@
 <div>
-	<h1>{{ game }}</h1>
-	{% if game.winner is not None %}
-	<h2>Winner is {{ game.winner.username }}</h2>
-	{% else %}
-	<h2>Winner is "Deleted User"</h2>
-	{% endif %}
-	<div>
-	  <div>
-	    {% if game.player1 is not None %}
-	    <p>{{ game.player1.username }}</p>
-	    {% else %}
-	    <p>"Deleted User"</p>
-	    {% endif %}
-	    <p id="p1-score">{{ game.player1_points }}</p>
-	  </div>
-	  <div>
-	    {% if game.player2 is not None %}
-	    <p>{{ game.player2.username }}</p>
-	    {% else %}
-	    <p>"Deleted User"</p>
-	    {% endif %}
-	    <p id="p2-score">{{ game.player2_points }}</p>
-	  </div>
-	</div>
+  <h1>{{ game }}</h1>
+  {% if game.winner is not None %}
+  <h2>Winner is {{ game.winner.username }}</h2>
+  {% else %}
+  <h2>Winner is "Deleted User"</h2>
+  {% endif %}
+  <div>
+    <div>
+      {% if game.player1 is not None %}
+      <p>{{ game.player1.username }}</p>
+      {% else %}
+      <p>"Deleted User"</p>
+      {% endif %}
+      <p id="p1-score">{{ game.player1_points }}</p>
+    </div>
+    <div>
+      {% if game.player2 is not None %}
+      <p>{{ game.player2.username }}</p>
+      {% else %}
+      <p>"Deleted User"</p>
+      {% endif %}
+      <p id="p2-score">{{ game.player2_points }}</p>
+    </div>
+  </div>
+  <a class="button" href="/pong/">Pong menu</a>
 </div>
