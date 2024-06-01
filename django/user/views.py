@@ -38,18 +38,13 @@ def match_history(request, username):
 
 
 def tournament_history(request, username):
-    if request.method == "GET":
-        tournaments_list = Tournament.get_tournaments_by_user(request.user)
-        print(tournaments_list, file=sys.stderr)
-        paginator = Paginator(tournaments_list, 10)
-        page_number = request.GET.get('page')
-        page_obj = paginator.get_page(page_number)
-        return render_component(
-            request,
-            'history/tournament.html',
-            'content',
-            {'page_obj': page_obj}
-        )
+    user = get_object_or_404(User, username=username)
+    return render_component(
+        request,
+        'history/tournament.html',
+        'content',
+        {'user': user}
+    )
 
 
 def register(request):
