@@ -1,3 +1,4 @@
+let retries = 0;
 const maxRetries = 5;
 
 class StatusWebSocket {
@@ -28,9 +29,7 @@ class StatusWebSocket {
   }
 
   onClose() {
-    let retries = 0;
-
-    while (this.loggedIn && retries < maxRetries) {
+    if (this.loggedIn && retries < maxRetries) {
       retries++;
       console.log(`Trying to reconnect... Attempt ${retries}`);
 
