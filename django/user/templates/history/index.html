@@ -1,0 +1,15 @@
+{% extends 'index.html' %}
+
+{% block title %} History {% endblock %}
+
+{% block content %}
+<div>
+  <h2 class="neon">History</h2>
+  <div>
+    <img class="avatar" src="{{ user.avatar.url }}" alt="Avatar" />
+    <span>{{ user.username }}</span>
+  </div>
+  <a class="button" href="{% url 'matchHistory' user.username %}">Match History</a>
+  <a class="button" href="{% url 'tournamentHistory' user.username %}">Tournament History</a>
+</div>
+{% endblock %}

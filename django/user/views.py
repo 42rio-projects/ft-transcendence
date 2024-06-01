@@ -11,7 +11,6 @@ from django.http import JsonResponse
 from django.http import HttpResponse
 from user.models import User
 from pong.models import Tournament
-from chat.models import Chat
 from .utils import validate_password, validate_register
 
 SERVICE_SID = os.environ['TWILIO_SERVICE_SID']
@@ -22,27 +21,36 @@ SERVICE_SID = os.environ["TWILIO_SERVICE_SID"]
 client = Client(ACCOUNT_SID, AUTH_TOKEN)
 
 
-def match_history(request):
-    if request.method == "GET":
-        games_list = request.user.get_games()
-        # paginator = Paginator(games_list, 10)
-
-        # page_number = request.GET.get('page')
-        # page_obj = paginator.get_page(page_number)
-
-        return render_component(request, 'match_history/index.html', 'content', {'page_obj': games_list})
+def history(request, username):
+    user = get_object_or_404(User, username=username)
+    context = {'user': user}
+    return render_component(request, 'history/index.html', 'content', context)
 
 
-def tournament_history(request):
+def match_history(request, username):
+    user = get_object_or_404(User, username=username)
+    games_list = user.get_games()
+    return render_component(
+        request,
+        'history/match.html',
+        'content',
+        {'page_obj': games_list}
+    )
+
+
+def tournament_history(request, username):
     if request.method == "GET":
         tournaments_list = Tournament.get_tournaments_by_user(request.user)
         print(tournaments_list, file=sys.stderr)
         paginator = Paginator(tournaments_list, 10)
-
         page_number = request.GET.get('page')
         page_obj = paginator.get_page(page_number)
-
-        return render_component(request, 'tournament_history/index.html', 'content', {'page_obj': page_obj})
+        return render_component(
+            request,
+            'history/tournament.html',
+            'content',
+            {'page_obj': page_obj}
+        )
 
 
 def register(request):

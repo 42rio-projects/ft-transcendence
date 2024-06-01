@@ -61,6 +61,7 @@ Profile
       <input type="hidden" name="user-action" value="send-message" />
       <button type="submit">Send Message</button>
     </form>
+	<a class="button" href="{% url 'history' user.username %}">History</a>
     <form method="post" onsubmit="handleFormSubmit(event)">
       {% csrf_token %}
       <input type="hidden" name="user-id" value="{{ user.id }}" />
