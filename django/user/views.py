@@ -5,6 +5,7 @@ from django.contrib.auth import authenticate, login as django_login, logout as d
 import os
 from django.core.paginator import Paginator
 import sys
+from django.contrib.auth.decorators import login_required
 
 from django.http import JsonResponse
 from django.http import HttpResponse
@@ -87,7 +88,7 @@ def login(request):
             return render_component(request, 'login_form.html', 'form', context, 400)
 
         django_login(request, user)
-        return redirect('/')
+        return redirect(request.GET.get('next') or '/')
 
     if request.method == 'GET':
         return render_component(request, 'login.html', 'content')
@@ -99,6 +100,7 @@ def logout(request):
         return redirect('/')
 
 
+@login_required
 def my_profile(request):
     if request.method == 'GET':
         return render_component(request, 'profile.html', 'content')
