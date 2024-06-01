@@ -13,7 +13,9 @@
   <div class="embranceForms">
     <img class="avatar" src="{{ other_user.avatar.url }}" alt="Avatar" />
 	{% if chat.starter != chat.receiver %}
-		<h2>{{other_user.username}}</h2>
+		<a href="{% url 'userProfile' other_user.username %}">
+	  	  {{other_user.username}}
+	  	</a>
 		<div class="inviteToPlay">
     	  <form method="post" onsubmit="handleFormSubmit(event)">
     	    {% csrf_token %}
