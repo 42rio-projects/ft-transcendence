@@ -12,7 +12,7 @@ from django.http import HttpResponse
 from user.models import User
 from pong.models import Tournament
 from chat.models import Chat
-from .utils import validate_password, validate_register
+from .utils import validate_password, validate_register, validate_update, handle_user_action
 
 SERVICE_SID = os.environ['TWILIO_SERVICE_SID']
 ACCOUNT_SID = os.environ['TWILIO_ACCOUNT_SID']
@@ -46,6 +46,9 @@ def tournament_history(request):
 
 
 def register(request):
+    if request.user.is_authenticated:
+        return redirect('/')
+
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
@@ -60,19 +63,19 @@ def register(request):
                 'password': password,
                 'password2': password2
             })
-
-            return render_component(request, 'register_form.html', 'form', errors_context, 400)
-
-        User.objects.create_user(username=username, password=password)
-        return render_component(request, 'register_form.html', 'form', {
-            'success': 'User created successfully!'
-        })
-
-    if request.method == 'GET':
-        return render_component(request, 'register.html', 'content')
+            return render_component(request, 'register/form.html', 'form', errors_context, 400)
+        else:
+            User.objects.create_user(username=username, password=password)
+            return render_component(request, 'register/form.html', 'form', {
+                'success': 'User created successfully!'
+            })
+    return render_component(request, 'register/index.html', 'content')
 
 
 def login(request):
+    if request.user.is_authenticated:
+        return redirect(request.GET.get('next') or '/')
+
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
@@ -84,107 +87,75 @@ def login(request):
                 'password': password,
                 'error': 'Incorrect username or password'
             }
-
-            return render_component(request, 'login_form.html', 'form', context, 400)
-
-        django_login(request, user)
-        return redirect(request.GET.get('next') or '/')
-
-    if request.method == 'GET':
-        return render_component(request, 'login.html', 'content')
+            return render_component(request, 'login/form.html', 'form', context, 400)
+        else:
+            django_login(request, user)
+            return redirect(request.GET.get('next') or '/')
+    return render_component(request, 'login/index.html', 'content')
 
 
+@login_required
 def logout(request):
-    if request.method == 'GET':
-        django_logout(request)
-        return redirect('/')
+    django_logout(request)
+    return redirect('/')
 
 
 @login_required
 def my_profile(request):
-    if request.method == 'GET':
-        return render_component(request, 'profile.html', 'content')
+    return render_component(request, 'profile.html', 'content')
 
 
+@login_required
 def user_profile(request, username):
     if username == request.user.username:
         return redirect('/profile/')
 
     user = get_object_or_404(User, username=username)
-    context = {'user': user}
+    context = { 'user': user }
 
     if request.method == 'POST':
-        user_action = request.POST.get('user-action')
+        action = request.POST.get('user-action')
         try:
-            if user_action == 'send-friend-invite':
-                request.user.add_friend(user)
-                context['success'] = 'Friend invite sent'
-            elif user_action == 'cancel-friend-invite':
-                request.user.cancel_friend_invite(user)
-                context['success'] = 'Friend invite canceled'
-            elif user_action == 'remove-friend':
-                request.user.del_friend(user)
-                context['success'] = 'Friendship removed!'
-            elif user_action == 'game-invite':
-                game = request.user.invite_to_game(user)
-                return redirect('onlineGame', game_id=game.pk)
-            elif user_action == 'block':
-                request.user.block_user(user)
-                context['success'] = 'User blocked'
-            elif user_action == 'unblock':
-                request.user.unblock_user(user)
-                context['success'] = 'User unblocked'
-            elif user_action == 'send-message':
-                chat = request.user.get_or_create_chat(user)
-                return redirect('chatRoom', id=chat.pk)
+            context['success'] = handle_user_action(request.user, user, action)
         except Exception as e:
             context['error'] = e.message
-
-        return render_component(request, 'profile.html', 'content', context)
-
-    if request.method == 'GET':
-        return render_component(request, 'profile.html', 'content', context)
+            return render_component(request, 'profile.html', 'content', context, 400)
+    return render_component(request, 'profile.html', 'content', context)
 
 
+@login_required
 def edit_profile(request):
     user = request.user
 
-    if request.method == "POST":
-        username = request.POST.get("username")
-        nickname = request.POST.get("nickname")
-        email = request.POST.get("email")
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        nickname = request.POST.get('nickname')
+        avatar = request.FILES.get('avatar')
 
-        try:
-            if (username != user.username):
-                user.change_username(username)
-
-            if (nickname != user.nickname):
-                user.change_nickname(nickname)
-
-            if email != user.email:
-                user.change_email(email)
-
-        except Exception as e:
-            return render_component(request, 'edit_profile.html', 'content', {
-                'error': e,
+        errors_context = validate_update(user, username, nickname)
+        if errors_context:
+            errors_context.update({
                 'username': username,
-                'email': email,
-                'nickname': nickname
-            }, 400)
-
-        return render_component(request, 'edit_profile.html', 'content', {
-            'success': 'Profile saved!',
-            'username': user.username,
-            'email': user.email,
-            'nickname': user.nickname,
-        })
-
-    if request.method == 'GET':
-        return render_component(request, 'edit_profile.html', 'content', {
-            "username": user.username,
-            "email": user.email,
-            'nickname': user.nickname
-        })
+                'nickname': nickname or '' # Set to empty string if None, so it can be rendered in template
+            })
+            return render_component(request, 'edit_profile.html', 'content', errors_context, 400)
+        else:
+            user.username = username
+            user.nickname = nickname or None # Set to None if empty string, so it's null in database
+            if avatar:
+                user.avatar = avatar
+            user.save()
+            return render_component(request, 'edit_profile.html', 'content', {
+                'success': 'Profile saved!',
+                'username': user.username,
+                'email': user.email,
+                'nickname': user.nickname or ''
+            })
+    return render_component(request, 'edit_profile.html', 'content', {
+        'username': user.username,
+        'email': user.email,
+        'nickname': user.nickname or ''
+    })
 
 
 def generate_totp_factor(request):

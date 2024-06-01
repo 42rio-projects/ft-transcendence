@@ -1,0 +1,22 @@
+{% extends 'index.html' %}
+
+{% block title %}Register{% endblock %}
+
+{% block content %}
+<div>
+  <div>
+    <h2 class="neon text-3xl">Register</h2>
+    <h3 class="text-xl font-normal">
+      Create your account:
+    </h3>
+  </div>
+  <form id="form" method="post" onsubmit="handleFormSubmit(event)">
+    {% include 'register/form.html' %}
+  </form>
+  <hr />
+  <div class="auth-footer">
+    <p>Already have an account?</p>
+    <a href="/login/">Login</a>
+  </div>
+</div>
+{% endblock %}

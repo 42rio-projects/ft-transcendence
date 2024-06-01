@@ -163,12 +163,20 @@ form div {
   font-weight: 400;
 }
 
-.color-success {
+.success {
   color: var(--success-color);
 }
 
-.color-error {
+.success:empty {
+  display: none;
+}
+
+.error {
   color: var(--error-color);
+}
+
+.error:empty {
+  display: none;
 }
 
 .header {
