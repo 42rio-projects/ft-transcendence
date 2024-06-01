@@ -17,11 +17,13 @@
 	<div>
 	  <div>
 	    {% if game.player1 is not None %}
+			<a href="{% url 'userProfile' game.player1.username %}">
 			{% if game.round and game.player1.nickname %}
-				<p>{{ game.player1.nickname }}</p>
+				{{ game.player1.nickname }}
 			{% else %}
-				<p>{{ game.player1.username }}</p>
+				{{ game.player1.username }}
 			{% endif %}
+			</a>
 	    {% else %}
 			<p>"Deleted User"</p>
 	    {% endif %}
@@ -29,11 +31,13 @@
 	  </div>
 	  <div>
 	    {% if game.player2 is not None %}
+			<a href="{% url 'userProfile' game.player2.username %}">
 			{% if game.round and game.player2.nickname %}
-				<p>{{ game.player2.nickname}}</p>
+				{{ game.player2.nickname }}
 			{% else %}
-				<p>{{ game.player2.username }}</p>
+				{{ game.player2.username }}
 			{% endif %}
+			</a>
 	    {% else %}
 			<p>"Deleted User"</p>
 	    {% endif %}
