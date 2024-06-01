@@ -83,7 +83,10 @@ class Tournament(models.Model):
         if self.players.count() + self.invites_sent.count() >= UPPER_PLAYER_LIMIT:
             raise Exception("Player limit reached")
         invite = TournamentInvite(tournament=self, receiver=user)
-        invite.save()
+        try:
+            invite.save()
+        except Exception:
+            raise Exception("Invite already sent")
         return invite
 
     def cancel(self):
@@ -272,6 +275,7 @@ class Round(models.Model):
     def __str__(self):
         return (f'{self.tournament.name} round {self.number}')
 
+
 class Game(models.Model):
     player1 = models.ForeignKey(
         'user.User',
@@ -339,21 +343,25 @@ class Game(models.Model):
         self.player2
 
     @database_sync_to_async
-    def render(self):
+    def raw_render(self):
         return render_to_string(
-            'pong/game/online/result.html', {"game": self}
+            'pong/game/online/raw_result.html', {"game": self}
         )
 
-    # Take tournament into consideration
     def __str__(self):
-        if self.player1 is not None and self.player2 is not None:
-            return (f'{self.player1.username} vs {self.player2.username}')
-        elif self.player1 is not None and self.player2 is None:
-            return (f'{self.player1.username} vs "Deleted User"')
-        elif self.player1 is None and self.player2 is not None:
-            return (f'"Deleted User" vs {self.player2.username}')
+        if self.player1 is None:
+            p1 = 'Deleted User'
+        elif self.player1.nickname and self.round:
+            p1 = self.player1.nickname
         else:
-            return ('"Deleted User" vs "Deleted User"')
+            p1 = self.player1.username
+        if self.player2 is None:
+            p2 = 'Deleted User'
+        elif self.player2.nickname and self.round:
+            p2 = self.player2.nickname
+        else:
+            p2 = self.player2.username
+        return (f'{p1} vs {p2}')
 
 
 class GameInvite(models.Model):
@@ -376,13 +384,13 @@ class GameInvite(models.Model):
         """
         Custom validation to prevent sending invites to friends.
         """
-        invite = GameInvite.objects.filter(
-            sender=self.receiver, receiver=self.sender
-        )
-        if invite.exists():
+        if GameInvite.objects.filter(sender=self.sender, receiver=self.receiver).exists():
             raise ValidationError(
-                'You cannot send a game invite to someone who has invited you.'
-            )
+                'You have already sent a game invite to this user.')
+
+        if GameInvite.objects.filter(sender=self.receiver, receiver=self.sender).exists():
+            raise ValidationError(
+                'You cannot send a game invite to someone who has invited you.')
 
     def save(self, *args, **kwargs):
         """

@@ -47,7 +47,7 @@ class LocalTournament():
         final = True if len(self.players) == 2 else False
         self.currentGame = self.games.pop()
         html = render_to_string(
-            'pong/game/local/game.html',
+            'pong/game/local/raw_game.html',
             {
                 'player1': self.currentGame[0],
                 'player2': self.currentGame[1],
@@ -118,7 +118,7 @@ class OnlineTournament():
     @database_sync_to_async
     def render_tournament(self):
         return render_to_string(
-            'pong/tournament/online/tournament.html',
+            'pong/tournament/online/raw_tournament.html',
             {"tournament": self.tournament, "user": self.socket.user}
         )
 

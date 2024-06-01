@@ -6,12 +6,11 @@ import os
 from django.core.paginator import Paginator
 import sys
 
-from django.core.paginator import Paginator
 from django.http import JsonResponse
 from django.http import HttpResponse
 from user.models import User
 from pong.models import Tournament
-from .utils import validate_password, validate_register, validate_update
+from .utils import validate_password, validate_register
 
 SERVICE_SID = os.environ['TWILIO_SERVICE_SID']
 ACCOUNT_SID = os.environ['TWILIO_ACCOUNT_SID']
@@ -24,12 +23,13 @@ client = Client(ACCOUNT_SID, AUTH_TOKEN)
 def match_history(request):
     if request.method == "GET":
         games_list = request.user.get_games()
-        paginator = Paginator(games_list, 10)
+        # paginator = Paginator(games_list, 10)
 
-        page_number = request.GET.get('page')
-        page_obj = paginator.get_page(page_number)
+        # page_number = request.GET.get('page')
+        # page_obj = paginator.get_page(page_number)
 
-        return render_component(request, 'match_history/index.html', 'content', {'page_obj': page_obj})
+        return render_component(request, 'match_history/index.html', 'content', {'page_obj': games_list})
+
 
 def tournament_history(request):
     if request.method == "GET":
@@ -41,6 +41,7 @@ def tournament_history(request):
         page_obj = paginator.get_page(page_number)
 
         return render_component(request, 'tournament_history/index.html', 'content', {'page_obj': page_obj})
+
 
 def register(request):
     if request.method == 'POST':
@@ -107,17 +108,29 @@ def user_profile(request, username):
         return redirect('/profile/')
 
     user = get_object_or_404(User, username=username)
-    context = { 'user': user }
+    context = {'user': user}
 
     if request.method == 'POST':
         user_action = request.POST.get('user-action')
         try:
-            if user_action == 'friend-invite':
+            if user_action == 'send-friend-invite':
                 request.user.add_friend(user)
                 context['success'] = 'Friend invite sent'
+            elif user_action == 'cancel-friend-invite':
+                request.user.cancel_friend_invite(user)
+                context['success'] = 'Friend invite canceled'
+            elif user_action == 'remove-friend':
+                request.user.del_friend(user)
+                context['success'] = 'Friendship removed!'
+            elif user_action == 'game-invite':
+                game = request.user.invite_to_game(user)
+                return redirect('onlineGame', game_id=game.pk)
             elif user_action == 'block':
                 request.user.block_user(user)
                 context['success'] = 'User blocked'
+            elif user_action == 'unblock':
+                request.user.unblock_user(user)
+                context['success'] = 'User unblocked'
         except Exception as e:
             context['error'] = e.message
 
@@ -167,7 +180,7 @@ def edit_profile(request):
             'nickname': user.nickname
         })
 
-# @login_required
+
 def generate_totp_factor(request):
     if request.method == "GET":
         # user = request.user
@@ -184,7 +197,6 @@ def generate_totp_factor(request):
         return JsonResponse(serialized_factor, safe=False)
 
 
-# @login_required
 def verify_totp_factor(request):
     if request.method == "POST":
         # user = request.user
@@ -200,9 +212,10 @@ def verify_totp_factor(request):
         status = factor.status
 
         if status == "approved":
-           return HttpResponse("Factor is valid")
+            return HttpResponse("Factor is valid")
 
         return HttpResponse("Factor is invalid")
+
 
 def serialize_factor(factor):
     serialized_data = {
@@ -213,7 +226,7 @@ def serialize_factor(factor):
     }
     return serialized_data
 
-# @login_required
+
 def list_totp_factors(request):
     if request.method == "GET":
         # user = request.user
@@ -223,9 +236,10 @@ def list_totp_factors(request):
         factors = client.verify.v2.services(
             SERVICE_SID).entities('ff483d1ff591898a9942916050d2ca3f').factors.list()
 
-        serialized_factors =  [serialize_factor(factor) for factor in factors]
+        serialized_factors = [serialize_factor(factor) for factor in factors]
 
         return JsonResponse(serialized_factors, safe=False)
+
 
 def validate_totp_token(request):
     if request.method == "POST":
@@ -251,6 +265,7 @@ def validate_totp_token(request):
             return HttpResponse("Token is valid")
 
         return HttpResponse("Token is invalid")
+
 
 def change_password(request):
     if request.method == 'POST':
@@ -281,7 +296,8 @@ def verify_email(request):
 
         if user_action == 'send-code':
             client = Client(ACCOUNT_SID, AUTH_TOKEN)
-            client.verify.services(SERVICE_SID).verifications.create(to=user.email, channel='email')
+            client.verify.services(SERVICE_SID).verifications.create(
+                to=user.email, channel='email')
 
             return render_component(request, 'verify_email_forms.html', 'forms', {
                 'success': 'Verification code sent to your email'
@@ -290,7 +306,8 @@ def verify_email(request):
             code = request.POST.get('code')
 
             client = Client(ACCOUNT_SID, AUTH_TOKEN)
-            verification_check = client.verify.services(SERVICE_SID).verification_checks.create(to=user.email, code=code)
+            verification_check = client.verify.services(
+                SERVICE_SID).verification_checks.create(to=user.email, code=code)
 
             if verification_check.status != 'approved':
                 return render_component(request, 'verify_email_forms.html', 'forms', {

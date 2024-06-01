@@ -1,16 +1,11 @@
-{% extends 'index.html' %}
-
-{% block title %} Local Game {% endblock %}
-
-{% block content %}
 <div id="local-game-section">
   <div id="local-game-start" class="verticalDiv">
-  {% if tournament %}
+    {% if tournament %}
     <button onclick="localTournamentSocket.startGame()">Start Game</button>
-  {% else %}
-  <h1>Local Game</h1>
+    {% else %}
+    <h1>Local Game</h1>
     <button onclick="localGameSocket.start()">Start Game</button>
-  {% endif %}
+    {% endif %}
   </div>
   {% if final %}
   <h2>!!Final!!</h2>
@@ -42,4 +37,3 @@
   </div>
   <canvas id="game-screen"></canvas>
 </div>
-{% endblock %}

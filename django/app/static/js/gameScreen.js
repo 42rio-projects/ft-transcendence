@@ -1,6 +1,6 @@
 class GameScreen {
-  screenHeight = 600;
-  screenWidth = 1200;
+  screenHeight = 300;
+  screenWidth = 600;
   gameHeight = 100;
   gameWidth = 200;
 
@@ -15,7 +15,7 @@ class GameScreen {
   }
 
   draw(data) {
-    this.ctx.fillStyle = "rgb(0 0 0)";
+    this.ctx.fillStyle = "rgb(50 50 50)";
     this.ctx.fillRect(0, 0, this.width, this.height);
     this.draw_players(data);
     this.draw_ball(data);

@@ -2,45 +2,32 @@ from django.urls import path
 from pong import views
 
 urlpatterns = [
-    path('', views.index, name='index'),
-    path('game-menu/', views.gameMenu, name='gameMenu'),
-    path('local-game/', views.localGame, name='localGame'),
-    path('online-game/<int:game_id>/', views.onlineGame, name='onlineGame'),
-    path("game-invites/", views.gameInvites, name="gameInvites"),
+    path('', views.index),
+    path('pong/', views.pong, name='pongMenu'),
+    path('pong/local-game/', views.localGame),
     path(
-        "game-invites/respond-invite/<int:invite_id>/",
-        views.respondGameInvite,
-        name="respondGameInvite"
-    ),
-    path('tournament-menu/', views.tournamentMenu, name='tournamentMenu'),
-    path('local-tournament/', views.localTournament, name='localTournament'),
-    path(
-        "tournament-invites/",
-        views.tournamentInvites,
-        name="tournamentInvites"
+        'pong/online-game/<int:game_id>/', views.onlineGame, name='onlineGame'
     ),
     path(
-        "tournament-invites/respond-invite/<int:invite_id>/",
-        views.respondTournamentInvite,
-        name="respondTournamentInvite"
+        'pong/local-tournament/', views.localTournament, name='localTournament'
     ),
     path(
-        'online-tournament/create',
-        views.createTournament,
-        name='createTournament'
+        "pong/online-tournament/menu",
+        views.tournamentMenu,
+        name="tournamentMenu"
     ),
     path(
-        'online-tournament/<int:tournament_id>/',
+        'pong/online-tournament/<int:tournament_id>/',
         views.onlineTournament,
         name='onlineTournament'
     ),
     path(
-        'online-tournament/<int:tournament_id>/invite',
+        'pong/online-tournament/<int:tournament_id>/invite',
         views.inviteToTournament,
         name='inviteToTournament'
     ),
     path(
-        'online-tournament/<int:tournament_id>/cancel',
+        'pong/online-tournament/<int:tournament_id>/cancel',
         views.cancelTournament,
         name='cancelTournament'
     ),

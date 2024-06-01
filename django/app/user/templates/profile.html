@@ -22,6 +22,7 @@ Profile
   <div>
     <img class="avatar" src="{{ user.avatar.url }}" alt="Avatar" />
     <span>{{ user.username }}</span>
+    <span id="{{ user.pk }}-status">{{ user.status }}</span>
   </div>
   <span>
     {% if user.email_verified %}
@@ -37,14 +38,33 @@ Profile
     <form method="post" onsubmit="handleFormSubmit(event)">
       {% csrf_token %}
       <input type="hidden" name="user-id" value="{{ user.id }}" />
-      <input type="hidden" name="user-action" value="friend-invite" />
-      <button type="submit">Friend invite</button>
+	  {% if user in request.user.users_invited_to_friend %}
+      <input type="hidden" name="user-action" value="cancel-friend-invite" />
+      <button type="submit">Cancel friend invite</button>
+	  {% elif user not in request.user.get_friends %}
+      <input type="hidden" name="user-action" value="send-friend-invite" />
+      <button type="submit">Send friend invite</button>
+    {% else %}
+      <input type="hidden" name="user-action" value="remove-friend" />
+      <button type="submit">Remove friend</button>
+	  {% endif %}
     </form>
     <form method="post" onsubmit="handleFormSubmit(event)">
       {% csrf_token %}
       <input type="hidden" name="user-id" value="{{ user.id }}" />
+      <input type="hidden" name="user-action" value="game-invite" />
+      <button type="submit">Game invite</button>
+    </form>
+    <form method="post" onsubmit="handleFormSubmit(event)">
+      {% csrf_token %}
+      <input type="hidden" name="user-id" value="{{ user.id }}" />
+	  {% if user in request.user.get_blocks %}
+      <input type="hidden" name="user-action" value="unblock" />
+      <button type="submit">Unblock</button>
+	  {% else %}
       <input type="hidden" name="user-action" value="block" />
       <button type="submit">Block</button>
+	  {% endif %}
     </form>
   </div>
   {% endif %}
