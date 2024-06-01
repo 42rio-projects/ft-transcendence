@@ -1,24 +1,36 @@
 <div>
   <h1>{{ game }}</h1>
   {% if game.winner is not None %}
-  <h2>Winner is {{ game.winner.username }}</h2>
+    {% if game.round and game.winner.nickname %}
+      <h2>Winner is {{ game.winner.nickname}}</h2>
+    {% else %}
+      <h2>Winner is {{ game.winner.username }}</h2>
+    {% endif %}
   {% else %}
-  <h2>Winner is "Deleted User"</h2>
+    <h2>Winner is "Deleted User"</h2>
   {% endif %}
   <div>
     <div>
       {% if game.player1 is not None %}
-      <p>{{ game.player1.username }}</p>
+        {% if game.round and game.player1.nickname %}
+          <p>{{ game.player1.nickname }}</p>
+        {% else %}
+          <p>{{ game.player1.username }}</p>
+        {% endif %}
       {% else %}
-      <p>"Deleted User"</p>
+        <p>"Deleted User"</p>
       {% endif %}
       <p id="p1-score">{{ game.player1_points }}</p>
     </div>
     <div>
       {% if game.player2 is not None %}
-      <p>{{ game.player2.username }}</p>
+        {% if game.round and game.player2.nickname %}
+          <p>{{ game.player2.nickname}}</p>
+        {% else %}
+          <p>{{ game.player2.username }}</p>
+        {% endif %}
       {% else %}
-      <p>"Deleted User"</p>
+        <p>"Deleted User"</p>
       {% endif %}
       <p id="p2-score">{{ game.player2_points }}</p>
     </div>

@@ -89,12 +89,16 @@ def onlineGame(request, game_id):
         try:
             game_invite = models.GameInvite.objects.get(game=game)
             context = {
+                "game": game,
                 "player1": game_invite.sender,
                 "player2": game_invite.receiver
             }
         except Exception:
-            context = {"player1": game.player1, "player2": game.player2}
-
+            context = {
+                "game": game,
+                "player1": game.player1,
+                "player2": game.player2
+            }
         return render_component(request, 'pong/game/online/game.html', 'content', context)
 
 
