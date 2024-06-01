@@ -2,6 +2,7 @@ import json
 import chat.models as models
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
+from django.template.loader import render_to_string
 from asgiref.sync import sync_to_async
 
 
@@ -38,9 +39,22 @@ class ChatConsumer(AsyncWebsocketConsumer):
             }
         )
 
-    async def chat_message(self, event):
+    async def chat_message(self, data):
         """Function called when websocket receives message from group"""
-        await self.send(text_data=json.dumps(event))
+        message_id = data['id']
+        try:
+            message = await get_message(message_id)
+        except Exception:
+            return
+        context = {"message": message, "user": self.user}
+        html = render_to_string('chat/message.html', context)
+        await self.send(text_data=json.dumps({"html": html}))
+
+
+@database_sync_to_async
+def get_message(id):
+    message = models.Message.objects.get(pk=id)
+    return message
 
 
 @database_sync_to_async

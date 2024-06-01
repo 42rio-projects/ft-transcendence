@@ -10,10 +10,8 @@ class MessageWebSocket {
 
   async onMessage(event) {
     const data = JSON.parse(event.data);
-    const message_id = data.id;
-    const response = await fetch("/message/" + message_id + "/");
-    const html = await response.text();
-    const container = document.querySelector(".renderChat");
+    const html = data.html;
+    const container = document.getElementById("chat-messages");
     container.innerHTML += html;
   }
 

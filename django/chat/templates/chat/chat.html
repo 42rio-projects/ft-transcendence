@@ -24,7 +24,7 @@
 	{% else %}
 		<h2>Notifications</h2>
 	{% endif %}
-    <div class="renderChat" style="height: 250px; overflow: auto;">
+    <div id="chat-messages" style="height: 250px; overflow: auto;">
       {% for message in chat.messages.all %}
 		{% if user == message.sender %}
 		 	<p class="messageSelf">{{ message.content }}</p>

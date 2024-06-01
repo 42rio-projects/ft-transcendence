@@ -10,5 +10,4 @@ urlpatterns = [
         views.sendMessage,
         name="sendMessage"
     ),
-    path("message/<int:id>/", views.message, name="message"),
 ]

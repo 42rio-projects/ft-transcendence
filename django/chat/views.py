@@ -62,13 +62,6 @@ def sendMessage(request, id):
             )
 
 
-def message(request, id):
-    message = get_object_or_404(models.Message, pk=id)
-    template = loader.get_template('chat/message.html')
-    context = {"message": message}
-    return HttpResponse(template.render(context, request))
-
-
 def notifications(request):
     chat = request.user.get_or_create_notifications()
     context = {"chat": chat, "other_user": request.user}
