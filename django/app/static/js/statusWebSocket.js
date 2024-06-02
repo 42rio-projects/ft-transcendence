@@ -3,7 +3,7 @@ const maxRetries = 5;
 
 class StatusWebSocket {
   constructor() {
-    this.socket = new WebSocket("ws://" + window.location.host + "/ws/status/");
+    this.socket = new WebSocket("wss://" + window.location.host + "/ws/status/");
     this.bind();
   }
 
@@ -35,7 +35,7 @@ class StatusWebSocket {
 
       setTimeout(() => {
         this.socket = new WebSocket(
-          "ws://" + window.location.host + "/ws/status/"
+          "wss://" + window.location.host + "/ws/status/"
         );
         this.bind();
       }, retries * 3000); // 3s
@@ -43,7 +43,7 @@ class StatusWebSocket {
   }
 
   connect() {
-    this.socket = new WebSocket("ws://" + window.location.host + "/ws/status/");
+    this.socket = new WebSocket("wss://" + window.location.host + "/ws/status/");
     this.bind();
   }
 
