@@ -7,12 +7,25 @@ from channels.db import database_sync_to_async
 from django.template.loader import render_to_string
 from channels.layers import get_channel_layer
 from relations.models import IsBlockedBy
+from asgiref.sync import async_to_sync
 
 
 UPPER_PLAYER_LIMIT = 16
 LOWER_PLAYER_LIMIT = 4
 TOURNAMENT_START_LIMIT = 60 * 5  # seconds
 ROUND_TIMEOUT = 60 * 5  # seconds
+
+
+@async_to_sync
+async def send_channel_message(group, message):
+    channel_layer = get_channel_layer()
+    await channel_layer.group_send(group, message,)
+
+
+def tournament_update(pk, json):
+    send_channel_message(
+        f'tournament_{pk}', {"type": "tournament.update", "json": json}
+    )
 
 
 class TournamentFinished(Exception):
@@ -37,15 +50,6 @@ class Tournament(models.Model):
     )
     started = models.BooleanField(default=False)
     finished = models.BooleanField(default=False)
-
-    def get_tournaments_by_user(user):
-        admin = Tournament.objects.filter(
-            admin=user
-        ).order_by('-date')
-        player = Tournament.objects.filter(
-            players=user
-        ).order_by('-date')
-        return admin.union(player)
 
     def new_round(self):
         if self.finished:
@@ -84,14 +88,30 @@ class Tournament(models.Model):
             raise ValidationError("Tournament already started.")
         if self.players.count() + self.invites_sent.count() >= UPPER_PLAYER_LIMIT:
             raise ValidationError("Player limit reached")
+        if self.admin == user:
+            self.players.add(self.admin)
+            html = render_to_string(
+                'pong/tournament/online/player.html', {'player': self.admin}
+            )
+            tournament_update(
+                self.pk, {"status": "new_player", "html": html}
+            )
+            return
         invite = TournamentInvite(tournament=self, receiver=user)
         invite.save()
-        return invite
+        html = render_to_string(
+            'pong/tournament/online/invite_sent.html', {'invite': invite}
+        )
+        tournament_update(
+            self.pk, {"status": "new_invite", "html": html}
+        )
 
     def cancel(self):
         if self.started:
             raise Exception("Tournament already started.")
         self.delete()
+        html = render_to_string('pong/tournament/online/cancelled.html')
+        tournament_update(self.pk, {"status": "cancelled", "html": html})
 
     def start(self):
         if self.started:
@@ -177,7 +197,16 @@ class TournamentInvite(models.Model):
         if accepted is True and tournament.started is False:
             tournament.players.add(self.receiver)
             tournament.save()
+            html = render_to_string(
+                'pong/tournament/online/player.html', {'player': self.receiver}
+            )
+            tournament_update(
+                tournament.pk, {"status": "new_player", "html": html}
+            )
         self.delete()
+        tournament_update(
+            self.tournament.pk, {"status": "delete_invite", "id": self.pk}
+        )
 
     def clean(self):
         if self.receiver in self.tournament.players.all():
@@ -331,15 +360,6 @@ class Game(models.Model):
         self.finished = True
         self.save()
 
-    def get_games_by_user(user, filters):
-        queryFilters = {}
-        if 'winner' in filters:
-            queryFilters['winner'] = filters['winner']
-        return Game.objects.filter(
-            models.Q(player1=user) | models.Q(player2=user),
-            **queryFilters
-        )
-
     @database_sync_to_async
     def a_refresh(self):
         self.refresh_from_db()
@@ -415,6 +435,14 @@ class GameInvite(models.Model):
             game.save()
         else:
             game.delete()
+            html = render_to_string('pong/game/online/canceled.html',)
+            models.send_channel_message(
+                f'game_{self.pk}',
+                {
+                    'type': 'game.update',
+                    'json': {'status': 'canceled', 'html': html}
+                },
+            )
         self.delete()
 
     class Meta:
