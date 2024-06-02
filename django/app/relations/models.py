@@ -20,11 +20,11 @@ class IsFriendsWith(models.Model):
         Validation to prevent duplicate entries and blocked friends
         """
         if IsBlockedBy.objects.filter(
-            Q(blocker=self.user1, blocked=self.user2) |
-            Q(blocker=self.user2, blocked=self.user1)
+            Q(blocker=self.sender, blocked=self.receiver) | Q(
+                blocked=self.receiver, blocker=self.sender)
         ).exists():
             raise ValidationError(
-                "Unable to add someone who you blocked or has you blocked"
+                "User blocked"
             )
         if IsFriendsWith.objects.filter(
                 user1=self.user2, user2=self.user1
@@ -110,11 +110,11 @@ class FriendInvite(models.Model):
         ).exists():
             raise ValidationError("Invite already sent")
         if IsBlockedBy.objects.filter(
-            Q(blocker=self.sender, blocked=self.receiver) |
-            Q(blocked=self.receiver, blocker=self.sender)
+            Q(blocker=self.sender, blocked=self.receiver) | Q(
+                blocked=self.receiver, blocker=self.sender)
         ).exists():
             raise ValidationError(
-                "Unable to add someone who you blocked or has you blocked"
+                "User blocked"
             )
         if IsFriendsWith.objects.filter(
             Q(user1=self.sender, user2=self.receiver) |

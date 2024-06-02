@@ -1,4 +1,9 @@
-<p id="player-{{ player.pk }}">
-  {% if player.nickname %} {{ player.nickname}} {% else %} {{ player.username }}
-  {% endif %}
-</p>
+<div id="player--{{player.pk}}">
+  <a href="{% url 'userProfile' player.username %}">
+    {% if player.nickname %}
+	{{ player.nickname }}
+    {% else %}
+	{{ player.username }}
+    {% endif %}
+  </a>
+</div>

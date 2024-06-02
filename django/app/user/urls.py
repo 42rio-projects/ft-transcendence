@@ -8,35 +8,43 @@ urlpatterns = [
     path('login/', views.login),
     path('logout/', views.logout),
 
-    path('tournament_history/', views.tournament_history),
-    path('match_history/', views.match_history),
+    path('history/<str:username>/', views.history, name="history"),
+    path(
+        'history/<str:username>/tournaments/',
+        views.tournament_history,
+        name="tournamentHistory"
+    ),
+    path(
+        'history/<str:username>/matches/',
+        views.match_history,
+        name="matchHistory"
+    ),
 
     path('profile/', views.my_profile),
-    path('profile/<str:username>/', views.user_profile),
+    path('profile/<str:username>/', views.user_profile, name="userProfile"),
     path('edit_profile/', views.edit_profile),
 
     path('change_password/', views.change_password),
     path('verify_email/', views.verify_email),
 
-	path(
-    'generate/totp/factor/',
-    views.generate_totp_factor,
-    name='generate_totp_factor'
+    path(
+        'generate/totp/factor/',
+        views.generate_totp_factor,
+        name='generate_totp_factor'
     ),
-	path(
-    'list/totp/factors/',
-    views.list_totp_factors,
-    name='list_totp_factors'
+    path(
+        'list/totp/factors/',
+        views.list_totp_factors,
+        name='list_totp_factors'
     ),
-	path(
-    'verify/totp/factor/',
-    views.verify_totp_factor,
-    name='verify_totp_factor'
+    path(
+        'verify/totp/factor/',
+        views.verify_totp_factor,
+        name='verify_totp_factor'
     ),
-	path(
-    'validate/totp/token/',
-    views.validate_totp_token,
-    name='validate_totp_token'
+    path(
+        'validate/totp/token/',
+        views.validate_totp_token,
+        name='validate_totp_token'
     ),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) # For Hentai images
-
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

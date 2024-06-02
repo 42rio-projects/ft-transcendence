@@ -184,6 +184,7 @@ CHANNEL_LAYERS = {
     },
 }
 
+<<<<<<< HEAD:django/app/ft_transcendence/settings.py
 CSRF_TRUSTED_ORIGINS = ["https://endgame.42.rio", "https://endgame.42.rio"]
 
 #Security settings
@@ -196,6 +197,9 @@ SECURE_HSTS_PRELOAD = True
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 LOGIN_URL = 'login'
+=======
+LOGIN_URL = '/login/'
+>>>>>>> develop:django/ft_transcendence/settings.py
 LOGIN_REDIRECT_URL = 'menu'
 LOGOUT_REDIRECT_URL = '/'
 # PROMETHEUS_EXPORT_MIGRATIONS = True

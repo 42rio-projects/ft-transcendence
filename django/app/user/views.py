@@ -5,6 +5,7 @@ from django.contrib.auth import authenticate, login as django_login, logout as d
 import os
 from django.core.paginator import Paginator
 import sys
+from django.contrib.auth.decorators import login_required
 
 from django.http import JsonResponse
 from django.http import HttpResponse
@@ -20,27 +21,30 @@ SERVICE_SID = os.environ["TWILIO_SERVICE_SID"]
 client = Client(ACCOUNT_SID, AUTH_TOKEN)
 
 
-def match_history(request):
-    if request.method == "GET":
-        games_list = request.user.get_games()
-        # paginator = Paginator(games_list, 10)
-
-        # page_number = request.GET.get('page')
-        # page_obj = paginator.get_page(page_number)
-
-        return render_component(request, 'match_history/index.html', 'content', {'page_obj': games_list})
+def history(request, username):
+    user = get_object_or_404(User, username=username)
+    context = {'user': user}
+    return render_component(request, 'history/index.html', 'content', context)
 
 
-def tournament_history(request):
-    if request.method == "GET":
-        tournaments_list = Tournament.get_tournaments_by_user(request.user)
-        print(tournaments_list, file=sys.stderr)
-        paginator = Paginator(tournaments_list, 10)
+def match_history(request, username):
+    user = get_object_or_404(User, username=username)
+    return render_component(
+        request,
+        'history/match.html',
+        'content',
+        {'user': user}
+    )
 
-        page_number = request.GET.get('page')
-        page_obj = paginator.get_page(page_number)
 
-        return render_component(request, 'tournament_history/index.html', 'content', {'page_obj': page_obj})
+def tournament_history(request, username):
+    user = get_object_or_404(User, username=username)
+    return render_component(
+        request,
+        'history/tournament.html',
+        'content',
+        {'user': user}
+    )
 
 
 def register(request):
@@ -86,7 +90,7 @@ def login(request):
             return render_component(request, 'login_form.html', 'form', context, 400)
 
         django_login(request, user)
-        return redirect('/')
+        return redirect(request.GET.get('next') or '/')
 
     if request.method == 'GET':
         return render_component(request, 'login.html', 'content')
@@ -98,6 +102,7 @@ def logout(request):
         return redirect('/')
 
 
+@login_required
 def my_profile(request):
     if request.method == 'GET':
         return render_component(request, 'profile.html', 'content')
@@ -123,14 +128,20 @@ def user_profile(request, username):
                 request.user.del_friend(user)
                 context['success'] = 'Friendship removed!'
             elif user_action == 'game-invite':
-                game = request.user.invite_to_game(user)
-                return redirect('onlineGame', game_id=game.pk)
+                try:
+                    game = request.user.invite_to_game(user)
+                    return redirect('onlineGame', game_id=game.pk)
+                except Exception as e:
+                    context['error'] = e.message
             elif user_action == 'block':
                 request.user.block_user(user)
                 context['success'] = 'User blocked'
             elif user_action == 'unblock':
                 request.user.unblock_user(user)
                 context['success'] = 'User unblocked'
+            elif user_action == 'send-message':
+                chat = request.user.get_or_create_chat(user)
+                return redirect('chatRoom', id=chat.pk)
         except Exception as e:
             context['error'] = e.message
 

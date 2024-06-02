@@ -1,1 +1,5 @@
-<p id="invite-{{ invite.pk }}">{{ invite.receiver }}</p>
+<div id="invite-{{ invite.pk }}">
+  <a href="{% url 'userProfile' invite.receiver.username %}">
+    {{ invite.receiver }}
+  </a>
+</div>

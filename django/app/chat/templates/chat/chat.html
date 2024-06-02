@@ -1,26 +1,49 @@
-<div class="renderChat">
-  {% for message in chat.messages.all %}
-  {% if user == message.sender %}
-  <p class="messageSelf">{{ message.content }}</p>
-  {% else %}
-  <p class="messageOthers">{{ message.content }}</p>
-  {% endif %}
-  {% endfor %}
+{% extends 'index.html' %}
+
+{% block title %} 
+	{% if chat.starter == chat.receiver %}
+		Notifications
+	{% else %}
+		Chat
+	{% endif %}
+{% endblock %}
+
+{% block content %}
+<div>
+  <div class="embranceForms">
+    <img class="avatar" src="{{ other_user.avatar.url }}" alt="Avatar" />
+	{% if chat.starter != chat.receiver %}
+		<a href="{% url 'userProfile' other_user.username %}">
+	  	  {{other_user.username}}
+	  	</a>
+		<div class="inviteToPlay">
+    	  <form method="post" onsubmit="handleFormSubmit(event)">
+    	    {% csrf_token %}
+    	    <input type="hidden" name="user-id" value="{{ user.id }}" />
+    	    <button type="submit">Invite to Game</button>
+    	  </form>
+    	</div>
+	{% else %}
+		<h2>Notifications</h2>
+	{% endif %}
+    <div id="chat-messages" style="height: 250px; overflow: auto;">
+      {% for message in chat.messages.all %}
+		{% if user == message.sender %}
+		 	<p class="messageSelf">{{ message.content }}</p>
+      	{% else %}
+			<p class="messageOthers">{{ message.content }}</p>
+      	{% endif %}
+      {% endfor %}
+    </div>
+	<span id="chat-warning" class="color-error"></span>
+	{% if chat.starter != chat.receiver %}
+      <form class="chatform" method="post" onsubmit="messageSocket.sendMessage(event)">
+        {% csrf_token %}
+        <input type="text" name="content" id="content" class="chat-input" placeholder="Digite sua mensagem" required />
+        <input type="hidden" name="url" value="{% url 'sendMessage' id=chat.id %}" />
+        <button type="submit" class="input-button">Enviar</button>
+      </form>
+	{% endif %}
+  </div>
 </div>
-<div class="embranceForms">
-<div class="inviteToPlay">
-  <form class="inviteToPlayForm" method="post" onsubmit="inviteToPlay.invite(event)">
-    {% csrf_token %}
-    <!-- Criar logica para o invite dos jogadores -->
-    <!-- <input type="hidden" name="url" value="{% url 'chatRoom' id=chat.id %}" /> -->
-    <button type="submit" class="input-button">Convidar para jogar</button>
-  </form>
-</div>
-  <form class="chatform" method="post" onsubmit="messageSocket.sendMessage(event)">
-    {% csrf_token %}
-    <input type="text" name="content" id="content" class="chat-input" placeholder="Digite sua mensagem" required />
-    <input type="hidden" name="url" value="{% url 'chatRoom' id=chat.id %}" />
-    <button type="submit" class="input-button">Enviar</button>
-  </form>
-</div>
-</div>
+{% endblock %}

@@ -1,0 +1,81 @@
+{% extends 'index.html' %}
+
+{% block title %} Match History {% endblock %}
+
+{% block content %}
+<div >
+  <table class="table">
+    <thead>
+      <tr class="headRow">
+        <th>
+          <p>Player 1</p>
+        </th>
+        <th>
+          <p>Score</p>
+        </th>
+        <th>
+          <p>Player 2</p>
+        </th>
+        <th>
+          <p>Score</p>
+        </th>
+        <th>
+          <p>Winner</p>
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for game in user.get_games.all%}
+      <tr>
+        <td>
+	      {% if game.player1 is not None %}
+		  	<a href="{% url 'userProfile' game.player1.username %}">
+		  	{% if game.round and game.player1.nickname %}
+		  		{{ game.player1.nickname }}
+		  	{% else %}
+		  		{{ game.player1.username }}
+		  	{% endif %}
+		  	</a>
+	      {% else %}
+			<p>"Deleted User"</p>
+		  {% endif %}
+        </td>
+        <td>
+          <p>{{ game.player1_points }}</p>
+        </td>
+        <td>
+	      {% if game.player2 is not None %}
+		  	<a href="{% url 'userProfile' game.player2.username %}">
+		  	{% if game.round and game.player2.nickname %}
+		  		{{ game.player2.nickname }}
+		  	{% else %}
+		  		{{ game.player2.username }}
+		  	{% endif %}
+		  	</a>
+	      {% else %}
+			<p>"Deleted User"</p>
+		  {% endif %}
+        </td>
+        <td>
+          <p>{{ game.player2_points }}</p>
+        </td>
+        <td>
+	      {% if game.winner is not None %}
+		  	<a href="{% url 'userProfile' game.winner.username %}">
+		  	{% if game.round and game.winner.nickname %}
+		  		{{ game.winner.nickname }}
+		  	{% else %}
+		  		{{ game.winner.username }}
+		  	{% endif %}
+		  	</a>
+	      {% else %}
+			<p>"Deleted User"</p>
+		  {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <a class="button" href="{% url 'history' user.username %}">History</a>
+</div>
+{% endblock %}
