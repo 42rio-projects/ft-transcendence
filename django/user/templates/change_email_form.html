@@ -1,0 +1,19 @@
+{% csrf_token %}
+
+{% if success %}
+<span class="color-success">{{ success }}</span>
+{% endif %}
+
+{% if error %}
+<span class="color-error">{{ error }}</span>
+{% endif %}
+
+<div>
+  <input
+    type="email"
+    name="email"
+    placeholder="New email"
+  />
+</div>
+
+<button type="submit">Change email</button>
