@@ -15,6 +15,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         self.user = self.scope['user']
         in_chat = await is_in_chat(self.user, self.chat)
         if not in_chat:
+            self.close()
             return
         await self.channel_layer.group_add(
             self.room_group_name, self.channel_name
