@@ -129,6 +129,12 @@ form {
   gap: 10px;
 }
 
+.profile-data {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
 form div {
   display: flex;
   flex-direction: column;
