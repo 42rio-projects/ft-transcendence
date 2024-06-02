@@ -11,7 +11,6 @@ from django.http import JsonResponse
 from django.http import HttpResponse
 from user.models import User
 from pong.models import Tournament
-from chat.models import Chat
 from .utils import validate_password, validate_register, validate_update, handle_user_action
 
 SERVICE_SID = os.environ['TWILIO_SERVICE_SID']
@@ -22,27 +21,30 @@ SERVICE_SID = os.environ["TWILIO_SERVICE_SID"]
 client = Client(ACCOUNT_SID, AUTH_TOKEN)
 
 
-def match_history(request):
-    if request.method == "GET":
-        games_list = request.user.get_games()
-        # paginator = Paginator(games_list, 10)
-
-        # page_number = request.GET.get('page')
-        # page_obj = paginator.get_page(page_number)
-
-        return render_component(request, 'match_history/index.html', 'content', {'page_obj': games_list})
+def history(request, username):
+    user = get_object_or_404(User, username=username)
+    context = {'user': user}
+    return render_component(request, 'history/index.html', 'content', context)
 
 
-def tournament_history(request):
-    if request.method == "GET":
-        tournaments_list = Tournament.get_tournaments_by_user(request.user)
-        print(tournaments_list, file=sys.stderr)
-        paginator = Paginator(tournaments_list, 10)
+def match_history(request, username):
+    user = get_object_or_404(User, username=username)
+    return render_component(
+        request,
+        'history/match.html',
+        'content',
+        {'user': user}
+    )
 
-        page_number = request.GET.get('page')
-        page_obj = paginator.get_page(page_number)
 
-        return render_component(request, 'tournament_history/index.html', 'content', {'page_obj': page_obj})
+def tournament_history(request, username):
+    user = get_object_or_404(User, username=username)
+    return render_component(
+        request,
+        'history/tournament.html',
+        'content',
+        {'user': user}
+    )
 
 
 def register(request):
@@ -116,7 +118,14 @@ def user_profile(request, username):
     if request.method == 'POST':
         action = request.POST.get('user-action')
         try:
-            context['success'] = handle_user_action(request.user, user, action)
+            if action == 'game-invite':
+                game = request.user.invite_to_game(user)
+                return redirect('onlineGame', game_id=game.pk)
+            elif action == 'send-message':
+                chat = request.user.get_or_create_chat(user)
+                return redirect('chatRoom', id=chat.pk)
+            else:
+                context['success'] = handle_user_action(request.user, user, action)
         except Exception as e:
             context['error'] = e.message
             return render_component(request, 'profile.html', 'content', context, 400)

@@ -30,6 +30,7 @@ Profile
       </div>
     </div>
     {% if request.user != user %}
+    {% if request.user not in user.get_blocks and user not in request.user.get_blocks %}
     <form method="post" onsubmit="handleFormSubmit(event)">
       {% csrf_token %}
       <input type="hidden" name="user-id" value="{{ user.id }}" />
@@ -44,6 +45,7 @@ Profile
       <button type="submit">Remove friend</button>
       {% endif %}
     </form>
+    {% endif %}
     {% else %}
     <a class="button" href="/edit-profile/">Edit profile</a>
     {% endif %}
@@ -58,6 +60,7 @@ Profile
   </div>
   {% else %}
   <div class="profile-actions">
+    {% if request.user not in user.get_blocks and user not in request.user.get_blocks %}
     <form method="post" onsubmit="handleFormSubmit(event)">
       {% csrf_token %}
       <input type="hidden" name="user-id" value="{{ user.id }}" />
@@ -70,6 +73,7 @@ Profile
       <input type="hidden" name="user-action" value="send-message" />
       <button type="submit">Send message</button>
     </form>
+    {% endif %}
     <form method="post" onsubmit="handleFormSubmit(event)">
       {% csrf_token %}
       <input type="hidden" name="user-id" value="{{ user.id }}" />

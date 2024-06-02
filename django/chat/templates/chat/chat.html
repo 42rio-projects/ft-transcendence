@@ -43,6 +43,8 @@
         <input type="hidden" name="url" value="{% url 'sendMessage' id=chat.id %}" />
         <button type="submit" class="input-button">Enviar</button>
       </form>
+	{% else %}
+		<a class="button" href="/pong/online-tournament/menu">Online Tournaments</a>
 	{% endif %}
   </div>
 </div>

@@ -1,5 +1,16 @@
-{% if tournament.winner.nickname %}
-<h2>Tournament winner is {{ tournament.winner.nickname }}</h2>
-{% else %}
-<h2>Tournament winner is {{ tournament.winner }}</h2>
-{% endif %}
+<div>
+  <h2>Tournament Winner</h2>
+  <div style="padding: 15px; display: flex; flex-direction: column">
+    {% if tournament.winner is not None %} {% if tournament.winner.nickname %}
+    <a class="button" href="{% url 'userProfile' tournament.winner.username %}">
+      {{ tournament.winner.nickname }}
+    </a>
+    {% else %}
+    <a class="button" href="{% url 'userProfile' tournament.winner.username %}">
+      {{ tournament.winner.username }}
+    </a>
+    {% endif %} {% else %}
+    <p>"Deleted User"</p>
+    {% endif %}
+  </div>
+</div>

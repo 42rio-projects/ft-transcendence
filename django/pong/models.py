@@ -1,16 +1,31 @@
 import asyncio
+from django.db.models import Q
 import random
 from django.db import models
 from django.core.exceptions import ValidationError
 from channels.db import database_sync_to_async
 from django.template.loader import render_to_string
 from channels.layers import get_channel_layer
+from relations.models import IsBlockedBy
+from asgiref.sync import async_to_sync
 
 
 UPPER_PLAYER_LIMIT = 16
 LOWER_PLAYER_LIMIT = 4
 TOURNAMENT_START_LIMIT = 60 * 5  # seconds
 ROUND_TIMEOUT = 60 * 5  # seconds
+
+
+@async_to_sync
+async def send_channel_message(group, message):
+    channel_layer = get_channel_layer()
+    await channel_layer.group_send(group, message,)
+
+
+def tournament_update(pk, json):
+    send_channel_message(
+        f'tournament_{pk}', {"type": "tournament.update", "json": json}
+    )
 
 
 class TournamentFinished(Exception):
@@ -35,15 +50,6 @@ class Tournament(models.Model):
     )
     started = models.BooleanField(default=False)
     finished = models.BooleanField(default=False)
-
-    def get_tournaments_by_user(user):
-        admin = Tournament.objects.filter(
-            admin=user
-        ).order_by('-date')
-        player = Tournament.objects.filter(
-            players=user
-        ).order_by('-date')
-        return admin.union(player)
 
     def new_round(self):
         if self.finished:
@@ -79,20 +85,33 @@ class Tournament(models.Model):
 
     def invite(self, user):
         if self.started:
-            raise Exception("Tournament already started.")
+            raise ValidationError("Tournament already started.")
         if self.players.count() + self.invites_sent.count() >= UPPER_PLAYER_LIMIT:
-            raise Exception("Player limit reached")
+            raise ValidationError("Player limit reached")
+        if self.admin == user:
+            self.players.add(self.admin)
+            html = render_to_string(
+                'pong/tournament/online/player.html', {'player': self.admin}
+            )
+            tournament_update(
+                self.pk, {"status": "new_player", "html": html}
+            )
+            return
         invite = TournamentInvite(tournament=self, receiver=user)
-        try:
-            invite.save()
-        except Exception:
-            raise Exception("Invite already sent")
-        return invite
+        invite.save()
+        html = render_to_string(
+            'pong/tournament/online/invite_sent.html', {'invite': invite}
+        )
+        tournament_update(
+            self.pk, {"status": "new_invite", "html": html}
+        )
 
     def cancel(self):
         if self.started:
             raise Exception("Tournament already started.")
         self.delete()
+        html = render_to_string('pong/tournament/online/cancelled.html')
+        tournament_update(self.pk, {"status": "cancelled", "html": html})
 
     def start(self):
         if self.started:
@@ -178,7 +197,16 @@ class TournamentInvite(models.Model):
         if accepted is True and tournament.started is False:
             tournament.players.add(self.receiver)
             tournament.save()
+            html = render_to_string(
+                'pong/tournament/online/player.html', {'player': self.receiver}
+            )
+            tournament_update(
+                tournament.pk, {"status": "new_player", "html": html}
+            )
         self.delete()
+        tournament_update(
+            self.tournament.pk, {"status": "delete_invite", "id": self.pk}
+        )
 
     def clean(self):
         if self.receiver in self.tournament.players.all():
@@ -186,6 +214,11 @@ class TournamentInvite(models.Model):
                 'You cannot send a invite to someone who is already in\
                 the tournament.'
             )
+        if IsBlockedBy.objects.filter(
+            Q(blocker=self.tournament.admin, blocked=self.receiver) | Q(
+                blocked=self.receiver, blocker=self.tournament.admin)
+        ).exists():
+            raise ValidationError("User blocked")
 
     def save(self, *args, **kwargs):
         """
@@ -198,7 +231,8 @@ class TournamentInvite(models.Model):
         constraints = [
             models.UniqueConstraint(
                 name="%(app_label)s_%(class)s_unique_relationships",
-                fields=["tournament", "receiver"]
+                fields=["tournament", "receiver"],
+                violation_error_message="Invite already sent"
             ),
         ]
 
@@ -326,15 +360,6 @@ class Game(models.Model):
         self.finished = True
         self.save()
 
-    def get_games_by_user(user, filters):
-        queryFilters = {}
-        if 'winner' in filters:
-            queryFilters['winner'] = filters['winner']
-        return Game.objects.filter(
-            models.Q(player1=user) | models.Q(player2=user),
-            **queryFilters
-        )
-
     @database_sync_to_async
     def a_refresh(self):
         self.refresh_from_db()
@@ -381,16 +406,20 @@ class GameInvite(models.Model):
     )
 
     def clean(self):
-        """
-        Custom validation to prevent sending invites to friends.
-        """
-        if GameInvite.objects.filter(sender=self.sender, receiver=self.receiver).exists():
+        if IsBlockedBy.objects.filter(
+            Q(blocker=self.sender, blocked=self.receiver) | Q(
+                blocked=self.receiver, blocker=self.sender)
+        ).exists():
+            raise ValidationError("User blocked")
+        if GameInvite.objects.filter(
+                sender=self.sender, receiver=self.receiver
+        ).exists():
             raise ValidationError(
-                'You have already sent a game invite to this user.')
-
-        if GameInvite.objects.filter(sender=self.receiver, receiver=self.sender).exists():
-            raise ValidationError(
-                'You cannot send a game invite to someone who has invited you.')
+                'You have already sent a game invite to this user')
+        if GameInvite.objects.filter(
+                sender=self.receiver, receiver=self.sender
+        ).exists():
+            raise ValidationError('User has already invited you')
 
     def save(self, *args, **kwargs):
         """
@@ -406,6 +435,14 @@ class GameInvite(models.Model):
             game.save()
         else:
             game.delete()
+            html = render_to_string('pong/game/online/canceled.html',)
+            models.send_channel_message(
+                f'game_{self.pk}',
+                {
+                    'type': 'game.update',
+                    'json': {'status': 'canceled', 'html': html}
+                },
+            )
         self.delete()
 
     class Meta:

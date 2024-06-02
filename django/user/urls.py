@@ -8,8 +8,17 @@ urlpatterns = [
     path('login/', views.login),
     path('logout/', views.logout),
 
-    path('tournament_history/', views.tournament_history),
-    path('match_history/', views.match_history),
+    path('history/<str:username>/', views.history, name="history"),
+    path(
+        'history/<str:username>/tournaments/',
+        views.tournament_history,
+        name="tournamentHistory"
+    ),
+    path(
+        'history/<str:username>/matches/',
+        views.match_history,
+        name="matchHistory"
+    ),
 
     path('profile/', views.my_profile),
     path('profile/<str:username>/', views.user_profile, name="userProfile"),

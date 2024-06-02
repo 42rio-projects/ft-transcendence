@@ -28,11 +28,16 @@ class LocalTournament():
             )
             return
         self.players.add(player)
-        html = render_to_string(
-            'pong/tournament/local/player.html', {'alias': player}
-        )
         if previous_size < len(self.players):
+            html = render_to_string(
+                'pong/tournament/local/player.html', {'alias': player}
+            )
             await self.send_message({"status": "new_player", "html": html})
+        else:
+            await self.send_message({
+                "status": "warning",
+                "content": f"Player {player} already added"
+            })
 
     async def remove_player(self, player):
         try:
