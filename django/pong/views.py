@@ -2,9 +2,9 @@ from user.models import User
 from django.shortcuts import redirect,  get_object_or_404
 from .utils import render_component
 from django.http import JsonResponse
-from django.template.loader import render_to_string
 from django.core.exceptions import PermissionDenied
 from pong import models
+from django.contrib.auth.decorators import login_required
 
 
 def json_error(message):
@@ -19,6 +19,7 @@ def json_success(message):
     )
 
 
+@login_required
 def index(request):
     if request.method == 'POST':
         username = request.POST.get('username')
@@ -27,13 +28,14 @@ def index(request):
         else:
             return render_component(request, 'search_user_form.html', 'form', {
                 'error': 'User not found',
-                'username': username  # So user doesn't have to re-type
+                'username': username
             }, status=404)
 
     if request.method == 'GET':
         return render_component(request, 'index.html', 'content')
 
 
+@login_required
 def pong(request):
     if request.method == 'POST':
         user_action = request.POST.get('user-action')
@@ -56,6 +58,7 @@ def localGame(request):
         return render_component(request, 'pong/game/local/game.html', 'content')
 
 
+@login_required
 def onlineGame(request, game_id):
     game = get_object_or_404(models.Game, pk=game_id)
     if game.finished:
@@ -89,6 +92,7 @@ def localTournament(request):
         return render_component(request, "pong/tournament/local/tournament.html", "content")
 
 
+@login_required
 def tournamentMenu(request):
     context = {}
     if request.method == 'POST':
@@ -122,12 +126,16 @@ def tournamentMenu(request):
     )
 
 
+@login_required
 def onlineTournament(request, tournament_id):
     tournament = get_object_or_404(models.Tournament, pk=tournament_id)
     return render_component(request, "pong/tournament/online/tournament.html", "content", {"tournament": tournament})
 
 
+@login_required
 def cancelTournament(request, tournament_id):
+    if request.method != 'POST':
+        return redirect('pongMenu')
     try:
         tournament = models.Tournament.objects.get(pk=tournament_id)
     except Exception:
@@ -141,6 +149,7 @@ def cancelTournament(request, tournament_id):
         return json_error(e.__str__())
 
 
+@login_required
 def inviteToTournament(request, tournament_id):
     if request.method != 'POST':
         return redirect('pongMenu')
