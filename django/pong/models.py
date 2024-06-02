@@ -1,10 +1,12 @@
 import asyncio
+from django.db.models import Q
 import random
 from django.db import models
 from django.core.exceptions import ValidationError
 from channels.db import database_sync_to_async
 from django.template.loader import render_to_string
 from channels.layers import get_channel_layer
+from relations.models import IsBlockedBy
 
 
 UPPER_PLAYER_LIMIT = 16
@@ -79,14 +81,11 @@ class Tournament(models.Model):
 
     def invite(self, user):
         if self.started:
-            raise Exception("Tournament already started.")
+            raise ValidationError("Tournament already started.")
         if self.players.count() + self.invites_sent.count() >= UPPER_PLAYER_LIMIT:
-            raise Exception("Player limit reached")
+            raise ValidationError("Player limit reached")
         invite = TournamentInvite(tournament=self, receiver=user)
-        try:
-            invite.save()
-        except Exception:
-            raise Exception("Invite already sent")
+        invite.save()
         return invite
 
     def cancel(self):
@@ -186,6 +185,11 @@ class TournamentInvite(models.Model):
                 'You cannot send a invite to someone who is already in\
                 the tournament.'
             )
+        if IsBlockedBy.objects.filter(
+            Q(blocker=self.tournament.admin, blocked=self.receiver) | Q(
+                blocked=self.receiver, blocker=self.tournament.admin)
+        ).exists():
+            raise ValidationError("User blocked")
 
     def save(self, *args, **kwargs):
         """
@@ -198,7 +202,8 @@ class TournamentInvite(models.Model):
         constraints = [
             models.UniqueConstraint(
                 name="%(app_label)s_%(class)s_unique_relationships",
-                fields=["tournament", "receiver"]
+                fields=["tournament", "receiver"],
+                violation_error_message="Invite already sent"
             ),
         ]
 
@@ -381,16 +386,20 @@ class GameInvite(models.Model):
     )
 
     def clean(self):
-        """
-        Custom validation to prevent sending invites to friends.
-        """
-        if GameInvite.objects.filter(sender=self.sender, receiver=self.receiver).exists():
+        if IsBlockedBy.objects.filter(
+            Q(blocker=self.sender, blocked=self.receiver) | Q(
+                blocked=self.receiver, blocker=self.sender)
+        ).exists():
+            raise ValidationError("User blocked")
+        if GameInvite.objects.filter(
+                sender=self.sender, receiver=self.receiver
+        ).exists():
             raise ValidationError(
-                'You have already sent a game invite to this user.')
-
-        if GameInvite.objects.filter(sender=self.receiver, receiver=self.sender).exists():
-            raise ValidationError(
-                'You cannot send a game invite to someone who has invited you.')
+                'You have already sent a game invite to this user')
+        if GameInvite.objects.filter(
+                sender=self.receiver, receiver=self.sender
+        ).exists():
+            raise ValidationError('User has already invited you')
 
     def save(self, *args, **kwargs):
         """

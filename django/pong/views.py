@@ -198,4 +198,4 @@ def inviteToTournament(request, tournament_id):
         )
         return json_success(f"Invite sent to {name}")
     except Exception as e:
-        return json_error(e.__str__())
+        return json_error(e.message)

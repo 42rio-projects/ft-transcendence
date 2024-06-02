@@ -24,7 +24,7 @@ class IsFriendsWith(models.Model):
                 blocked=self.receiver, blocker=self.sender)
         ).exists():
             raise ValidationError(
-                "Unable to add someone who you blocked or has you blocked"
+                "User blocked"
             )
         if IsFriendsWith.objects.filter(
                 user1=self.user2, user2=self.user1
@@ -114,7 +114,7 @@ class FriendInvite(models.Model):
                 blocked=self.receiver, blocker=self.sender)
         ).exists():
             raise ValidationError(
-                "Unable to add someone who you blocked or has you blocked"
+                "User blocked"
             )
         if IsFriendsWith.objects.filter(
             Q(user1=self.sender, user2=self.receiver) |
