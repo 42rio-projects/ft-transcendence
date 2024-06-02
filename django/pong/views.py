@@ -1,13 +1,10 @@
 from user.models import User
 from django.shortcuts import redirect,  get_object_or_404
 from .utils import render_component
-from asgiref.sync import async_to_sync
 from django.http import JsonResponse
 from django.template.loader import render_to_string
-from channels.layers import get_channel_layer
-from django.http import HttpResponse
 from django.core.exceptions import PermissionDenied
-from . import models
+from pong import models
 
 
 def json_error(message):
@@ -19,18 +16,6 @@ def json_error(message):
 def json_success(message):
     return JsonResponse(
         {"status": "success", "message": message}
-    )
-
-
-@async_to_sync
-async def send_channel_message(group, message):
-    channel_layer = get_channel_layer()
-    await channel_layer.group_send(group, message,)
-
-
-def tournament_update(pk, json):
-    send_channel_message(
-        f'tournament_{pk}', {"type": "tournament.update", "json": json}
     )
 
 
@@ -62,14 +47,6 @@ def pong(request):
             invite.respond(accepted=True)
             return redirect('onlineGame', game_id=invite.game.pk)
         elif user_action == 'reject-game':
-            html = render_to_string('pong/game/online/canceled.html',)
-            send_channel_message(
-                f'game_{invite.game.pk}',
-                {
-                    'type': 'game.update',
-                    'json': {'status': 'canceled', 'html': html}
-                },
-            )
             invite.respond(accepted=False)
     return render_component(request, 'pong/pong.html', 'content')
 
@@ -120,7 +97,6 @@ def tournamentMenu(request):
             invite_id = request.POST.get('invite-id')
             try:
                 invite = models.TournamentInvite.objects.get(pk=invite_id)
-                pk = invite.tournament.pk
             except Exception:
                 context['error'] = 'Invite no longer exists'
                 user_action = ''
@@ -137,15 +113,9 @@ def tournamentMenu(request):
         elif user_action == 'accept-invite':
             invite.respond(accepted=True)
             context['success'] = 'Invite accepted'
-            html = render_to_string(
-                'pong/tournament/online/player.html', {'player': request.user}
-            )
-            tournament_update(pk, {"status": "new_player", "html": html})
-            tournament_update(pk, {"status": "delete_invite", "id": invite_id})
         elif user_action == 'reject-invite':
             invite.respond(accepted=False)
             context['success'] = 'Invite rejected'
-            tournament_update(pk, {"status": "delete_invite", "id": invite_id})
 
     return render_component(
         request, "pong/tournament/online/menu.html", "content", context
@@ -165,10 +135,7 @@ def cancelTournament(request, tournament_id):
     if request.user != tournament.admin:
         return json_error("You're not tournament admin.")
     try:
-        pk = tournament.pk
         tournament.cancel()
-        html = render_to_string('pong/tournament/online/cancelled.html')
-        tournament_update(pk, {"status": "cancelled", "html": html})
         return json_success(f"Tournament {tournament.name} cancelled.")
     except Exception as e:
         return json_error(e.__str__())
@@ -189,13 +156,7 @@ def inviteToTournament(request, tournament_id):
     try:
         if request.user != tournament.admin:
             raise Exception("You're not tournament admin.")
-        invite = tournament.invite(user)
-        html = render_to_string(
-            'pong/tournament/online/invite_sent.html', {'invite': invite}
-        )
-        tournament_update(
-            tournament.pk, {"status": "new_invite", "html": html}
-        )
+        tournament.invite(user)
         return json_success(f"Invite sent to {name}")
     except Exception as e:
         return json_error(e.message)
