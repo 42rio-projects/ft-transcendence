@@ -1,30 +1,29 @@
 import os
-from channels.auth import AuthMiddlewareStack
 from channels.routing import ProtocolTypeRouter, URLRouter
-from channels.security.websocket import AllowedHostsOriginValidator
+from channels.auth import AuthMiddlewareStack
 from django.core.asgi import get_asgi_application
 
-import chat.routing
-import relations.routing
-import pong.routing
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ft_transcendence.settings')
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "ft_transcendence.settings")
-# Initialize Django ASGI application early to ensure the AppRegistry
-# is populated before importing code that may import ORM models.
+# Garanta que as configurações do Django sejam carregadas antes de acessar modelos ou rotas
 django_asgi_app = get_asgi_application()
 
+def get_application():
+    import django
+    django.setup()  # Carrega as configurações do Django
 
-url_patterns = (
-    chat.routing.urlpatterns +
-    relations.routing.urlpatterns +
-    pong.routing.urlpatterns
-)
+    # Importe suas rotas somente depois que as configurações do Django estiverem carregadas
+    from chat.routing import websocket_urlpatterns
+    from pong.routing import websocket_urlpatterns
+    from relations.routing import websocket_urlpatterns
 
-application = ProtocolTypeRouter(
-    {
+    return ProtocolTypeRouter({
         "http": django_asgi_app,
-        "websocket": AllowedHostsOriginValidator(
-            AuthMiddlewareStack(URLRouter(url_patterns)),
+        "websocket": AuthMiddlewareStack(
+            URLRouter(
+                websocket_urlpatterns
+            )
         ),
-    }
-)
+    })
+
+application = get_application()

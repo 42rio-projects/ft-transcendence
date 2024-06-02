@@ -37,5 +37,13 @@ python manage.py collectstatic --noinput
 echo "CreateSuperUser"
 python manage.py createsuperuser --noinput
 
-echo "Runserver"
-gunicorn -c gunicorn_config.py ft_transcendence.wsgi:application
+echo "Starting Gunicorn and Daphne..."
+
+# Start Gunicorn in background
+gunicorn -c gunicorn_config.py ft_transcendence.wsgi:application &
+
+# Start Daphne in background
+daphne -b 0.0.0.0 -p 8001 ft_transcendence.asgi:application &
+
+# Wait for both processes to finish
+wait
