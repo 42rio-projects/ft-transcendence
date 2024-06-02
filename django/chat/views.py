@@ -1,5 +1,3 @@
-from django.template import loader
-from django.http import HttpResponse
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.http import HttpResponseForbidden
@@ -26,9 +24,14 @@ def chatRoom(request, id):
 
     if other_user == request.user:
         return redirect('notifications')
+    if request.user in other_user.get_blocks() or other_user in request.user.get_blocks():
+        return redirect('userProfile', other_user.username)
     if request.method == 'POST':
-        game = request.user.invite_to_game(other_user)
-        return redirect('onlineGame', game_id=game.pk)
+        try:
+            game = request.user.invite_to_game(other_user)
+            return redirect('onlineGame', game_id=game.pk)
+        except Exception:
+            return redirect('userProfile', other_user.username)
 
     context = {"chat": chat, "other_user": other_user}
     return render_component(request, 'chat/chat.html', 'content', context)

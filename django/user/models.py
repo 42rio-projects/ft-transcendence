@@ -149,6 +149,21 @@ class User(AbstractUser):
 
     def block_user(self, user):
         IsBlockedBy(blocker=self, blocked=user).save()
+        friendship = IsFriendsWith.objects.filter(
+            Q(user1=self, user2=user) | Q(user1=user, user2=self)
+        )
+        if friendship.exists():
+            friendship[0].delete()
+        friend_invite = FriendInvite.objects.filter(
+            Q(sender=self, receiver=user) | Q(sender=user, receiver=self)
+        )
+        if friend_invite.exists():
+            friend_invite[0].delete()
+        game_invite = GameInvite.objects.filter(
+            Q(sender=self, receiver=user) | Q(sender=user, receiver=self)
+        )
+        if game_invite.exists():
+            game_invite[0].delete()
 
     def unblock_user(self, user):
         block = IsBlockedBy.objects.filter(Q(blocker=self, blocked=user))

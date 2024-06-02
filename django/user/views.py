@@ -128,8 +128,11 @@ def user_profile(request, username):
                 request.user.del_friend(user)
                 context['success'] = 'Friendship removed!'
             elif user_action == 'game-invite':
-                game = request.user.invite_to_game(user)
-                return redirect('onlineGame', game_id=game.pk)
+                try:
+                    game = request.user.invite_to_game(user)
+                    return redirect('onlineGame', game_id=game.pk)
+                except Exception as e:
+                    context['error'] = e.message
             elif user_action == 'block':
                 request.user.block_user(user)
                 context['success'] = 'User blocked'
