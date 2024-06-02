@@ -5,23 +5,18 @@
 {% block content %}
 <div>
   <div>
-    <h2 class="neon text-3xl">{% block auth_title %}Login{% endblock %}</h2>
+    <h2 class="neon text-3xl">Login</h2>
     <h3 class="text-xl font-normal">
-      {% block auth_subtitle %}Enter your account:{% endblock %}
+      Enter your account:
     </h3>
   </div>
-
   <form id="form" method="post" onsubmit="handleLogin(event)">
-    {% block auth_form %} {% include 'login_form.html' %} {% endblock %}
+    {% include 'login/form.html' %}
   </form>
-
   <hr />
-
   <div class="auth-footer">
-    {% block auth_footer %}
     <p>Don't have an account?</p>
     <a href="/register/">Register</a>
-    {% endblock %}
   </div>
 </div>
 {% endblock %}
