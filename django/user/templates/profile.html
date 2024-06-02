@@ -18,7 +18,7 @@ Profile
     <div class="user-info">
       <img class="user-info-avatar" src="{{ user.avatar.url }}" alt="Avatar" />
       <div class="user-info-container">
-        <span>{% if user.nickname %}{{ user.nickname }}{% else %}{{ user.username }}{% endif %}</span>
+        <span>{{ user.username }}</span>
         <div class="user-info-status">
           {% if user.status == 'Online' %}
           <div id="{{ user.pk }}-status-icon" class="online-icon"></div>
