@@ -62,13 +62,13 @@ Profile
       {% csrf_token %}
       <input type="hidden" name="user-id" value="{{ user.id }}" />
       <input type="hidden" name="user-action" value="game-invite" />
-      <button type="submit">Invite to Game</button>
+      <button type="submit">Invite to game</button>
     </form>
     <form method="post" onsubmit="handleFormSubmit(event)">
       {% csrf_token %}
       <input type="hidden" name="user-id" value="{{ user.id }}" />
       <input type="hidden" name="user-action" value="send-message" />
-      <button type="submit">Send Message</button>
+      <button type="submit">Send message</button>
     </form>
     <form method="post" onsubmit="handleFormSubmit(event)">
       {% csrf_token %}
