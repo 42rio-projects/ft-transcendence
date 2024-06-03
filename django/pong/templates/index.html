@@ -23,6 +23,7 @@
       </button>
     </div>
     {% else %}
+    <a href="/">Home</a>
     <a href="/register/">Register</a>
     <span class="vertical-line"></span>
     <a href="/login/">Login</a>
@@ -32,11 +33,20 @@
 
 <main class="main-container">
   {% block content %}
-  <div class="home">
-    <h1 class="neon">Search user</h1>
-    <form id="form" method="post" onsubmit="handleFormSubmit(event)">
-      {% include 'search_user_form.html' %}
-    </form>
-  </div>
+   {% if user.is_authenticated %}
+     <div class="home">
+       <h1 class="neon">Search user</h1>
+       <form id="form" method="post" onsubmit="handleFormSubmit(event)">
+         {% include 'search_user_form.html' %}
+       </form>
+     </div>
+   {% else %}
+     <div>
+       <h1 class="neon">Welcome</h1>
+       <a class="button" href="/pong/local-game/">Local Game</a>
+       <a class="button" href="/pong/local-tournament/">Local Tournament</a>
+	   <a class="button" href="/login/">Login</a>
+     </div>
+   {% endif %}
   {% endblock %}
 </main>
