@@ -1,4 +1,4 @@
-<li id="tournament_player_{{ alias }}" class="tournament-player">
+<li id="tournament_player_{{ alias }}" class="row justify-between items-center">
   <span>{{ alias }}</span>
   <form class="inline-block" onsubmit="localTournamentSocket.playerAction(event)">
     {% csrf_token %}

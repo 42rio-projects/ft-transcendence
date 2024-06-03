@@ -137,38 +137,6 @@ hr {
   gap: 32px
 }
 
-.tournament {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.tournament-options {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.tournament-players {
-  display: flex;
-  flex-direction: column;
-  width: 300px;
-  gap: 8px;
-}
-
-.tournament-player {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.tournament-result-actions {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  margin-top: 20px;
-}
-
 .home {
   width: 300px;
 }
