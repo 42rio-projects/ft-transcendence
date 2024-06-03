@@ -236,6 +236,10 @@ form div {
   flex-direction: row;
 }
 
+.inline-block {
+  display: inline-block;
+}
+
 .local-result-content {
   display: flex;
   flex-direction: column;
@@ -282,6 +286,35 @@ form div {
   width: 32px;
   height: 32px;
   border-radius: 50%;
+}
+
+.tournament {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.tournament-options {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.tournament-players {
+  display: flex;
+  flex-direction: column;
+  width: 300px;
+  gap: 8px;
+}
+
+.tournament-player {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.width-full {
+  width: 100%;
 }
 
 .main-container {

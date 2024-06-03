@@ -4,29 +4,32 @@
 
 {% block content %}
 <div>
-  <div id="formation-menu">
+  <div id="formation-menu" class="tournament">
     <div class="verticalDiv">
-	<span id="local-tournament-warning" class="color-error"></span>
-      <form onsubmit="localTournamentSocket.playerAction(event)">
-        {% csrf_token %}
-        <input
-          type="text"
-          name="alias"
-          class="chat-input"
-          placeholder="Player Alias"
-          required
-        />
-        <input type="hidden" name="user_action" value="add_player" />
-        <button type="submit" class="input-button">Add</button>
-      </form>
-      <form onsubmit="localTournamentSocket.tournamentAction(event)">
-        {% csrf_token %}
-        <input type="hidden" name="user_action" value="start_tournament" />
-        <button type="submit" class="input-button">Start Tournament</button>
-      </form>
+      <span id="local-tournament-warning" class="error"></span>
+      <div class="tournament-options">
+        <form class="row" onsubmit="localTournamentSocket.playerAction(event)">
+          {% csrf_token %}
+          <input
+            class="width-full"
+            type="text"
+            name="alias"
+            class="chat-input"
+            placeholder="Player Alias"
+            required
+          />
+          <input type="hidden" name="user_action" value="add_player" />
+          <button type="submit" class="input-button">Add</button>
+        </form>
+        <form onsubmit="localTournamentSocket.tournamentAction(event)">
+          {% csrf_token %}
+          <input type="hidden" name="user_action" value="start_tournament" />
+          <button type="submit" class="input-button">Start Tournament</button>
+        </form>
+      </div>
     </div>
     <h2>Players</h2>
-	<ul id="tournament-players" style="height: 250px; overflow: auto;"></ul>
+    <ul id="tournament-players" class="tournament-players" style="height: 250px; overflow: auto;"></ul>
   </div>
   <div id="game-section"></div>
 </div>
