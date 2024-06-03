@@ -1,11 +1,11 @@
 <div class="game-container" id="local-game-section">
   <div id="local-game-start" class="verticalDiv">
   {% if tournament %}
-    <button onclick="localTournamentSocket.startGame()">Start Game</button>
+    <button class="button" onclick="localTournamentSocket.startGame()">Start Game</button>
   {% else %}
   <div class="game-header" >
     <h1>Local Game</h1>
-      <button onclick="localGameSocket.start()">Start Game</button>
+      <button class="button" onclick="localGameSocket.start()">Start Game</button>
   </div>
   {% endif %}
   </div>

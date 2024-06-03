@@ -25,7 +25,7 @@
           <form method="post" onsubmit="handleFormSubmit(event)">
             {% csrf_token %}
             <input type="hidden" name="user-id" value="{{ user.id }}" />
-	    	<button type="submit">Invite to Game</button>
+	    	<button class="button" type="submit">Invite to Game</button>
           </form>
         </div>
 	  {% endif %}
@@ -43,7 +43,7 @@
 	<div class="chatBottom">
       <form method="post" class="chatForm" onsubmit="messageSocket.sendMessage(event)">
         {% csrf_token %}
-        <input type="text" name="content" id="content" class="chat-input" placeholder="Type your message" required />
+        <input class="input" type="text" name="content" id="content" class="chat-input" placeholder="Type your message" required />
         <input type="hidden" name="url" value="{% url 'sendMessage' id=chat.id %}" />
         <button class="sendMessageButton" type="submit">
 			<img class="sendMessageIcon" src="https://cdn-icons-png.freepik.com/512/4414/4414831.png"/> 

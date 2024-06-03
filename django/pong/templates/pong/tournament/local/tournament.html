@@ -8,23 +8,22 @@
     <div class="verticalDiv">
       <span id="local-tournament-warning" class="error"></span>
       <div class="tournament-options">
-        <form class="row" onsubmit="localTournamentSocket.playerAction(event)">
+        <form class="row gap-1" onsubmit="localTournamentSocket.playerAction(event)">
           {% csrf_token %}
           <input
-            class="width-full"
+            class="input width-full"
             type="text"
             name="alias"
-            class="chat-input"
             placeholder="Player Alias"
             required
           />
           <input type="hidden" name="user_action" value="add_player" />
-          <button type="submit" class="input-button">Add</button>
+          <button class="button" type="submit" class="input-button">Add</button>
         </form>
-        <form onsubmit="localTournamentSocket.tournamentAction(event)">
+        <form class="column items-center" onsubmit="localTournamentSocket.tournamentAction(event)">
           {% csrf_token %}
           <input type="hidden" name="user_action" value="start_tournament" />
-          <button type="submit" class="input-button">Start Tournament</button>
+          <button class="button" type="submit" class="input-button">Start Tournament</button>
         </form>
       </div>
     </div>
