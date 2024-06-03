@@ -11,7 +11,7 @@
     <form method="post" onsubmit="handleFormSubmit(event)">
       {% csrf_token %}
       <input type="hidden" name="user-id" value="{{ user.id }}" />
-      <button type="submit">Unblock</button>
+      <button class="button" type="submit">Unblock</button>
     </form>
   </li>
   {% endfor %}

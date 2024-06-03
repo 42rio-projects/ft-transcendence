@@ -4,33 +4,40 @@
 
 {% block content %}
 <div>
-  <div id="formation-menu" class="tournament">
-    <div class="verticalDiv">
-      <span id="local-tournament-warning" class="error"></span>
-      <div class="tournament-options">
-        <form class="row" onsubmit="localTournamentSocket.playerAction(event)">
-          {% csrf_token %}
-          <input
-            class="width-full"
-            type="text"
-            name="alias"
-            class="chat-input"
-            placeholder="Player Alias"
-            required
-          />
-          <input type="hidden" name="user_action" value="add_player" />
-          <button type="submit" class="input-button">Add</button>
-        </form>
-        <form onsubmit="localTournamentSocket.tournamentAction(event)">
-          {% csrf_token %}
-          <input type="hidden" name="user_action" value="start_tournament" />
-          <button type="submit" class="input-button">Start Tournament</button>
-        </form>
+  <div>
+    <div id="formation-menu" class="tournament">
+      <div class="column gap-4">
+        <div class="column gap-2">
+          <h2 class="neon">Add Players</h2>
+          <div class="column gap-1">
+            <span id="local-tournament-warning" class="error"></span>
+            <form class="row gap-1" onsubmit="localTournamentSocket.playerAction(event)">
+              {% csrf_token %}
+              <input
+                class="input width-full"
+                type="text"
+                name="alias"
+                placeholder="Player Alias"
+                required
+              />
+              <input type="hidden" name="user_action" value="add_player" />
+              <button class="button" type="submit">Add</button>
+            </form>
+          </div>
+        </div>
+        <div class="column gap-2">
+          <h2 class="neon">Players</h2>
+          <ul id="tournament-players" class="tournament-players"></ul>
+        </div>
       </div>
+      <hr />
+      <form class="column" onsubmit="localTournamentSocket.tournamentAction(event)">
+        {% csrf_token %}
+        <input type="hidden" name="user_action" value="start_tournament" />
+        <button class="button" type="submit">Start Tournament</button>
+      </form>
     </div>
-    <h2>Players</h2>
-    <ul id="tournament-players" class="tournament-players" style="height: 250px; overflow: auto;"></ul>
+    <div id="game-section"></div>
   </div>
-  <div id="game-section"></div>
 </div>
 {% endblock %}

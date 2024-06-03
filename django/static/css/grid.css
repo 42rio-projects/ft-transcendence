@@ -1,0 +1,84 @@
+/* Grid styles */
+
+@keyframes neon-fog-anim {
+  from {
+    top: 40%;
+  }
+
+  to {
+    top: 50%;
+  }
+}
+
+@keyframes grid-top-anim {
+  from {
+    height: 100%;
+  }
+
+  to {
+    height: 80%;
+  }
+}
+
+.neon-fog {
+  width: 100vw;
+  position: absolute;
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0) 0%,
+    var(--primary-color-darker) 100%
+  );
+  bottom: 253px;
+  z-index: -10;
+  animation: neon-fog-anim 2s ease-in-out infinite alternate;
+}
+
+.grid-container {
+  position: absolute;
+  bottom: 0;
+  height: 400px;
+  width: 100vw;
+  z-index: -5;
+  overflow: hidden;
+}
+
+.grid {
+  height: 100%;
+  width: 185vw;
+  margin: 0 -42.5%;
+  transform: perspective(200px) rotateX(60deg);
+  border-top: 1px solid var(--primary-color-lighter);
+  background-color: var(--background-color);
+}
+
+.grid-top {
+  background: linear-gradient(
+    to bottom,
+    var(--primary-color-darker) 0%,
+    var(--background-color) 100%
+  );
+  width: inherit;
+  position: absolute;
+  top: 0;
+  animation: grid-top-anim 2s ease-in-out infinite alternate;
+}
+
+.grid-lines {
+  background-image: repeating-linear-gradient(
+      /* horizontal lines */ 0deg,
+      var(--primary-color) 2px,
+      var(--primary-color-lighter) 4px,
+      transparent 0px,
+      transparent 40px
+    ),
+    repeating-linear-gradient(
+      /* vertical lines */ -90deg,
+      var(--primary-color) 4px,
+      var(--primary-color-lighter) 6px,
+      transparent 0px,
+      transparent 60px
+    );
+  height: 100%;
+  width: 100%;
+  position: absolute;
+}

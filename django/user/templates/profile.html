@@ -36,13 +36,13 @@ Profile
       <input type="hidden" name="user-id" value="{{ user.id }}" />
       {% if user in request.user.users_invited_to_friend %}
       <input type="hidden" name="user-action" value="cancel-friend-invite" />
-      <button type="submit">Cancel friend invite</button>
+      <button class="button" type="submit">Cancel friend invite</button>
       {% elif user not in request.user.get_friends %}
       <input type="hidden" name="user-action" value="send-friend-invite" />
-      <button type="submit">Send friend invite</button>
+      <button class="button" type="submit">Send friend invite</button>
       {% else %}
       <input type="hidden" name="user-action" value="remove-friend" />
-      <button type="submit">Remove friend</button>
+      <button class="button" type="submit">Remove friend</button>
       {% endif %}
     </form>
     {% endif %}
@@ -81,29 +81,29 @@ Profile
   {% else %}
   <div class="profile-actions">
     {% if request.user not in user.get_blocks and user not in request.user.get_blocks %}
-    <form method="post" onsubmit="handleFormSubmit(event)">
+    <form class="column" method="post" onsubmit="handleFormSubmit(event)">
       {% csrf_token %}
       <input type="hidden" name="user-id" value="{{ user.id }}" />
       <input type="hidden" name="user-action" value="game-invite" />
-      <button type="submit">Invite to game</button>
+      <button class="button" type="submit">Invite to game</button>
     </form>
-    <form method="post" onsubmit="handleFormSubmit(event)">
+    <form class="column" method="post" onsubmit="handleFormSubmit(event)">
       {% csrf_token %}
       <input type="hidden" name="user-id" value="{{ user.id }}" />
       <input type="hidden" name="user-action" value="send-message" />
-      <button type="submit">Send message</button>
+      <button class="button" type="submit">Send message</button>
     </form>
     {% endif %}
     <a class="button" href="/history/{{ user.username }}">History</a>
-    <form method="post" onsubmit="handleFormSubmit(event)">
+    <form class="column" method="post" onsubmit="handleFormSubmit(event)">
       {% csrf_token %}
       <input type="hidden" name="user-id" value="{{ user.id }}" />
       {% if user in request.user.get_blocks %}
       <input type="hidden" name="user-action" value="unblock" />
-      <button type="submit">Unblock</button>
+      <button class="button" type="submit">Unblock</button>
       {% else %}
       <input type="hidden" name="user-action" value="block" />
-      <button type="submit">Block</button>
+      <button class="button" type="submit">Block</button>
       {% endif %}
     </form>
   </div>
