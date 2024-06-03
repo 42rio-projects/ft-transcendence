@@ -1,19 +1,21 @@
-{% csrf_token %}
-
-{% if success %}
-<span class="color-success">{{ success }}</span>
-{% endif %}
-
-{% if error %}
-<span class="color-error">{{ error }}</span>
-{% endif %}
-
-<div>
-  <input
-    type="email"
-    name="email"
-    placeholder="New email"
-  />
+<div class="form-container">
+  {% if error %}
+  <span class="error">{{ error }}</span>
+  {% endif %}
+  {% if success %}
+  <div class='success-and-back-button' >
+    <button type="button" onclick="window.location.href='/profile'">Back to profile</button>
+    <span class="success">{{ success }}</span>
+  </div>
+  {% else %}
+  <div>
+    {% csrf_token %}
+    <input
+      type="email"
+      name="email"
+      placeholder="New email"
+    />
+  </div>
+  <button type="submit">Change email</button>
+  {% endif %}
 </div>
-
-<button type="submit">Change email</button>

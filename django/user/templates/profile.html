@@ -66,8 +66,12 @@ Profile
     {% endif %}
   </div>
   <div class="profile-actions">
+    {% if user.email %}
     <a class="button" href="/change-email/">Change email</a>
-    {% if not user.email_verified_at %}
+    {% else %}
+    <a class="button" href="/change-email/">Add email</a>
+    {% endif %}
+    {% if user.email and not user.email_verified %}
     <a class="button" href="/verify-email/">Verify email</a>
     {% endif %}
     {% if user.email_verified %}

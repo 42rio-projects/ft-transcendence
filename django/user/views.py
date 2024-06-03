@@ -179,10 +179,9 @@ def change_password(request):
             return render_component(request, 'change_password_form.html', 'form', errors_context, 400)
 
         request.user.set_password(password)
+        request.user.save()
 
-        return render_component(request, 'change_password_form.html', 'form', {
-            'success': 'Password changed successfully!'
-        })
+        return redirect('/login/')
 
     if request.method == 'GET':
         return render_component(request, 'change_password.html', 'content')
@@ -195,9 +194,7 @@ def change_email(request):
         try :
             if email != user.email:
                 user.change_email(email)
-                return render_component(request, 'change_email_form.html', 'form', {
-                    'success': 'Email changed successfully!'
-                })
+                return redirect('/verify-email/')
 
         except Exception as e:
             return render_component(request, 'change_email_form.html', 'form', {
