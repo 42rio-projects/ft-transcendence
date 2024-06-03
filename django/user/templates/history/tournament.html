@@ -25,18 +25,18 @@
       {% for tournament in user.finished_tournaments %}
         <tr>
           <td class="historyCell">
-            <a href='{% url 'onlineTournament' tournament.id %}'>
+            <a class="link" href='{% url 'onlineTournament' tournament.id %}'>
 			  {{ tournament.name }}
             </a>
           </td>
           <td class="historyCell">
             {% if tournament.admin is not None %}
               {% if tournament.admin.nickname %}
-                <a href="{% url 'userProfile' tournament.admin.username %}">
+                <a class="link" href="{% url 'userProfile' tournament.admin.username %}">
                   {{ tournament.admin.nickname }}
                 </a>
               {% else %}
-                <a href="{% url 'userProfile' tournament.admin.username %}">
+                <a class="link" href="{% url 'userProfile' tournament.admin.username %}">
                   {{ tournament.admin.username }}
                 </a>
               {% endif %}
@@ -47,11 +47,11 @@
           <td class="historyCell">
             {% if tournament.winner is not None %}
               {% if tournament.winner.nickname %}
-                <a href="{% url 'userProfile' tournament.winner.username %}">
+                <a class="link" href="{% url 'userProfile' tournament.winner.username %}">
                   {{ tournament.winner.nickname }}
                 </a>
               {% else %}
-                <a href="{% url 'userProfile' tournament.winner.username %}">
+                <a class="link" href="{% url 'userProfile' tournament.winner.username %}">
                   {{ tournament.winner.username }}
                 </a>
               {% endif %}

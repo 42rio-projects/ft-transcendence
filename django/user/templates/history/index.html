@@ -9,7 +9,7 @@
   </div>
   <div class="historyHeader">
     <img class="historyAvatar" src="{{ user.avatar.url }}" alt="Avatar" />
-    <a href='{% url 'userProfile' user.username %}'>{{ user.username }}</a>
+    <a class="link" href='{% url 'userProfile' user.username %}'>{{ user.username }}</a>
   </div>
   <a class="button" href="{% url 'matchHistory' user.username %}">Match History</a>
   <a class="button" href="{% url 'tournamentHistory' user.username %}">Tournament History</a>
