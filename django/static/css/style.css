@@ -11,38 +11,6 @@
   --error-color: #ee1b1b;
 }
 
-@keyframes neon {
-  from {
-    text-shadow: 0 0 2px var(--primary-color), 0 0 8px var(--primary-color),
-      0 0 10px var(--primary-color-darker);
-  }
-
-  to {
-    text-shadow: 0 0 12px var(--primary-color), 0 0 30px var(--primary-color),
-      0 0 40px var(--primary-color-darker);
-  }
-}
-
-@keyframes neon-fog-anim {
-  from {
-    top: 40%;
-  }
-
-  to {
-    top: 50%;
-  }
-}
-
-@keyframes grid-top-anim {
-  from {
-    height: 100%;
-  }
-
-  to {
-    height: 80%;
-  }
-}
-
 * {
   margin: 0;
   padding: 0;
@@ -53,7 +21,6 @@
 body {
   color: var(--foreground-color);
   height: 100vh;
-  overflow: hidden;
   background: radial-gradient(
       ellipse at center,
       rgb(50, 40, 180) 0%,
@@ -65,60 +32,36 @@ body {
   background-position: center;
 }
 
-button {
-  border: none;
-  border-radius: 10px;
-  font-size: 0.9rem;
-  padding: 10px;
-  background-color: var(--primary-color-darker);
+a {
+  text-decoration: none;
   color: var(--foreground-color);
-  cursor: pointer;
-  transition: background-color 0.5s ease-out, color 0.2s ease-out;
-}
-
-button:hover {
-  background-color: var(--primary-color);
-}
-
-.button {
-  border: none;
-  border-radius: 10px;
-  font-size: 0.9rem;
-  padding: 10px;
-  background-color: var(--primary-color-darker);
-  color: var(--foreground-color);
-  cursor: pointer;
-  transition: background-color 0.5s ease-out, color 0.2s ease-out;
-  text-align: center;
-}
-
-.button:hover {
-  color: var(--foreground-color);
-  background-color: var(--primary-color);
-}
-
-input {
-  display: flex;
-  border: none;
-  border-radius: 5px;
-  padding: 10px;
-  background-color: var(--background-color-lighter);
-  color: var(--foreground-color);
-}
-
-input:focus {
-  outline: none;
 }
 
 hr {
   margin: 5px 0;
 }
 
-
-.form-container {
+.content {
   display: flex;
   flex-direction: column;
-  gap: 10px
+  height: 100%;
+}
+
+.main {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
+.main > div {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--foreground-color);
+  border-radius: 10px;
+  padding: 25px;
+  background-color: var(--background-color);
+  gap: 10px;
 }
 
 .success-and-back-button {
@@ -128,87 +71,10 @@ hr {
   gap: 10px;
 }
 
-
-a {
-  text-decoration: none;
-  color: var(--foreground-color);
-}
-
-a:hover {
-  color: var(--primary-color);
-}
-
-form {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
 .profile-data {
   display: flex;
   flex-direction: column;
   gap: 10px;
-}
-
-form div {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-
-.neon {
-  animation: neon 1.5s ease-in-out infinite alternate;
-}
-
-.text-sm {
-  font-size: 0.875rem;
-  line-height: 1.25rem;
-}
-
-.text-xl {
-  font-size: 1.25rem;
-  line-height: 1.75rem;
-}
-
-.text-2xl {
-  font-size: 1.5rem;
-  line-height: 2rem;
-}
-
-.text-3xl {
-  font-size: 1.875rem;
-  line-height: 2.25rem;
-}
-
-.font-normal {
-  font-weight: 400;
-}
-
-.success {
-  color: var(--success-color);
-}
-
-.success:empty {
-  display: none;
-}
-
-.error {
-  color: var(--error-color);
-}
-
-.error:empty {
-  display: none;
-}
-
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0 25px;
-  height: 50px;
-  background-color: var(--background-color);
-  color: var(--foreground-color);
-  border-bottom: 1px solid var(--foreground-color);
 }
 
 .game-container {
@@ -226,20 +92,6 @@ form div {
 
 .result-score {
   text-align: center;
-}
-
-.column {
-  display: flex;
-  flex-direction: column;
-}
-
-.row {
-  display: flex;
-  flex-direction: row;
-}
-
-.inline-block {
-  display: inline-block;
 }
 
 .result-content {
@@ -285,24 +137,6 @@ form div {
   gap: 32px
 }
 
-.header-section {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.vertical-line {
-  width: 1px;
-  height: 20px;
-  background-color: var(--foreground-color);
-}
-
-.header-avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-}
-
 .tournament {
   display: flex;
   flex-direction: column;
@@ -328,33 +162,11 @@ form div {
   justify-content: space-between;
 }
 
-.width-full {
-  width: 100%;
-}
-
 .tournament-result-actions {
   display: flex;
   justify-content: center;
   gap: 10px;
   margin-top: 20px;
-}
-
-.main-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: calc(100vh - 50px); /* 50px header height */
-}
-
-.main-container > div {
-  display: flex;
-  flex-direction: column;
-  border: 1px solid var(--foreground-color);
-  border-radius: 10px;
-  padding: 25px;
-  background-color: var(--background-color);
-  gap: 10px;
-  height: fit-content;
 }
 
 .home {
@@ -477,61 +289,4 @@ form div {
   display: flex;
   flex-direction: column;
   gap: 5px;
-}
-
-.neon-fog {
-  width: 100%;
-  position: absolute;
-  background: linear-gradient(
-    to bottom,
-    rgba(0, 0, 0, 0) 0%,
-    var(--primary-color-darker) 100%
-  );
-  bottom: 253px;
-  z-index: -10;
-  animation: neon-fog-anim 2s ease-in-out infinite alternate;
-}
-
-.grid {
-  height: 400px;
-  width: 185vw;
-  position: absolute;
-  bottom: 0;
-  margin: 0 -42.5%;
-  transform: perspective(200px) rotateX(60deg);
-  z-index: -5;
-  border-top: 1px solid var(--primary-color-lighter);
-  background-color: var(--background-color);
-}
-
-.grid-top {
-  background: linear-gradient(
-    to bottom,
-    var(--primary-color-darker) 0%,
-    var(--background-color) 100%
-  );
-  width: inherit;
-  position: absolute;
-  top: 0;
-  animation: grid-top-anim 2s ease-in-out infinite alternate;
-}
-
-.grid-lines {
-  background-image: repeating-linear-gradient(
-      /* horizontal lines */ 0deg,
-      var(--primary-color) 2px,
-      var(--primary-color-lighter) 4px,
-      transparent 0px,
-      transparent 40px
-    ),
-    repeating-linear-gradient(
-      /* vertical lines */ -90deg,
-      var(--primary-color) 4px,
-      var(--primary-color-lighter) 6px,
-      transparent 0px,
-      transparent 60px
-    );
-  height: 100%;
-  width: 100%;
-  position: absolute;
 }

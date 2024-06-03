@@ -6,6 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ft_transcendence</title>
 
+    <link rel="stylesheet" href="{% static 'css/generic.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/grid.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/header.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/pong.css' %}" />
     <link rel="stylesheet" href="{% static 'css/style.css' %}" />
     <link rel="stylesheet" href="{% static 'chat/css/chat.css' %}" />
     <script src="{% static 'js/statusWebSocket.js' %}"></script>
@@ -20,11 +24,13 @@
   <body>
     <!-- grid arcade -->
     <div class="neon-fog"></div>
-    <div class="grid">
-      <div class="grid-top"></div>
-      <div class="grid-lines"></div>
+    <div class="grid-container">
+      <div class="grid">
+        <div class="grid-top"></div>
+        <div class="grid-lines"></div>
+      </div>
     </div>
 
-    <div id="content">{{ content }}</div>
+    <div id="content" class="content">{{ content }}</div>
   </body>
 </html>

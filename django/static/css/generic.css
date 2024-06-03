@@ -1,0 +1,133 @@
+/* Non-specific styles that are used across the site */
+
+@keyframes neon {
+  from {
+    text-shadow: 0 0 2px var(--primary-color), 0 0 8px var(--primary-color),
+      0 0 10px var(--primary-color-darker);
+  }
+
+  to {
+    text-shadow: 0 0 12px var(--primary-color), 0 0 30px var(--primary-color),
+      0 0 40px var(--primary-color-darker);
+  }
+}
+
+.button {
+  border: none;
+  border-radius: 10px;
+  padding: 10px;
+  font-size: 0.9rem;
+  text-align: center;
+  color: var(--foreground-color);
+  background-color: var(--primary-color-darker);
+  transition: background-color 0.5s ease-out, color 0.2s ease-out;
+  cursor: pointer;
+}
+
+.button:hover {
+  color: var(--foreground-color);
+  background-color: var(--primary-color);
+}
+
+.input {
+  display: flex;
+  border: none;
+  border-radius: 5px;
+  padding: 10px;
+  color: var(--foreground-color);
+  background-color: var(--background-color-lighter);
+}
+
+.input:focus {
+  outline: none;
+}
+
+.link:hover {
+  color: var(--primary-color);
+}
+
+.neon {
+  animation: neon 1.5s ease-in-out infinite alternate;
+}
+
+.text-sm {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+.text-xl {
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+}
+
+.text-2xl {
+  font-size: 1.5rem;
+  line-height: 2rem;
+}
+
+.text-3xl {
+  font-size: 1.875rem;
+  line-height: 2.25rem;
+}
+
+.font-normal {
+  font-weight: 400;
+}
+
+.success {
+  color: var(--success-color);
+}
+
+.success:empty {
+  display: none;
+}
+
+.error {
+  color: var(--error-color);
+}
+
+.error:empty {
+  display: none;
+}
+
+.inline-block {
+  display: inline-block;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+}
+
+.row {
+  display: flex;
+  flex-direction: row;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.items-center {
+  align-items: center;
+}
+
+.height-full {
+  height: 100%;
+}
+
+.width-full {
+  width: 100%;
+}
+
+.gap-1 {
+  gap: 0.25rem;
+}
+
+.gap-2 {
+  gap: 0.5rem;
+}
+
+.gap-4 {
+  gap: 1rem;
+}

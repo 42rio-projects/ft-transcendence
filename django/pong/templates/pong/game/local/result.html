@@ -18,7 +18,7 @@
 
 {% if tournament %}
 <div class="tournament-result-actions">
-  <button onclick="localTournamentSocket.nextGame('{{ winner }}')">next</button>
+  <button class="button" onclick="localTournamentSocket.nextGame('{{ winner }}')">next</button>
   {% else %}
   <a class="button" href="/pong/local-game">Play again</a>
   <a class="button" href="/pong/">Pong menu</a>

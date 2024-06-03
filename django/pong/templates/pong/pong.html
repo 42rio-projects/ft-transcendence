@@ -9,20 +9,20 @@
   <a class="button" href="/">Online Game</a>
   <a class="button" href="/pong/online-tournament/menu">Online Tournaments</a>
   <h2 class="neon">Game invites</h2>
-  <ul style="height: 200px; overflow: auto;">
+  <ul style="max-height: 200px; overflow: auto;">
     {% for invite in user.game_invites_received.all %}
-		<li class="game-invite">
+		<li class="row items-center gap-4">
     	  <span>{{ invite.sender }}</span>
-    	  <div class="game-invite-actions">
-    	    <form method="post" onsubmit="handleFormSubmit(event)">
+    	  <div class="row gap-1">
+    	    <form class="column" method="post" onsubmit="handleFormSubmit(event)">
     	      {% csrf_token %}
-    	      <button type="submit">Accept</button>
+    	      <button class="button" type="submit">Accept</button>
     	      <input type="hidden" name="user-action" value="accept-game" />
     	      <input type="hidden" name="invite-id" value="{{ invite.id }}" />
     	    </form>
-    	    <form method="post" onsubmit="handleFormSubmit(event)">
+    	    <form class="column" method="post" onsubmit="handleFormSubmit(event)">
     	      {% csrf_token %}
-    	      <button type="submit">Reject</button>
+    	      <button class="button" type="submit">Reject</button>
     	      <input type="hidden" name="user-action" value="reject-game" />
     	      <input type="hidden" name="invite-id" value="{{ invite.id }}" />
     	    </form>

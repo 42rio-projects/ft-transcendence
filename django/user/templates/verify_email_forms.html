@@ -1,20 +1,16 @@
 <div class="form-container">
-  {% if error %}
   <span class="error">{{ error }}</span>
-  {% endif %}
-  {% if message %}
   <span class="success">{{ message }}</span>
-  {% endif %}
   {% if success %}
   <div class='success-and-back-button' >
-    <button type="button" onclick="window.location.href='/profile'">Back to profile</button>
+    <a class="button" href="/profile/">Back to profile</a>
     <span class="success">{{ success }}</span>
   </div>
   {% else %}
-  <form method="post" onsubmit="handleFormSubmit(event)">
+  <form class="column gap-1" method="post" onsubmit="handleFormSubmit(event)">
     {% csrf_token %}
-    <input type="text" name="code" placeholder="Code" />
-    <button type="submit">Verify code</button>
+    <input class="input" type="text" name="code" placeholder="Code" />
+    <button class="button" type="submit">Verify code</button>
   </form>
   {% endif %}
 </div>
