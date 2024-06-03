@@ -4,6 +4,7 @@
 
 {% block friends_content %}
 <ul class="user-list">
+  {% if user.get_blocks %}
   {% for user in user.get_blocks %}
   <li>
     <span>{{ user.username }}</span>
@@ -14,5 +15,8 @@
     </form>
   </li>
   {% endfor %}
+  {% else %}
+  <li class="empty-item">No users blocked</li>
+  {% endif %}
 </ul>
 {% endblock %}

@@ -4,6 +4,7 @@
 
 {% block friends_content %}
 <ul class="user-list">
+  {% if user.friend_invites_sent.all %}
   {% for invite in user.friend_invites_sent.all %}
   <li>
     <span>{{ invite.receiver }}</span>
@@ -14,5 +15,8 @@
     </form>
   </li>
   {% endfor %}
+  {% else %}
+  <li class="empty-item">No invites sent</li>
+  {% endif %}
 </ul>
 {% endblock %}
