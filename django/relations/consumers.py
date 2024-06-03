@@ -21,9 +21,12 @@ class statusConsumer(AsyncWebsocketConsumer):
         """Accept connection and broadcast user online status"""
         await self.accept()
         if not self.scope['user'].is_authenticated:
+            self.authenticated = False
             await self.send(text_data=json.dumps({'type': 'no.login'}))
             self.close(True)
             return
+
+        self.authenticated = True
 
         await self.channel_layer.group_add('status', self.channel_name)
 
@@ -38,7 +41,7 @@ class statusConsumer(AsyncWebsocketConsumer):
 
     async def disconnect(self, simple_disconnect=False):
         """Broadcast user offline status"""
-        if simple_disconnect:
+        if simple_disconnect and self.authenticated == False:
             await self.channel_layer.group_discard('status', self.channel_name)
             return
         user = await get_user(self.scope['session'].get('_auth_user_id'))

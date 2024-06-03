@@ -81,9 +81,21 @@ class User(AbstractUser):
         for friendship in friendships:
             if friendship.user1 != self:
                 friends.append(friendship.user1)
-            elif friendship.user2 != self:
+            else:
                 friends.append(friendship.user2)
         return friends
+
+    def get_online_friends(self):
+        friendships = IsFriendsWith.objects.filter(
+            Q(user1=self) | Q(user2=self)
+        ).prefetch_related('user1', 'user2')
+        online_friends = []
+        for friendship in friendships:
+            if friendship.user1 != self and friendship.user1.status == 'Online':
+                online_friends.append(friendship.user1)
+            elif friendship.user2.status == 'Online':
+                online_friends.append(friendship.user2)
+        return online_friends
 
     def get_games(self, filters=None):
         home_games = self.home_games.filter(

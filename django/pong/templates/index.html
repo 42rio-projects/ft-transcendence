@@ -43,20 +43,46 @@
 </header>
 <main class="main">
   {% block content %}
-   {% if user.is_authenticated %}
-     <div class="home">
-       <h1 class="neon">Search user</h1>
-       <form id="form" class="row gap-1" method="post" onsubmit="handleFormSubmit(event)">
-         {% include 'search_user_form.html' %}
-       </form>
-     </div>
-   {% else %}
-     <div>
-       <h1 class="neon">Welcome</h1>
-       <a class="button" href="/pong/local-game/">Local Game</a>
-       <a class="button" href="/pong/local-tournament/">Local Tournament</a>
-	   <a class="button" href="/login/">Login</a>
-     </div>
-   {% endif %}
+  {% if user.is_authenticated %}
+  <div class="home items-center gap-4">
+    <div class="column items-center gap-2">
+      <h1 class="neon">Search user</h1>
+      <form id="form" class="column gap-1" method="post" onsubmit="handleFormSubmit(event)">
+        {% include 'search_user_form.html' %}
+      </form>
+    </div>
+    <hr class="width-full" />
+    <div class="column items-center gap-2">
+      <h2 class="neon">Online friends</h2>
+      <ul class="user-list">
+        {% if user.get_friends %}
+        {% for user in user.get_online_friends %}
+        <li class="row gap-4">
+          <div>
+            <span>{{ user.username }}</span>
+            {% if user.status == 'Online' %}
+            <div id="{{ user.pk }}-status-icon" class="online-icon"></div>
+            {% else %}
+            <div id="{{ user.pk }}-status-icon" class="offline-icon"></div>
+            {% endif %}
+            <span id="{{ user.pk }}-status">{{ user.status }}</span>
+          </div>
+          <a class="button" href="/profile/{{ user.username }}/">See profile</a>
+        </li>
+        {% endfor %}
+        {% else %}
+        <li class="empty-item">No friends</li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+  {% else %}
+  <div>
+    <h1 class="neon">Welcome</h1>
+    <a class="button" href="/pong/local-game/">Local Game</a>
+    <a class="button" href="/pong/local-tournament/">Local Tournament</a>
+    <a class="button" href="/login/">Login</a>
+  </div>
+  {% endif %}
   {% endblock %}
 </main>
