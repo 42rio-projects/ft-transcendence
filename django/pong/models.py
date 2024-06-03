@@ -12,8 +12,8 @@ from asgiref.sync import async_to_sync
 
 UPPER_PLAYER_LIMIT = 16
 LOWER_PLAYER_LIMIT = 4
-TOURNAMENT_START_LIMIT = 60 * 5  # seconds
-ROUND_TIMEOUT = 60 * 5  # seconds
+TOURNAMENT_START_LIMIT = 60 * 15  # seconds
+ROUND_TIMEOUT = 60 * 10  # seconds
 
 
 @async_to_sync

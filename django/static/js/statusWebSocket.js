@@ -21,8 +21,6 @@ class StatusWebSocket {
   onMessage(event) {
     const data = JSON.parse(event.data);
 
-    console.log(data);
-
     if (data.type === "user.status") {
       this.setUserStatus(data);
     } else if (data.type === "no.login") {

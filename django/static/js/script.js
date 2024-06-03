@@ -100,8 +100,6 @@ function handleSockets(url) {
     onlineTournamentSocket.socket.close();
   }
 
-  console.log("Url: " + url);
-
   if (url == "/friends/") {
     statusSocket.setInitialStatus();
   } else if (url.includes("/chat/room")) {
