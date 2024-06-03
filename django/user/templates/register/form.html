@@ -1,6 +1,6 @@
 {% csrf_token %}
 <span class="success">{{ success }}</span>
-<div class="column width-full">
+<div class="column">
   <span class="error text-sm">{{ username_error }}</span>
   <input
     class="input"
@@ -10,7 +10,7 @@
     value="{{ username }}"
   />
 </div>
-<div class="column width-full">
+<div class="column">
   <span class="error text-sm">{{ password_error }}</span>
   <input
     class="input"
@@ -20,7 +20,7 @@
     value="{{ password }}"
   />
 </div>
-<div class="column width-full">
+<div class="column">
   <span class="error text-sm">{{ password2_error }}</span>
   <input
     class="input"
@@ -30,4 +30,4 @@
     value="{{ password2 }}"
   />
 </div>
-<button class="button width-full" type="submit">Register</button>
+<button class="button" type="submit">Register</button>
