@@ -21,6 +21,9 @@ volumes:
   kibanadata:
     driver: local
 
+  metricbeatdata:
+    driver: local
+
   logstashdata:
     driver: local
 
@@ -311,6 +314,32 @@ services:
       - ./requirements/elk/kibanasetup.sh:/usr/local/bin/kibanasetup.sh
     command: >
       sh -c "/usr/local/bin/kibanasetup.sh"
+
+  metricbeat:
+    container_name: metricbeat
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+      kibana:
+        condition: service_healthy
+    image: docker.elastic.co/beats/metricbeat:${STACK_VERSION}
+    user: root
+    volumes:
+      - certs:/usr/share/metricbeat/certs
+      - metricbeatdata:/usr/share/metricbeat/data
+      - "./requirements/elk/metricbeat.yml:/usr/share/metricbeat/metricbeat.yml:ro"
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "/sys/fs/cgroup:/hostfs/sys/fs/cgroup:ro"
+      - "/proc:/hostfs/proc:ro"
+      - "/:/hostfs:ro"
+    environment:
+      - ELASTIC_USER=elastic
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+      - ELASTIC_HOSTS=https://elasticsearch:9200
+      - KIBANA_HOSTS=http://kibana:5601
+      - LOGSTASH_HOSTS=http://logstash:9600
+    networks:
+      - ft_transcendence
 
   locust:
     container_name: locust
