@@ -69,8 +69,6 @@ services:
     build: ./django
     env_file: .env
     restart: always
-    ports:
-      - "8000:8000"
     depends_on:
       - postgres
     volumes:
@@ -286,9 +284,6 @@ services:
     labels:
       co.elastic.logs/module: logstash
     user: root
-    ports:
-      - 5044:5044
-      - 9600:9600
     volumes:
       - certs:/usr/share/logstash/certs
       - logstashdata:/usr/share/logstash/data

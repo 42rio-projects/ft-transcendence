@@ -10,7 +10,7 @@ for name in "${names[@]}"; do
   curl_response=$(curl --silent --fail -X POST "http://kibana:5601/api/data_views/data_view" \
                      -H 'kbn-xsrf: true' -H 'Content-Type: application/json' \
                      --user "elastic:$senha" \
-                     -d "{ \"data_view\": { \"title\": \"$name\", \"name\": \"$name\" } }" 2>&1)
+                     -d "{ \"data_view\": { \"title\": \"$name\", \"name\": \"$name\" , \"timeFieldName\": \"@timestamp\" } }" 2>&1)
 
   if [ $? -eq 0 ]; then
     echo "Data view \"$name\" created successfully."
