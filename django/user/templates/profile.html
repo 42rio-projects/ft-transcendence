@@ -30,22 +30,26 @@ Profile
       </div>
     </div>
     {% if request.user != user %}
-    {% if request.user not in user.get_blocks and user not in request.user.get_blocks %}
-    <form method="post" onsubmit="handleFormSubmit(event)">
-      {% csrf_token %}
-      <input type="hidden" name="user-id" value="{{ user.id }}" />
-      {% if user in request.user.users_invited_to_friend %}
-      <input type="hidden" name="user-action" value="cancel-friend-invite" />
-      <button class="button" type="submit">Cancel friend invite</button>
-      {% elif user not in request.user.get_friends %}
-      <input type="hidden" name="user-action" value="send-friend-invite" />
-      <button class="button" type="submit">Send friend invite</button>
-      {% else %}
-      <input type="hidden" name="user-action" value="remove-friend" />
-      <button class="button" type="submit">Remove friend</button>
+      {% if request.user not in user.get_blocks and user not in request.user.get_blocks %}
+        <form method="post" onsubmit="handleFormSubmit(event)">
+          {% csrf_token %}
+          <input type="hidden" name="user-id" value="{{ user.id }}" />
+          {% if user in request.user.users_invited_to_friend %}
+            <input type="hidden" name="user-action" value="cancel-friend-invite" />
+            <button class="button" type="submit">Cancel friend invite</button>
+          {% elif user not in request.user.get_friends %}
+            <input type="hidden" name="user-action" value="send-friend-invite" />
+            <button class="button" type="submit">Send friend invite</button>
+          {% else %}
+            <input type="hidden" name="user-action" value="remove-friend" />
+            <button class="button" type="submit">Remove friend</button>
+          {% endif %}
+        </form>
+	  {% elif request.user in user.get_blocks %}
+	    <h3> User blocked you</h3>
+	  {% elif user in request.user.get_blocks %}
+	    <h3> User blocked by you</h3>
       {% endif %}
-    </form>
-    {% endif %}
     {% else %}
     <a class="button" href="/edit-profile/">Edit profile</a>
     {% endif %}
