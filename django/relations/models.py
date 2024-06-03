@@ -20,8 +20,8 @@ class IsFriendsWith(models.Model):
         Validation to prevent duplicate entries and blocked friends
         """
         if IsBlockedBy.objects.filter(
-            Q(blocker=self.sender, blocked=self.receiver) | Q(
-                blocked=self.receiver, blocker=self.sender)
+            Q(blocker=self.user1, blocked=self.user2) | Q(
+                blocked=self.user2, blocker=self.user1)
         ).exists():
             raise ValidationError(
                 "User blocked"
