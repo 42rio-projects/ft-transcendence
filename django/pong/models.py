@@ -109,9 +109,9 @@ class Tournament(models.Model):
     def cancel(self):
         if self.started:
             raise Exception("Tournament already started.")
-        self.delete()
         html = render_to_string('pong/tournament/online/cancelled.html')
         tournament_update(self.pk, {"status": "cancelled", "html": html})
+        self.delete()
 
     def start(self):
         if self.started:
