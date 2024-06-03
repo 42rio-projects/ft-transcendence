@@ -1,37 +1,47 @@
 <div class="game-container" id="local-game-section">
-  <div id="local-game-start" class="verticalDiv">
-  {% if tournament %}
+  <div id="local-game-start">
+    {% if tournament %}
     <button class="button" onclick="localTournamentSocket.startGame()">Start Game</button>
-  {% else %}
-  <div class="game-header" >
-    <h1>Local Game</h1>
-      <button class="button" onclick="localGameSocket.start()">Start Game</button>
-  </div>
-  {% endif %}
+    {% else %}
+    <div class="game-header" >
+      <h1>Local Game</h1>
+      <button class="button" type="submit" onclick="localGameSocket.start()">Start Game</button>
+    </div>
+    {% endif %}
   </div>
   {% if final %}
   <h2>!!Final!!</h2>
   {% endif %}
-  <h2>Controls</h2>
-  <div class="controls-game">
-    <div>
-      {% if player1 %}
-      <p id="p1-alias">{{ player1 }}</p>
-      {% else %}
-      <p class="player1" id="p1-alias">Player1</p>
-      {% endif %}
-      <p id="p1-score"></p>
+  <h2>
+    <span>{% if player1 %}{{ player1 }}{% else %}Player1{% endif %}</span>
+    <span class="neon">vs</span>
+    <span>{% if player2 %}{{ player2 }}{% else %}Player2{% endif %}</span>
+  </h2>
+  <div class="row justify-between">
+    <div class="column">
+      <div class="row gap-2">
+        {% if player1 %}
+        <span class="player1" id="p1-alias">{{ player1 }}</span>
+        {% else %}
+        <span class="player1" id="p1-alias">Player1</span>
+        {% endif %}
+        <span>-</span>
+        <span id="p1-score"></span>
+      </div>
       W -> move up
       <br />
       S -> move down
     </div>
-    <div>
-      {% if player2 %}
-      <p id="p2-alias">{{ player2 }}</p>
-      {% else %}
-      <p class='player2' id="p2-alias">Player2</p>
-      {% endif %}
-      <p id="p2-score"></p>
+    <div class="column">
+      <div class="row gap-2">
+        {% if player2 %}
+        <span class="player2" id="p2-alias">{{ player2 }}</span>
+        {% else %}
+        <span class='player2' id="p2-alias">Player2</span>
+        {% endif %}
+        <span>-</span>
+        <span id="p2-score"></span>
+      </div>
       Arrow up -> move up
       <br />
       Arrow down -> move down
