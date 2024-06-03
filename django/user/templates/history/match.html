@@ -32,7 +32,7 @@
       <tr>
         <td class="historyCell">
           {% if game.player1 is not None %}
-    	  	<a href="{% url 'userProfile' game.player1.username %}">
+    	  	<a class="link" href="{% url 'userProfile' game.player1.username %}">
     	  	{% if game.round and game.player1.nickname %}
     	  		{{ game.player1.nickname }}
     	  	{% else %}
@@ -48,7 +48,7 @@
         </td>
         <td class="historyCell">
           {% if game.player2 is not None %}
-    	  	<a href="{% url 'userProfile' game.player2.username %}">
+    	  	<a class="link" href="{% url 'userProfile' game.player2.username %}">
     	  	{% if game.round and game.player2.nickname %}
     	  		{{ game.player2.nickname }}
     	  	{% else %}
@@ -64,7 +64,7 @@
         </td>
         <td class="historyCell">
           {% if game.winner is not None %}
-    	  	<a href="{% url 'userProfile' game.winner.username %}">
+    	  	<a class="link" href="{% url 'userProfile' game.winner.username %}">
     	  	{% if game.round and game.winner.nickname %}
     	  		{{ game.winner.nickname }}
     	  	{% else %}
