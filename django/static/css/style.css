@@ -216,6 +216,37 @@ form div {
   flex-direction: column;
 }
 
+.local-result-container {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.local-result-score {
+  text-align: center;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+}
+
+.row {
+  display: flex;
+  flex-direction: row;
+}
+
+.local-result-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.local-result-pontuation {
+  display: flex;
+  justify-content: space-between;
+}
+
 .local-game-header {
   display: flex;
   flex-direction: column;
