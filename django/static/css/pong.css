@@ -11,3 +11,19 @@
   width: 300px;
   gap: 1rem;
 }
+
+.game-result-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 120px;
+  gap: 0.5rem;
+}
+
+.player1 {
+  color: rgb(25 140 225);
+}
+
+.player2 {
+  color: rgb(255 128 0);
+}

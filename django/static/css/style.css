@@ -111,14 +111,6 @@ hr {
   flex-direction: column;
 }
 
-.player1 {
-  color: blue;
-}
-
-.player2 {
-  color: orange;
-}
-
 .game-header {
   display: flex;
   justify-content: space-between;
