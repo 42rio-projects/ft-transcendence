@@ -216,7 +216,7 @@ class TournamentInvite(models.Model):
             )
         if IsBlockedBy.objects.filter(
             Q(blocker=self.tournament.admin, blocked=self.receiver) | Q(
-                blocked=self.receiver, blocker=self.tournament.admin)
+                blocker=self.receiver, blocked=self.tournament.admin)
         ).exists():
             raise ValidationError("User blocked")
 
@@ -408,14 +408,15 @@ class GameInvite(models.Model):
     def clean(self):
         if IsBlockedBy.objects.filter(
             Q(blocker=self.sender, blocked=self.receiver) | Q(
-                blocked=self.receiver, blocker=self.sender)
+                blocker=self.receiver, blocked=self.sender)
         ).exists():
             raise ValidationError("User blocked")
         if GameInvite.objects.filter(
                 sender=self.sender, receiver=self.receiver
         ).exists():
             raise ValidationError(
-                'You have already sent a game invite to this user')
+                'You have already sent a game invite to this user'
+            )
         if GameInvite.objects.filter(
                 sender=self.receiver, receiver=self.sender
         ).exists():
