@@ -3,14 +3,9 @@ from pong.utils import render_component
 from twilio.rest import Client
 from django.contrib.auth import authenticate, login as django_login, logout as django_logout
 import os
-from django.core.paginator import Paginator
-import sys
 from django.contrib.auth.decorators import login_required
 
-from django.http import JsonResponse
-from django.http import HttpResponse
 from user.models import User
-from pong.models import Tournament
 from .utils import validate_password, validate_register, validate_update, handle_user_action
 
 SERVICE_SID = os.environ['TWILIO_SERVICE_SID']
@@ -58,14 +53,14 @@ def register(request):
 
         errors_context = validate_register(username, password, password2)
         if errors_context:
-            # Add the previous values to the context
-            # So the user doesn't have to retype everything
             errors_context.update({
                 'username': username,
                 'password': password,
                 'password2': password2
             })
-            return render_component(request, 'register/form.html', 'form', errors_context, 400)
+            return render_component(
+                request, 'register/form.html', 'form', errors_context, 400
+            )
         else:
             User.objects.create_user(username=username, password=password)
             return render_component(request, 'register/form.html', 'form', {
@@ -89,7 +84,9 @@ def login(request):
                 'password': password,
                 'error': 'Incorrect username or password'
             }
-            return render_component(request, 'login/form.html', 'form', context, 400)
+            return render_component(
+                request, 'login/form.html', 'form', context, 400
+            )
         else:
             django_login(request, user)
             return redirect(request.GET.get('next') or '/')
@@ -113,7 +110,7 @@ def user_profile(request, username):
         return redirect('/profile/')
 
     user = get_object_or_404(User, username=username)
-    context = { 'user': user }
+    context = {'user': user}
 
     if request.method == 'POST':
         action = request.POST.get('user-action')
@@ -125,10 +122,13 @@ def user_profile(request, username):
                 chat = request.user.get_or_create_chat(user)
                 return redirect('chatRoom', id=chat.pk)
             else:
-                context['success'] = handle_user_action(request.user, user, action)
+                context['success'] = handle_user_action(
+                    request.user, user, action)
         except Exception as e:
             context['error'] = e.message
-            return render_component(request, 'profile.html', 'content', context, 400)
+            return render_component(
+                request, 'profile.html', 'content', context, 400
+            )
     return render_component(request, 'profile.html', 'content', context)
 
 
@@ -145,12 +145,14 @@ def edit_profile(request):
         if errors_context:
             errors_context.update({
                 'username': username,
-                'nickname': nickname or '' # Set to empty string if None, so it can be rendered in template
+                'nickname': nickname or ''
             })
-            return render_component(request, 'edit_profile.html', 'content', errors_context, 400)
+            return render_component(
+                request, 'edit_profile.html', 'content', errors_context, 400
+            )
         else:
             user.username = username
-            user.nickname = nickname or None # Set to None if empty string, so it's null in database
+            user.nickname = nickname or None
             if avatar:
                 user.avatar = avatar
             user.save()
@@ -166,6 +168,7 @@ def edit_profile(request):
         'nickname': user.nickname or ''
     })
 
+
 def change_password(request):
     if request.method == 'POST':
         password = request.POST.get('password')
@@ -176,7 +179,12 @@ def change_password(request):
             errors_context['password'] = password
             errors_context['password2'] = password2
 
-            return render_component(request, 'change_password_form.html', 'form', errors_context, 400)
+            return render_component(
+                request,
+                'change_password_form.html',
+                'form',
+                errors_context, 400
+            )
 
         request.user.set_password(password)
         request.user.save()
@@ -186,25 +194,29 @@ def change_password(request):
     if request.method == 'GET':
         return render_component(request, 'change_password.html', 'content')
 
+
 def change_email(request):
     if request.method == 'POST':
         email = request.POST.get('email')
         user = request.user
 
-        try :
+        try:
             if email != user.email:
                 user.change_email(email)
                 return redirect('/verify-email/')
 
         except Exception as e:
-            return render_component(request, 'change_email_form.html', 'form', {
-                'error': e,
-                'email': email
-            }, 400)
-
+            return render_component(
+                request,
+                'change_email_form.html',
+                'form',
+                {'error': e, 'email': email},
+                400
+            )
 
     if request.method == 'GET':
         return render_component(request, 'change_email.html', 'content')
+
 
 def verify_email(request):
     user = request.user
@@ -217,9 +229,12 @@ def verify_email(request):
             SERVICE_SID).verification_checks.create(to=user.email, code=code)
 
         if verification_check.status != 'approved':
-            return render_component(request, 'verify_email_forms.html', 'forms', {
-                'error': 'Invalid code'
-            })
+            return render_component(
+                request,
+                'verify_email_forms.html',
+                'forms',
+                {'error': 'Invalid code'}
+            )
 
         user.email_verified = True
         user.save()
@@ -229,10 +244,10 @@ def verify_email(request):
 
     if request.method == 'GET':
 
-            client = Client(ACCOUNT_SID, AUTH_TOKEN)
-            client.verify.services(SERVICE_SID).verifications.create(
-                to=user.email, channel='email')
+        client = Client(ACCOUNT_SID, AUTH_TOKEN)
+        client.verify.services(SERVICE_SID).verifications.create(
+            to=user.email, channel='email')
 
-            return render_component(request, 'verify_email.html', 'content', {
-                'message': 'Verification code sent to your email'
-            })
+        return render_component(request, 'verify_email.html', 'content', {
+            'message': 'Verification code sent to your email'
+        })
