@@ -166,93 +166,6 @@ def edit_profile(request):
         'nickname': user.nickname or ''
     })
 
-
-def generate_totp_factor(request):
-    if request.method == "GET":
-        # user = request.user
-
-        # new_factor = client.verify.v2.services(
-        #     SERVICE_SID).entities(user.id).new_factors.create(
-        #     friendly_name=user.name, factor_type="totp")
-        new_factor = client.verify.v2.services(
-            SERVICE_SID).entities('ff483d1ff591898a9942916050d2ca3f').new_factors.create(
-            friendly_name='Vitinho', factor_type="totp")
-
-        serialized_factor = serialize_factor(new_factor)
-
-        return JsonResponse(serialized_factor, safe=False)
-
-
-def verify_totp_factor(request):
-    if request.method == "POST":
-        # user = request.user
-
-        code = request.POST.get("code")
-        sid = request.POST.get("sid")
-
-        # factor = client.verify.v2.services(
-        #     SERVICE_SID).entities(user.id).factors(sid).update(auth_payload=code)
-        factor = client.verify.v2.services(
-            SERVICE_SID).entities('ff483d1ff591898a9942916050d2ca3f').factors(sid).update(auth_payload=code)
-
-        status = factor.status
-
-        if status == "approved":
-            return HttpResponse("Factor is valid")
-
-        return HttpResponse("Factor is invalid")
-
-
-def serialize_factor(factor):
-    serialized_data = {
-        'sid': factor.sid,
-        'status': factor.status,
-        'identity': factor.identity,
-        'friendly_name': factor.friendly_name,
-    }
-    return serialized_data
-
-
-def list_totp_factors(request):
-    if request.method == "GET":
-        # user = request.user
-
-        # factors = client.verify.v2.services(
-        #     SERVICE_SID).entities(user.id).factors.list()
-        factors = client.verify.v2.services(
-            SERVICE_SID).entities('ff483d1ff591898a9942916050d2ca3f').factors.list()
-
-        serialized_factors = [serialize_factor(factor) for factor in factors]
-
-        return JsonResponse(serialized_factors, safe=False)
-
-
-def validate_totp_token(request):
-    if request.method == "POST":
-        # user = request.user
-
-        token = request.POST.get("token")
-        sid = request.POST.get("sid")
-
-        # verification = client.verify.v2.services(
-        #     SERVICE_SID).entities(user.id).challenges.create(
-        #     factor_sid=sid,
-        #     code=token
-        # )
-        verification = client.verify.v2.services(
-            SERVICE_SID).entities('ff483d1ff591898a9942916050d2ca3f').challenges.create(
-            factor_sid=sid,
-            auth_payload=token
-        )
-
-        status = verification.status
-
-        if status == "approved":
-            return HttpResponse("Token is valid")
-
-        return HttpResponse("Token is invalid")
-
-
 def change_password(request):
     if request.method == 'POST':
         password = request.POST.get('password')
@@ -266,47 +179,60 @@ def change_password(request):
             return render_component(request, 'change_password_form.html', 'form', errors_context, 400)
 
         request.user.set_password(password)
+        request.user.save()
 
-        return render_component(request, 'change_password_form.html', 'form', {
-            'success': 'Password changed successfully!'
-        })
+        return redirect('/login/')
 
     if request.method == 'GET':
         return render_component(request, 'change_password.html', 'content')
 
+def change_email(request):
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        user = request.user
+
+        try :
+            if email != user.email:
+                user.change_email(email)
+                return redirect('/verify-email/')
+
+        except Exception as e:
+            return render_component(request, 'change_email_form.html', 'form', {
+                'error': e,
+                'email': email
+            }, 400)
+
+
+    if request.method == 'GET':
+        return render_component(request, 'change_email.html', 'content')
 
 def verify_email(request):
+    user = request.user
     if request.method == 'POST':
-        user = request.user
-        user_action = request.POST.get('user-action')
 
-        if user_action == 'send-code':
+        code = request.POST.get('code')
+
+        client = Client(ACCOUNT_SID, AUTH_TOKEN)
+        verification_check = client.verify.services(
+            SERVICE_SID).verification_checks.create(to=user.email, code=code)
+
+        if verification_check.status != 'approved':
+            return render_component(request, 'verify_email_forms.html', 'forms', {
+                'error': 'Invalid code'
+            })
+
+        user.email_verified = True
+        user.save()
+        return render_component(request, 'verify_email_forms.html', 'forms', {
+            'success': 'Email verified successfully!'
+        })
+
+    if request.method == 'GET':
+
             client = Client(ACCOUNT_SID, AUTH_TOKEN)
             client.verify.services(SERVICE_SID).verifications.create(
                 to=user.email, channel='email')
 
-            return render_component(request, 'verify_email_forms.html', 'forms', {
-                'success': 'Verification code sent to your email'
+            return render_component(request, 'verify_email.html', 'content', {
+                'message': 'Verification code sent to your email'
             })
-        elif user_action == 'verify-code':
-            code = request.POST.get('code')
-
-            client = Client(ACCOUNT_SID, AUTH_TOKEN)
-            verification_check = client.verify.services(
-                SERVICE_SID).verification_checks.create(to=user.email, code=code)
-
-            if verification_check.status != 'approved':
-                return render_component(request, 'verify_email_forms.html', 'forms', {
-                    'error': 'Invalid code'
-                })
-
-            user.email_verified = True
-            user.save()
-            return render_component(request, 'verify_email_forms.html', 'forms', {
-                'success': 'Email verified successfully!'
-            })
-
-        return render_component(request, 'verify_email_forms.html', 'forms')
-
-    if request.method == 'GET':
-        return render_component(request, 'verify_email.html', 'content')

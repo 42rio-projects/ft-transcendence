@@ -3,25 +3,27 @@
 {% block title %} Local Game {% endblock %}
 
 {% block content %}
-<div id="local-game-section">
+<div class="local-game-container" id="local-game-section">
   <div id="local-game-start" class="verticalDiv">
   {% if tournament %}
     <button onclick="localTournamentSocket.startGame()">Start Game</button>
   {% else %}
-  <h1>Local Game</h1>
-    <button onclick="localGameSocket.start()">Start Game</button>
+  <div class="local-game-header" >
+    <h1>Local Game</h1>
+      <button onclick="localGameSocket.start()">Start Game</button>
+  </div>
   {% endif %}
   </div>
   {% if final %}
   <h2>!!Final!!</h2>
   {% endif %}
   <h2>Controls</h2>
-  <div class="verticalDiv">
+  <div class="controls-game">
     <div>
       {% if player1 %}
       <p id="p1-alias">{{ player1 }}</p>
       {% else %}
-      <p id="p1-alias">Player1</p>
+      <p class="player1" id="p1-alias">Player1</p>
       {% endif %}
       <p id="p1-score"></p>
       W -> move up
@@ -32,7 +34,7 @@
       {% if player2 %}
       <p id="p2-alias">{{ player2 }}</p>
       {% else %}
-      <p id="p2-alias">Player2</p>
+      <p class='player2' id="p2-alias">Player2</p>
       {% endif %}
       <p id="p2-score"></p>
       Arrow up -> move up

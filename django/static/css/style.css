@@ -114,6 +114,21 @@ hr {
   margin: 5px 0;
 }
 
+
+.form-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px
+}
+
+.success-and-back-button {
+  display:flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+}
+
+
 a {
   text-decoration: none;
   color: var(--foreground-color);
@@ -124,6 +139,12 @@ a:hover {
 }
 
 form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.profile-data {
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -188,6 +209,30 @@ form div {
   background-color: var(--background-color);
   color: var(--foreground-color);
   border-bottom: 1px solid var(--foreground-color);
+}
+
+.local-game-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.local-game-header {
+  display: flex;
+  flex-direction: column;
+}
+
+.player1 {
+  color: blue
+}
+
+.player2 {
+  color: orange
+}
+
+.controls-game {
+  display: flex;
+  justify-content: space-between;
+  gap: 32px
 }
 
 .header-section {

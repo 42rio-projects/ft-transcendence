@@ -2,19 +2,20 @@
   {% if error %}
   <span class="error">{{ error }}</span>
   {% endif %}
-  {% if message %}
-  <span class="success">{{ message }}</span>
-  {% endif %}
   {% if success %}
   <div class='success-and-back-button' >
     <button type="button" onclick="window.location.href='/profile'">Back to profile</button>
     <span class="success">{{ success }}</span>
   </div>
   {% else %}
-  <form method="post" onsubmit="handleFormSubmit(event)">
+  <div>
     {% csrf_token %}
-    <input type="text" name="code" placeholder="Code" />
-    <button type="submit">Verify code</button>
-  </form>
+    <input
+      type="email"
+      name="email"
+      placeholder="New email"
+    />
+  </div>
+  <button type="submit">Change email</button>
   {% endif %}
 </div>
