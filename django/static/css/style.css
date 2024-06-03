@@ -255,8 +255,9 @@ form div {
 
 .main-container {
   display: flex;
+  align-items: center;
   justify-content: center;
-  margin-top: 10%;
+  height: calc(100vh - 50px); /* 50px header height */
 }
 
 .main-container > div {
@@ -267,6 +268,7 @@ form div {
   padding: 25px;
   background-color: var(--background-color);
   gap: 10px;
+  height: fit-content;
 }
 
 .home {
@@ -306,7 +308,14 @@ form div {
 .user-list {
   display: flex;
   flex-direction: column;
+  height: 400px;
+  overflow: auto;
   gap: 10px;
+}
+
+.empty-item {
+  display: flex;
+  margin: auto;
 }
 
 .user-list li {
