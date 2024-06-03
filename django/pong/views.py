@@ -19,7 +19,6 @@ def json_success(message):
     )
 
 
-@login_required
 def index(request):
     if request.method == 'POST':
         username = request.POST.get('username')

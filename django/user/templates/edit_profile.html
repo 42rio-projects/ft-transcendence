@@ -5,21 +5,33 @@
 {% block content %}
 <div>
   <h1 class="neon">Edit profile</h1>
-
   <hr />
-
-  <form id="form" method="post" onsubmit="handleFormSubmit(event)">
-    {% include 'edit_profile_form.html' %}
+  <form method="post" onsubmit="handleFormSubmit(event)">
+    {% csrf_token %}
+    <span class="success">{{ success }}</span>
+    <div>
+      <label for="avatar">Avatar:</label>
+      <input class="button" type="file" name="avatar" />
+    </div>
+    <div>
+      <span class="error text-sm">{{ username_error }}</span>
+      <input
+        type="text"
+        name="username"
+        placeholder="Username"
+        value="{{ username }}"
+      />
+    </div>
+    <div>
+      <span class="error text-sm">{{ nickname_error }}</span>
+      <input
+        type="nickname"
+        name="nickname"
+        placeholder="Nickname"
+        value="{{ nickname }}"
+      />
+    </div>
+    <button type="submit">Save</button>
   </form>
-
-  <hr />
-
-  {% if email and not user.email_verified %}
-  <a class="button" href="/verify_email/">
-    Verify email
-  </a>
-  {% endif %}
-  <a class="button" href="/change_password/">Change password</a>
-  <a class="button" href="/change-email/">Change email</a>
 </div>
 {% endblock %}

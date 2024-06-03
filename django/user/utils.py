@@ -13,6 +13,18 @@ def validate_username(username):
     return errors
 
 
+def validate_nickname(nickname):
+    errors = {}
+    if not nickname:
+        return errors
+    elif len(nickname) < 2:
+        errors["nickname_error"] = "Nickname must be at least 2 characters long"
+    elif User.objects.filter(nickname=nickname).exists():
+        errors["nickname_error"] = "Nickname is already in use"
+
+    return errors
+
+
 def validate_email(email):
     errors = {}
     if User.objects.filter(email=email).exists():
@@ -45,12 +57,30 @@ def validate_register(username, password, password2):
     return errors
 
 
-def validate_update(user, username, email):
+def validate_update(user, username, nickname):
     errors = {}
     if username != user.username:
         errors.update(validate_username(username))
 
-    if email != user.email:
-        errors.update(validate_email(email))
+    if nickname != user.nickname:
+        errors.update(validate_nickname(nickname))
 
     return errors
+
+
+def handle_user_action(user1, user2, action):
+    if action == 'send-friend-invite':
+        user1.add_friend(user2)
+        return 'Friend invite sent'
+    elif action == 'cancel-friend-invite':
+        user1.cancel_friend_invite(user2)
+        return 'Friend invite canceled'
+    elif action == 'remove-friend':
+        user1.del_friend(user2)
+        return 'Friend removed'
+    elif action == 'block':
+        user1.block_user(user2)
+        return 'User blocked'
+    elif action == 'unblock':
+        user1.unblock_user(user2)
+        return 'User unblocked'

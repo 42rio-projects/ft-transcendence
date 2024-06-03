@@ -1,21 +1,15 @@
 {% csrf_token %}
-
-{% if error %}
-<span class="color-error">{{ error }}</span>
-{% endif %}
-
+<span class="error">{{ error }}</span>
 <input
   type="text"
   name="username"
   placeholder="Username"
   value="{{ username }}"
 />
-
 <input
   type="password"
   name="password"
   placeholder="Password"
   value="{{ password }}"
 />
-
 <button type="submit">Login</button>
