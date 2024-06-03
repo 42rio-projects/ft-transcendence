@@ -33,7 +33,7 @@ async function navigate(url) {
 // Navigation with history (forward and back buttons)
 window.addEventListener("popstate", async (event) => {
   event.preventDefault();
-  await fetchData(event.state ? event.state.url : window.location.href);
+  await navigate(event.state ? event.state.url : window.location.href);
 });
 
 // Navigation with links (anchor tags)
