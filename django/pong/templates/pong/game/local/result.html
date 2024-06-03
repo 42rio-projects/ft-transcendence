@@ -1,16 +1,21 @@
-<h1>{{ player1 }} VS {{ player2 }}</h1>
-<h2>Winner is {{ winner }}</h2>
-<h3>Score</h3>
-<div class="verticalDiv">
-  <div>
-    <p>{{ player1 }}</p>
-    <p id="p1-score">{{ player1_points }}</p>
-  </div>
-  <div>
-    <p>{{ player2 }}</p>
-    <p id="p2-score">{{ player2_points }}</p>
+<div class="local-result-container" >
+  <h2>Winner is {{ winner }}</h2>
+
+  <div class='local-result-content'>
+    <h3 class="local-result-score" >Score</h3>
+    <div class="local-result-pontuation">
+      <div>
+        <p>{{ player1 }}</p>
+        <p id="p1-score">{{ player1_points }}</p>
+      </div>
+      <div>
+        <p>{{ player2 }}</p>
+        <p id="p2-score">{{ player2_points }}</p>
+      </div>
+    </div>
   </div>
 </div>
+
 {% if tournament %}
 <button onclick="localTournamentSocket.nextGame('{{ winner }}')">next</button>
 {% else %}
