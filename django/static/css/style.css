@@ -114,6 +114,19 @@ hr {
   margin: 5px 0;
 }
 
+
+.verify-email-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px
+}
+
+.email-verified {
+  display:flex;
+  align-items: center;
+  gap: 10px;
+}
+
 a {
   text-decoration: none;
   color: var(--foreground-color);
