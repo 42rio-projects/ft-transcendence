@@ -62,8 +62,8 @@ services:
       - postgres
     env_file: .env
     volumes:
-      - ./requirements/pgadmin/servers.json:/pgadmin4/servers.json # preconfigured servers/connections
-      - ./requirements/pgadmin/pgpass:/pgpass # passwords for the connections in this file
+      - ./requirements/pgadmin/servers.json:/pgadmin4/servers.json
+      - ./requirements/pgadmin/pgpass:/pgpass
     networks:
       - ft_transcendence
 
@@ -76,7 +76,7 @@ services:
       - postgres
     volumes:
       - staticVolume:/static
-      - mediaVolume:/media
+      - mediaVolume:/media/user/avatars
     networks:
       - ft_transcendence
 
@@ -112,8 +112,6 @@ services:
     container_name: alertmanager
     image: prom/alertmanager
     restart: always
-    ports:
-      - "9093:9093"
     networks:
       - ft_transcendence
 
