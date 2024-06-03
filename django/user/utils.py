@@ -7,6 +7,8 @@ def validate_username(username):
         errors["username_error"] = "Username is required"
     elif len(username) < 2:
         errors["username_error"] = "Username must be at least 2 characters long"
+    elif len(username) > 16:
+        errors["username_error"] = "Username can't have more than 16 characters"
     elif User.objects.filter(username=username).exists():
         errors["username_error"] = "Username is already in use"
 
@@ -19,6 +21,8 @@ def validate_nickname(nickname):
         return errors
     elif len(nickname) < 2:
         errors["nickname_error"] = "Nickname must be at least 2 characters long"
+    elif len(nickname) > 16:
+        errors["nickmane_error"] = "Nickname can't have more than 16 characters"
     elif User.objects.filter(nickname=nickname).exists():
         errors["nickname_error"] = "Nickname is already in use"
 
