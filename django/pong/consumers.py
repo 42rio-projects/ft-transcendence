@@ -66,10 +66,12 @@ class OnlineGameCosumer(AsyncWebsocketConsumer):
         if self.game.game_model.finished:
             del self.online_games[self.game_id]
             self.close(True)
+            return
         try:
             self.player = self.game.get_player(self.scope['user'])
         except Exception:
             self.close(True)
+            return
         await self.channel_layer.group_add(
             self.room_group_name, self.channel_name
         )
@@ -99,6 +101,7 @@ class OnlineGameCosumer(AsyncWebsocketConsumer):
             if self.player == 1:
                 self.game.info.p1_move = direction
             elif self.player == 2:
+
                 self.game.info.p2_move = direction
 
     async def receive(self, text_data):

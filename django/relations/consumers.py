@@ -19,10 +19,12 @@ def set_user_status(user, status):
 class statusConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         """Accept connection and broadcast user online status"""
+        await self.accept()
         if not self.scope['user'].is_authenticated:
+            await self.send(text_data=json.dumps({'type': 'no.login'}))
+            self.close(True)
             return
 
-        await self.accept()
         await self.channel_layer.group_add('status', self.channel_name)
 
         user = await get_user(self.scope['session'].get('_auth_user_id'))
@@ -34,8 +36,11 @@ class statusConsumer(AsyncWebsocketConsumer):
             'user_pk': user.pk
         })
 
-    async def disconnect(self, close_code):
+    async def disconnect(self, simple_disconnect=False):
         """Broadcast user offline status"""
+        if simple_disconnect:
+            await self.channel_layer.group_discard('status', self.channel_name)
+            return
         user = await get_user(self.scope['session'].get('_auth_user_id'))
 
         await set_user_status(user, 'Offline')
@@ -44,7 +49,6 @@ class statusConsumer(AsyncWebsocketConsumer):
             'user_status': 'Offline',
             'user_pk': user.pk
         })
-
         await self.channel_layer.group_discard('status', self.channel_name)
 
     async def user_status(self, event):

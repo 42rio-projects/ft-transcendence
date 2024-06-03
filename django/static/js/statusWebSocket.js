@@ -25,6 +25,8 @@ class StatusWebSocket {
 
     if (data.type === "user.status") {
       this.setUserStatus(data);
+    } else if (data.type === "no.login") {
+      this.loggedIn = false;
     }
   }
 
@@ -35,7 +37,7 @@ class StatusWebSocket {
 
       setTimeout(() => {
         this.socket = new WebSocket(
-          "ws://" + window.location.host + "/ws/status/"
+          "ws://" + window.location.host + "/ws/status/",
         );
         this.bind();
       }, retries * 3000); // 3s
@@ -59,8 +61,10 @@ class StatusWebSocket {
     }
     const circle = document.getElementById(`${data.user_pk}-status-icon`);
     if (circle) {
-        data.user_status === "Online" ? circle.className = "online-icon" : circle.className = "offline-icon";
-      }
+      data.user_status === "Online"
+        ? (circle.className = "online-icon")
+        : (circle.className = "offline-icon");
+    }
   }
 }
 
