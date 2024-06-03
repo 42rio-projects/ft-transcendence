@@ -10,13 +10,13 @@
       Enter your account:
     </h3>
   </div>
-  <form id="form" method="post" onsubmit="handleLogin(event)">
+  <form id="form" class="column gap-2" method="post" onsubmit="handleLogin(event)">
     {% include 'login/form.html' %}
   </form>
   <hr />
   <div class="auth-footer">
     <p>Don't have an account?</p>
-    <a href="/register/">Register</a>
+    <a class="link" href="/register/">Register</a>
   </div>
 </div>
 {% endblock %}

@@ -1,15 +1,17 @@
 {% csrf_token %}
 <span class="error">{{ error }}</span>
 <input
+  class="input"
   type="text"
   name="username"
   placeholder="Username"
   value="{{ username }}"
 />
 <input
+  class="input"
   type="password"
   name="password"
   placeholder="Password"
   value="{{ password }}"
 />
-<button type="submit">Login</button>
+<button class="button" type="submit">Login</button>

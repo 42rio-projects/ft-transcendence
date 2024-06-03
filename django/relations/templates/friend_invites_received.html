@@ -13,13 +13,13 @@
         {% csrf_token %}
         <input type="hidden" name="invite-id" value="{{ invite.id }}" />
         <input type="hidden" name="user-action" value="accept" />
-        <button type="submit">Accept invite</button>
+        <button class="button" type="submit">Accept invite</button>
       </form>
       <form method="post" onsubmit="handleFormSubmit(event)">
         {% csrf_token %}
         <input type="hidden" name="invite-id" value="{{ invite.id }}" />
         <input type="hidden" name="user-action" value="reject" />
-        <button type="submit">Reject invite</button>
+        <button class="button" type="submit">Reject invite</button>
       </form>
     </div>
   </li>

@@ -2,41 +2,51 @@
   <h1 class="neon text-2xl">
     ft_transcendence - {% block title %}Home{% endblock %}
   </h1>
-  <nav class="header-section">
-    {% if user.is_authenticated %}
+  <nav class="header-nav">
+    {% if request.user.is_authenticated %}
     <div class="header-section">
-      <a href="/">Home</a>
-      <a href="/pong/">Pong</a>
-      <a href="/friends/">Friends</a>
-      <a href="{% url 'history' request.user.username %}">History</a>
-      <a href="{% url 'notifications' %}">Notifications</a>
+      <a class="link" href="/">Home</a>
+      <a class="link" href="/pong/">Pong</a>
+      <a class="link" href="/friends/">Friends</a>
+      <a class="link" href="/history/{{ request.user.username }}/">History</a>
+      <a class="link" href="/chat/room/{{ request.user.pk }}/">Notifications</a>
     </div>
-    <span class="vertical-line"></span>
+    <span class="header-vertical-line"></span>
     <div class="header-section">
-      <a href="/profile/">Profile</a>
-      <button
-        class="link"
-        type="submit"
-        onclick="handleLogout('/logout/')"
-      >
-        Logout
-      </button>
+      <a class="link" href="/profile/">{{ request.user.username }}</a>
+      <img
+        class="header-avatar"
+        src="{{ request.user.avatar.url }}"
+        alt="{{ request.user.username }} avatar"
+      />
     </div>
+    <button
+      class="logout-button"
+      type="submit"
+      onclick="handleLogout('/logout/')"
+    >
+      <img
+        class="logout-icon"
+        src="/media/icons/logout-icon.svg"
+        alt="Logout icon"
+      />
+    </button>
     {% else %}
     <a href="/">Home</a>
-    <a href="/register/">Register</a>
-    <span class="vertical-line"></span>
-    <a href="/login/">Login</a>
+    <span class="header-vertical-line"></span>
+    <div class="header-section">
+      <a href="/register/">Register</a>
+      <a href="/login/">Login</a>
+    </div>
     {% endif %}
   </nav>
 </header>
-
-<main class="main-container">
+<main class="main">
   {% block content %}
    {% if user.is_authenticated %}
      <div class="home">
        <h1 class="neon">Search user</h1>
-       <form id="form" method="post" onsubmit="handleFormSubmit(event)">
+       <form id="form" class="row gap-1" method="post" onsubmit="handleFormSubmit(event)">
          {% include 'search_user_form.html' %}
        </form>
      </div>

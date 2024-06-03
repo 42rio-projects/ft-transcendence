@@ -10,16 +10,17 @@
   <span class="color-error">{{ error }}</span>
   {% endif %}
   <h2>Create Tournament</h2>
-  <form method="post" onsubmit="handleFormSubmit(event)">
+  <form class="row gap-1" method="post" onsubmit="handleFormSubmit(event)">
     {% csrf_token %}
     <input
+	  class="input width-full"
 	  type="text"
 	  name="tournament-name"
 	  class="chat-input"
 	  placeholder="Tournament name"
 	  required
 	/>
-    <button type="submit">Create</button>
+    <button class="button" type="submit">Create</button>
     <input type="hidden" name="user_action" value="create-tournament" />
   </form>
   <div id="current-tournaments">
@@ -48,13 +49,13 @@
     	  <div class="verticalDiv">
     	    <form method="POST" onsubmit="handleFormSubmit(event)">
     	      {% csrf_token %}
-    	      <button type="submit">Accept</button>
+    	      <button class="button" type="submit">Accept</button>
     	      <input type="hidden" name="user_action" value="accept-invite"/>
     	      <input type="hidden" name="invite-id" value="{{ invite.id }}" />
     	    </form>
     	    <form method="POST" onsubmit="handleFormSubmit(event)">
     	      {% csrf_token %}
-    	      <button type="submit">Reject</button>
+    	      <button class="button" type="submit">Reject</button>
     	      <input type="hidden" name="user_action" value="reject-invite"/>
     	      <input type="hidden" name="invite-id" value="{{ invite.id }}" />
     	    </form>
