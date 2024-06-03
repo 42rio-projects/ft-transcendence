@@ -106,11 +106,16 @@ def tournamentMenu(request):
         if user_action == 'create-tournament':
             name = request.POST.get('tournament-name')
             try:
-                tournament = models.Tournament(admin=request.user, name=name)
-                tournament.save()
-                return redirect(
-                    'onlineTournament', tournament_id=tournament.pk
-                )
+                if len(name) > 16:
+                    context['error'] = 'Tournament name is too long'
+                else:
+                    tournament = models.Tournament(
+                        admin=request.user, name=name
+                    )
+                    tournament.save()
+                    return redirect(
+                        'onlineTournament', tournament_id=tournament.pk
+                    )
             except Exception:
                 context['error'] = 'Tournament with this name already exists'
         elif user_action == 'accept-invite':
