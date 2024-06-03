@@ -2,12 +2,16 @@
 
 @keyframes neon {
   from {
-    text-shadow: 0 0 2px var(--primary-color), 0 0 8px var(--primary-color),
+    text-shadow:
+      0 0 2px var(--primary-color),
+      0 0 8px var(--primary-color),
       0 0 10px var(--primary-color-darker);
   }
 
   to {
-    text-shadow: 0 0 12px var(--primary-color), 0 0 30px var(--primary-color),
+    text-shadow:
+      0 0 12px var(--primary-color),
+      0 0 30px var(--primary-color),
       0 0 40px var(--primary-color-darker);
   }
 }
@@ -20,7 +24,9 @@
   text-align: center;
   color: var(--foreground-color);
   background-color: var(--primary-color-darker);
-  transition: background-color 0.5s ease-out, color 0.2s ease-out;
+  transition:
+    background-color 0.5s ease-out,
+    color 0.2s ease-out;
   cursor: pointer;
 }
 
@@ -133,6 +139,10 @@
 
 .gap-4 {
   gap: 1rem;
+}
+
+.gap-8 {
+  gap: 2rem;
 }
 
 .p-2 {

@@ -1,20 +1,110 @@
 <div id="tournament-display">
-  <h1>{{ tournament }}</h1>
-  <div id="tournament-rounds" style="display: flex;">
-    {% for round in tournament.rounds.all %}
-    <div>
-      <h2>{{ round }}</h2>
-	  <div style="padding: 15px; display: flex; flex-direction: column;">
-		{% for game in round.games.all %}
-	  	  <a class="button" href='{% url 'onlineGame' game.id %}'>
-      	    {{ game }}
-	  	  </a>
-      	{% endfor %}
+  <div class="row justify-center items-center">
+    <h1 class="neon">{{ tournament }}</h1>
+  </div>
+  {% if tournament.started == False %}
+	<span id="online-tournament-success" class="success"></span>
+	<span id="online-tournament-warning" class="error"></span>
+	{% if user == tournament.admin %}
+  	  <div id="admin-pannel" class="tournament">
+  		  <form class="row gap-1" method="post" onsubmit="onlineTournamentSocket.form(event)">
+  		    {% csrf_token %}
+  		    <input
+				class="input width-full"
+				type="text"
+				name="username"
+				class="chat-input"
+				placeholder="username to invite"
+				required
+			/>
+  		    <input
+  		      type="hidden"
+  		      name="url"
+  		      value="{% url 'inviteToTournament' tournament.id %}"
+  		    />
+  		    <button class="button" type="submit">Invite</button>
+  		  </form>
+  		</div>
+  	{% endif %}
+	<div id="tournament-players">
+  	  <h2 class="neon">Players</h2>
+	  <div class="pongList">
+  	    {% for player in tournament.players.all %}
+	    <div id="player--{{player.pk}}">
+	      <a class="link" href="{% url 'userProfile' player.username %}">
+	        {% if player.nickname %}
+	          {{ player.nickname}}
+	        {% else %}
+	          {{ player.username }}
+	        {% endif %}
+	      </a>
+	    </div>
+  	    {% endfor %}
 	  </div>
-    </div>
+  	</div>
+  	<h2 class="neon">Invites Sent</h2>
+  	<div id="invited-players" class="pongList">
+  	  {% for invite in tournament.invites_sent.all %}
+  	  <div id="invite-{{ invite.pk }}">
+	    <a class="link" href="{% url 'userProfile' invite.receiver.username %}">
+		  {{ invite.receiver }}
+	    </a>
+	  </div>
+  	  {% endfor %}
+  	</div>
+    <hr />
+	{% if user == tournament.admin %}
+  	  <div id="admin-pannel" class="tournament">
+  		  <form class="column gap-1" method="post" onsubmit="onlineTournamentSocket.form(event)">
+  		    {% csrf_token %}
+  		    <input
+  		      type="hidden"
+  		      name="url"
+  		      value="{% url 'cancelTournament' tournament.id %}"
+  		    />
+  		    <button class="button" type="submit">Cancel Tournament</button>
+  		  </form>
+  		  <button class="button" onclick="onlineTournamentSocket.start()">Start Tournament</button>
+  		</div>
+	{% else %}
+		<h2 class="neon">Waiting for admin to start</h2>
+  	{% endif %}
+  {% else %}
+  <div id="tournament-rounds" class="row justify-center items-center gap-2">
+    {% for round in tournament.rounds.all %}
+      <div class="tournamentPhase">
+        <h2 class="neon">{{ round }}</h2>
+	    <div class="column gap-2">
+	  	  {% for game in round.games.all %}
+	        <a class="button" href='{% url 'onlineGame' game.id %}'>
+              {{ game }}
+	        </a>
+          {% endfor %}
+	    </div>
+      </div>
     {% endfor %}
 	{% if tournament.finished %}
-	<h2>Tournament winner is {{ tournament.winner }}</h2>
+	  <div class="tournamentPhase">
+	    <h2 class="neon">Tournament Winner</h2>
+	    <div class="column width-full gap-2">
+	      {% if tournament.winner is not None %}
+	      	{% if tournament.winner.nickname %}
+	      		<a class="button" href="{% url 'userProfile' tournament.winner.username %}">
+	      			{{ tournament.winner.nickname }}
+	      		</a>
+	      	{% else %}
+	      		<a class="button" href="{% url 'userProfile' tournament.winner.username %}">
+	      			{{ tournament.winner.username }}
+	      		</a>
+	      	{% endif %}
+	      {% else %}
+	      	<p>"Deleted User"</p>
+	      {% endif %}
+	    </div>
+	  </div>
     {% endif %}
   </div>
+  <hr/>
+  <a class="button width-full" href="/pong/">Pong menu</a>
+  {% endif %}
 </div>

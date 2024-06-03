@@ -9,9 +9,9 @@
   <a class="button" href="/">Online Game</a>
   <a class="button" href="/pong/online-tournament/menu">Online Tournaments</a>
   <h2 class="neon">Game invites</h2>
-  <ul style="max-height: 200px; overflow: auto;">
+  <ul class="pongList">
     {% for invite in user.game_invites_received.all %}
-		<li class="row items-center gap-4">
+		<li class="row items-center gap-8 justify-between">
     	  <span>{{ invite.sender }}</span>
     	  <div class="row gap-1">
     	    <form class="column" method="post" onsubmit="handleFormSubmit(event)">
