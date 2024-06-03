@@ -24,8 +24,6 @@ def chatRoom(request, id):
     except Exception as e:
         return HttpResponseForbidden(e.__str__())
 
-    if other_user == request.user:
-        return redirect('notifications')
     if request.user in other_user.get_blocks() or other_user in request.user.get_blocks():
         return redirect('userProfile', other_user.username)
     if request.method == 'POST':
@@ -73,5 +71,4 @@ def sendMessage(request, id):
 @login_required
 def notifications(request):
     chat = request.user.get_or_create_notifications()
-    context = {"chat": chat, "other_user": request.user}
-    return render_component(request, 'chat/chat.html', 'content', context)
+    return redirect('chatRoom', id=chat.pk)

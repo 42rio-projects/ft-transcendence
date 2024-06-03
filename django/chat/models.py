@@ -1,5 +1,4 @@
 from django.db import models
-# from django.core.exceptions import ValidationError
 
 
 class Chat(models.Model):
@@ -15,18 +14,9 @@ class Chat(models.Model):
     )
 
     def save(self, *args, **kwargs):
-        # Essa budega nao funciona nem por um inferno
-        # if not self.receiver:
-        #     raise ValidationError("Usuário não encontrado.")
-
-        # Verifica se o usuário está na blocklist
-        # if self.starter.blocked_users.filter(username=self.receiver.username).exists():
-        # raise ValidationError("Você não pode iniciar um chat com um usuário na sua blocklist.")
-
         if Chat.objects.filter(
                 starter=self.receiver, receiver=self.starter
         ).exists():
-            # Chat already exists, don't create a duplicate entry
             pass
         else:
             super().save(*args, **kwargs)

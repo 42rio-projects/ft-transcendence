@@ -9,43 +9,49 @@
 {% endblock %}
 
 {% block content %}
-<div>
-  <div class="embranceForms">
-    <img class="avatar" src="{{ other_user.avatar.url }}" alt="Avatar" />
+<div class="chatTotal">
+	<div class="chatProfile">
+      <img class="chatAvatar" src="{{ other_user.avatar.url }}" alt="Avatar" />
+	  {% if chat.starter != chat.receiver %}
+	  	<a href="{% url 'userProfile' other_user.username %}">
+	    	  {{other_user.username}}
+	    	</a>
+	  {% else %}
+	  	<h2>Notifications</h2>
+	  {% endif %}
+	</div>
+	  {% if chat.starter != chat.receiver %}
+	    <div class="inviteToPlay">
+          <form method="post" onsubmit="handleFormSubmit(event)">
+            {% csrf_token %}
+            <input type="hidden" name="user-id" value="{{ user.id }}" />
+	    	<button type="submit">Invite to Game</button>
+          </form>
+        </div>
+	  {% endif %}
+      <div id="chat-messages" class="chatSpace">
+        {% for message in chat.messages.all %}
+	  	{% if user == message.sender %}
+	  	 	<p class="messageSelf">{{ message.content }}</p>
+        	{% else %}
+	  		<p class="messageOthers">{{ message.content }}</p>
+        	{% endif %}
+        {% endfor %}
+	  <span id="chat-warning" class="color-error"></span>
+	</div>
 	{% if chat.starter != chat.receiver %}
-		<a href="{% url 'userProfile' other_user.username %}">
-	  	  {{other_user.username}}
-	  	</a>
-		<div class="inviteToPlay">
-    	  <form method="post" onsubmit="handleFormSubmit(event)">
-    	    {% csrf_token %}
-    	    <input type="hidden" name="user-id" value="{{ user.id }}" />
-    	    <button type="submit">Invite to Game</button>
-    	  </form>
-    	</div>
-	{% else %}
-		<h2>Notifications</h2>
-	{% endif %}
-    <div id="chat-messages" style="height: 250px; overflow: auto;">
-      {% for message in chat.messages.all %}
-		{% if user == message.sender %}
-		 	<p class="messageSelf">{{ message.content }}</p>
-      	{% else %}
-			<p class="messageOthers">{{ message.content }}</p>
-      	{% endif %}
-      {% endfor %}
-    </div>
-	<span id="chat-warning" class="color-error"></span>
-	{% if chat.starter != chat.receiver %}
-      <form class="chatform" method="post" onsubmit="messageSocket.sendMessage(event)">
+	<div class="chatBottom">
+      <form method="post" class="chatForm" onsubmit="messageSocket.sendMessage(event)">
         {% csrf_token %}
-        <input type="text" name="content" id="content" class="chat-input" placeholder="Digite sua mensagem" required />
+        <input type="text" name="content" id="content" class="chat-input" placeholder="Type your message" required />
         <input type="hidden" name="url" value="{% url 'sendMessage' id=chat.id %}" />
-        <button type="submit" class="input-button">Enviar</button>
+        <button class="sendMessageButton" type="submit">
+			<img class="sendMessageIcon" src="https://cdn-icons-png.freepik.com/512/4414/4414831.png"/> 
+		</button>
       </form>
 	{% else %}
 		<a class="button" href="/pong/online-tournament/menu">Online Tournaments</a>
 	{% endif %}
-  </div>
+	<div>
 </div>
 {% endblock %}

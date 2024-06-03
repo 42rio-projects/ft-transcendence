@@ -13,6 +13,7 @@ class MessageWebSocket {
     const html = data.html;
     const container = document.getElementById("chat-messages");
     container.innerHTML += html;
+    this.scrollDown();
   }
 
   async sendMessage(event) {
@@ -47,5 +48,9 @@ class MessageWebSocket {
       }, 1500);
     }
   }
-}
 
+  scrollDown() {
+    document.getElementById("chat-messages").scrollTop =
+      document.getElementById("chat-messages").scrollHeight;
+  }
+}
