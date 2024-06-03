@@ -13,9 +13,11 @@ def get_application():
     django.setup()  # Carrega as configurações do Django
 
     # Importe suas rotas somente depois que as configurações do Django estiverem carregadas
-    from chat.routing import websocket_urlpatterns
-    from pong.routing import websocket_urlpatterns
-    from relations.routing import websocket_urlpatterns
+    import chat.routing
+    import relations.routing
+    import pong.routing
+
+    websocket_urlpatterns = chat.routing.websocket_urlpatterns + relations.routing.websocket_urlpatterns + pong.routing.websocket_urlpatterns
 
     return ProtocolTypeRouter({
         "http": django_asgi_app,
