@@ -437,7 +437,7 @@ class GameInvite(models.Model):
         else:
             game.delete()
             html = render_to_string('pong/game/online/canceled.html',)
-            models.send_channel_message(
+            send_channel_message(
                 f'game_{self.pk}',
                 {
                     'type': 'game.update',
