@@ -1,43 +1,55 @@
-<div>
-	<h1>{{ game }}</h1>
-	{% if game.winner is not None %}
-		{% if game.round and game.winner.nickname %}
-			<h2>Winner is {{ game.winner.nickname}}</h2>
-		{% else %}
-			<h2>Winner is {{ game.winner.username }}</h2>
-		{% endif %}
-	{% else %}
-	<h2>Winner is "Deleted User"</h2>
-	{% endif %}
-	<div>
-	  <div>
-	    {% if game.player1 is not None %}
-			<a href="{% url 'userProfile' game.player1.username %}">
-			{% if game.round and game.player1.nickname %}
-				{{ game.player1.nickname }}
-			{% else %}
-				{{ game.player1.username }}
-			{% endif %}
-			</a>
-	    {% else %}
-			<p>"Deleted User"</p>
-	    {% endif %}
-	    <p id="p1-score">{{ game.player1_points }}</p>
-	  </div>
-	  <div>
-	    {% if game.player2 is not None %}
-			<a href="{% url 'userProfile' game.player2.username %}">
-			{% if game.round and game.player2.nickname %}
-				{{ game.player2.nickname }}
-			{% else %}
-				{{ game.player2.username }}
-			{% endif %}
-			</a>
-	    {% else %}
-			<p>"Deleted User"</p>
-	    {% endif %}
-	    <p id="p2-score">{{ game.player2_points }}</p>
+<div class="game-result">
+	<div class="column items-center">
+	  <h1 class="neon">{{ game }}</h1>
+	  {% if game.winner is not None %}
+	  	{% if game.round and game.winner.nickname %}
+	  		<h2 class="neon">Winner is {{ game.winner.nickname}}</h2>
+	  	{% else %}
+	  		<h2 class="neon">Winner is {{ game.winner.username }}</h2>
+	  	{% endif %}
+	  {% else %}
+	  <h2>Winner is "Deleted User"</h2>
+	  {% endif %}
+	</div>
+	<div class="column items-center gap-2 width-full">
+      <h3 class="text-xl">Score</h3>
+	  <div class="row justify-center width-full gap-4">
+	    <div class="row gap-2">
+	      {% if game.player1 is not None %}
+	      	<a
+	      		class="link player1"
+	      		href="{% url 'userProfile' game.player1.username %}"
+	      	>
+	      	{% if game.round and game.player1.nickname %}
+	      		{{ game.player1.nickname }}
+	      	{% else %}
+	      		{{ game.player1.username }}
+	      	{% endif %}
+	      	</a>
+	      {% else %}
+	      	<p>"Deleted User"</p>
+	      {% endif %}
+	      <p id="p1-score">- {{ game.player1_points }}</p>
+	    </div>
+        <span class="neon">vs</span>
+	    <div class="row gap-2">
+	      {% if game.player2 is not None %}
+	      	<a
+				class="player2"
+				href="{% url 'userProfile' game.player2.username %}"
+			>
+	      	{% if game.round and game.player2.nickname %}
+	      		{{ game.player2.nickname }}
+	      	{% else %}
+	      		{{ game.player2.username }}
+	      	{% endif %}
+	      	</a>
+	      {% else %}
+	      	<p>"Deleted User"</p>
+	      {% endif %}
+	      <p id="p2-score">- {{ game.player2_points }}</p>
+	    </div>
 	  </div>
 	</div>
-	<a class="button" href="/pong/">Pong menu</a>
+	<a class="button width-full" href="/pong/">Pong menu</a>
 </div>
