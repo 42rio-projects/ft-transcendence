@@ -33,7 +33,7 @@ class StatusWebSocket {
 
       setTimeout(() => {
         this.socket = new WebSocket(
-          "ws://" + window.location.host + "/ws/status/",
+          "wss://" + window.location.host + "/ws/status/",
         );
         this.bind();
       }, retries * 3000); // 3s
