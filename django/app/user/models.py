@@ -94,7 +94,7 @@ class User(AbstractUser):
         for friendship in friendships:
             if friendship.user1 != self and friendship.user1.status == 'Online':
                 online_friends.append(friendship.user1)
-            elif friendship.user2.status == 'Online':
+            elif friendship.user2 != self and friendship.user2.status == 'Online':
                 online_friends.append(friendship.user2)
         return online_friends
 
@@ -237,12 +237,12 @@ class User(AbstractUser):
         ).order_by('-date').all())
 
     def finished_player_tournaments(self):
-        return (self.my_tournaments.filter(
+        return (self.tournaments.filter(
             Q(finished=True)
         ).order_by('-date').all())
 
     def finished_admin_tournaments(self):
-        return (self.my_tournaments.filter(
+        return (self.tournaments.filter(
             Q(finished=True)
         ).order_by('-date').all())
 
