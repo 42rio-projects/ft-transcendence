@@ -33,11 +33,7 @@ class StatusWebSocket {
 
       setTimeout(() => {
         this.socket = new WebSocket(
-<<<<<<< HEAD:django/app/static/js/statusWebSocket.js
-          "wss://" + window.location.host + "/ws/status/"
-=======
           "ws://" + window.location.host + "/ws/status/",
->>>>>>> develop:django/static/js/statusWebSocket.js
         );
         this.bind();
       }, retries * 3000); // 3s

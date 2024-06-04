@@ -14,11 +14,6 @@ async function fetchData(url, options = {}) {
   const target = document.getElementById(target_id);
   if (target) {
     target.innerHTML = await response.text();
-<<<<<<< HEAD:django/app/static/js/script.js
-  } else {
-    console.error("Could not find target element with id: " + target_id);
-=======
->>>>>>> develop:django/static/js/script.js
   }
 
   handleSockets(response.url);
@@ -28,14 +23,11 @@ async function fetchData(url, options = {}) {
 
 async function navigate(url) {
   const response = await fetchData(url);
-<<<<<<< HEAD:django/app/static/js/script.js
-=======
   if (!response.ok && !response.redirected) {
     toast(`Error: ${response.status} ${response.statusText}`);
     return response;
   }
 
->>>>>>> develop:django/static/js/script.js
   if (response.url != window.location.href) {
     history.pushState({ url: response.url }, null, response.url);
   }
@@ -44,11 +36,7 @@ async function navigate(url) {
 // Navigation with history (forward and back buttons)
 window.addEventListener("popstate", async (event) => {
   event.preventDefault();
-<<<<<<< HEAD:django/app/static/js/script.js
-  await fetchData(event.state ? event.state.url : window.location.href);
-=======
   await navigate(event.state ? event.state.url : window.location.href);
->>>>>>> develop:django/static/js/script.js
 });
 
 // Navigation with links (anchor tags)
