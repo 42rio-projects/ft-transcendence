@@ -37,6 +37,7 @@ class OnlineGameWebSocket {
       this.renderResult(data["html"]);
     } else if (data["status"] == "finished") {
       this.gameRunning = false;
+      this.unsetKeyListeners();
     } else if (data["status"] == "result") {
       this.renderResult(data["html"]);
     }
