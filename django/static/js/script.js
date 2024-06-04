@@ -9,10 +9,6 @@ async function fetchData(url, options = {}) {
   options.headers["X-Transcendence"] = true;
 
   const response = await fetch(url, options);
-  if (!response.ok && !response.redirected) {
-    toast(`Error: ${response.status} ${response.statusText}`);
-    return response;
-  }
 
   const target_id = response.headers.get("X-Target-Id");
   const target = document.getElementById(target_id);
@@ -27,7 +23,12 @@ async function fetchData(url, options = {}) {
 
 async function navigate(url) {
   const response = await fetchData(url);
-  if (response.ok && response.url != window.location.href) {
+  if (!response.ok && !response.redirected) {
+    toast(`Error: ${response.status} ${response.statusText}`);
+    return response;
+  }
+
+  if (response.url != window.location.href) {
     history.pushState({ url: response.url }, null, response.url);
   }
 }
@@ -55,7 +56,7 @@ async function handleFormSubmit(event) {
     body: new FormData(form),
   });
 
-  if (response.ok && response.url != form.action) {
+  if (response.url != form.action) {
     history.pushState({ url: response.url }, null, response.url);
   }
 

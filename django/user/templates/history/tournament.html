@@ -11,6 +11,9 @@
     <thead>
       <tr class="historyHeadRow">
         <th class="historyCell">
+			<h2 class="neon">Date</h2>
+		</th>
+        <th class="historyCell">
 			<h2 class="neon">Name</h2>
 		</th>
         <th class="historyCell">
@@ -24,6 +27,9 @@
     <tbody>
       {% for tournament in user.finished_tournaments %}
         <tr>
+          <td class="historyCell">
+			  {{ tournament.date }}
+          </td>
           <td class="historyCell">
             <a class="link" href='{% url 'onlineTournament' tournament.id %}'>
 			  {{ tournament.name }}
