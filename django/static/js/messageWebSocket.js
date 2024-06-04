@@ -33,9 +33,7 @@ class MessageWebSocket {
       } else {
         this.displayWarning(jsonResponse["msg"]);
       }
-    } catch (error) {
-      console.log(error);
-    }
+    } catch {}
   }
   onClose(event) {}
 

@@ -15,7 +15,6 @@ class StatusWebSocket {
 
   onOpen() {
     this.loggedIn = true;
-    console.log("Status WebSocket connected");
   }
 
   onMessage(event) {
@@ -31,7 +30,6 @@ class StatusWebSocket {
   onClose() {
     if (this.loggedIn && retries < maxRetries) {
       retries++;
-      console.log(`Trying to reconnect... Attempt ${retries}`);
 
       setTimeout(() => {
         this.socket = new WebSocket(

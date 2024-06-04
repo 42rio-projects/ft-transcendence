@@ -25,8 +25,6 @@ class OnlineGameWebSocket {
       this.gameScreen.draw(data);
     } else if (data["status"] == "score") {
       this.updateScoreboard(data);
-    } else if (data["status"] == "invalid") {
-      console.error(data["message"]);
     } else if (data["status"] == "started") {
       this.setKeyListeners();
       this.gameRunning = true;

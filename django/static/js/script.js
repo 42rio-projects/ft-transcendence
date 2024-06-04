@@ -18,8 +18,6 @@ async function fetchData(url, options = {}) {
   const target = document.getElementById(target_id);
   if (target) {
     target.innerHTML = await response.text();
-  } else {
-    console.error("Could not find target element with id: " + target_id);
   }
 
   handleSockets(response.url);
