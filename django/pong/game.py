@@ -10,7 +10,7 @@ from pong.models import Game as GameModel
 X_SPEED_LIMIT = 2
 Y_SPEED_LIMIT = 4
 SPEED_COUNTER = 5
-TICK_RATE = 1 / 45
+TICK_RATE = 1 / 60
 BALL_SPEED = 1
 BAR_SPEED = 2
 BAR_HEIGHT = 20

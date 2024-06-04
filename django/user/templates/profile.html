@@ -54,8 +54,19 @@ Profile
     <a class="button" href="/edit-profile/">Edit profile</a>
     {% endif %}
   </div>
-  {% if user == request.user %}
   <div class="profile-data">
+    <div>
+      <label>Games won:</label>
+      <span>{{ user.count_wins }}</span>
+    </div>
+    <div>
+      <label>Games lost:</label>
+      <span>{{ user.count_losses }}</span>
+    </div>
+    <div>
+      <label>Tournament won:</label>
+      <span>{{ user.count_tournament_wins }}</span>
+    </div>
     {% if user.email %}
     <div>
       <label>Email:</label>
@@ -69,6 +80,7 @@ Profile
     </div>
     {% endif %}
   </div>
+  {% if user == request.user %}
   <div class="profile-actions">
     {% if user.email %}
     <a class="button" href="/change-email/">Change email</a>
