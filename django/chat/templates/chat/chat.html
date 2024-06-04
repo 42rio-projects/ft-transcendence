@@ -37,10 +37,10 @@
 	  		<p class="messageOthers">{{ message.content }}</p>
         	{% endif %}
         {% endfor %}
-	  <span id="chat-warning" class="color-error"></span>
 	</div>
 	{% if chat.starter != chat.receiver %}
 	<div class="chatBottom">
+	  <span id="chat-warning" class="error"></span>
       <form method="post" class="chatForm" onsubmit="messageSocket.sendMessage(event)">
         {% csrf_token %}
         <input class="input" type="text" name="content" id="content" class="chat-input" placeholder="Type your message" required />
