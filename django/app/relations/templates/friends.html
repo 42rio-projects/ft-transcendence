@@ -21,27 +21,31 @@
 
   {% block friends_content %}
   <ul class="user-list">
+    {% if user.get_friends %}
     {% for user in user.get_friends %}
     <li>
       <div>
         <span>{{ user.username }}</span>
         {% if user.status == 'Online' %}
-          <div id="{{ user.pk }}-status-icon" class="online-icon"></div>
+        <div id="{{ user.pk }}-status-icon" class="online-icon"></div>
         {% else %}
-          <div id="{{ user.pk }}-status-icon" class="offline-icon"></div>
+        <div id="{{ user.pk }}-status-icon" class="offline-icon"></div>
         {% endif %}
+        <span id="{{ user.pk }}-status">{{ user.status }}</span>
       </div>
       <div>
         <a class="button" href="/profile/{{ user.username }}/">See profile</a>
-        <span id="{{ user.pk }}-status">{{ user.status }}</span>
         <form method="post" onsubmit="handleFormSubmit(event)">
           {% csrf_token %}
           <input type="hidden" name="user-id" value="{{ user.id }}" />
-          <button type="submit">Remove friend</button>
+          <button class="button" type="submit">Remove friend</button>
         </form>
       </div>
     </li>
     {% endfor %}
+    {% else %}
+    <li class="empty-item">No friends</li>
+    {% endif %}
   </ul>
   {% endblock %}
 </div>

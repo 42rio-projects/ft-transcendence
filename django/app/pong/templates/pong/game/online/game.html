@@ -3,41 +3,30 @@
 {% block title %} Online Game {% endblock %}
 
 {% block content %}
-<div id="online-game-section">
-  <h1>
-   {% if game.round and player1.nickname %}
-     {{ player1.nickname }}
-   {% else %}
-     {{ game.player1.username }}
-   {% endif %}
-   vs
-   {% if game.round and game.player2.nickname %}
-     {{ player2.nickname }}
-   {% else %}
-     {{ player2.username }}
-   {% endif %}
-  </h1>
+<div class="game-container" id="online-game-section">
   <h2>Controls</h2>
-  <div class="verticalDiv">
-    W -> move up
-    <br />
-    S -> move down
+  <div class="controls-game">
     <div>
       {% if game.round and player1.nickname %}
-        <p>{{ player1.nickname }}</p>
+      <p class="player1">{{ player1.nickname }}</p>
       {% else %}
-        <p>{{ player1.username }}</p>
+      <p class="player1">{{ player1.username }}</p>
       {% endif %}
       <p id="p1-score"></p>
     </div>
     <div>
-      {% if game.round and player2.nickname %}
-        <p>{{ player2.nickname }}</p>
+      {% if game.round and player1.nickname %}
+      <p class="player2">{{ player2.nickname }}</p>
       {% else %}
-        <p>{{ player2.username }}</p>
+      <p class="player2">{{ player2.username }}</p>
       {% endif %}
       <p id="p2-score"></p>
     </div>
+  </div>
+  <div>
+    W -> move up
+    <br />
+    S -> move down
   </div>
   <canvas id="game-screen"></canvas>
 </div>

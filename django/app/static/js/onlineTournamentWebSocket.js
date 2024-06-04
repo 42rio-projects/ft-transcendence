@@ -48,9 +48,13 @@ class OnlineTournamentWebSocket {
       return;
     }
     if (status == "success") {
-      this.displaySuccess(json?.message);
+      try {
+        this.displaySuccess(json?.message);
+      } catch {}
     } else if (status == "error") {
-      this.displayWarning(json?.message);
+      try {
+        this.displayWarning(json?.message);
+      } catch {}
     }
   }
 

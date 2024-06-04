@@ -2,6 +2,7 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.http import HttpResponseForbidden
 from pong.utils import render_component
+from django.contrib.auth.decorators import login_required
 
 import chat.models as models
 
@@ -15,6 +16,7 @@ def check_permissions_and_get_other_user(chat, user):
     return other_user
 
 
+@login_required
 def chatRoom(request, id):
     chat = get_object_or_404(models.Chat, pk=id)
     try:
@@ -22,8 +24,6 @@ def chatRoom(request, id):
     except Exception as e:
         return HttpResponseForbidden(e.__str__())
 
-    if other_user == request.user:
-        return redirect('notifications')
     if request.user in other_user.get_blocks() or other_user in request.user.get_blocks():
         return redirect('userProfile', other_user.username)
     if request.method == 'POST':
@@ -37,6 +37,7 @@ def chatRoom(request, id):
     return render_component(request, 'chat/chat.html', 'content', context)
 
 
+@login_required
 def sendMessage(request, id):
     if request.method == 'GET':
         return redirect('chatRoom', id=id)
@@ -67,7 +68,7 @@ def sendMessage(request, id):
             )
 
 
+@login_required
 def notifications(request):
     chat = request.user.get_or_create_notifications()
-    context = {"chat": chat, "other_user": request.user}
-    return render_component(request, 'chat/chat.html', 'content', context)
+    return redirect('chatRoom', id=chat.pk)

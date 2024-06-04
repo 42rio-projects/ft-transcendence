@@ -3,79 +3,88 @@
 {% block title %} Match History {% endblock %}
 
 {% block content %}
-<div >
-  <table class="table">
+<div class="historyContainer">
+  <div class="historyTitle">
+	<h2 class="neon">Games</h2>
+  </div>
+  <table class="historyTable">
     <thead>
-      <tr class="headRow">
-        <th>
-          <p>Player 1</p>
+      <tr class="historyHeadRow">
+        <th class="historyCell">
+          <h2 class="neon">Date</h2>
         </th>
-        <th>
-          <p>Score</p>
+        <th class="historyCell">
+          <h2 class="neon">Player 1</h2>
         </th>
-        <th>
-          <p>Player 2</p>
+        <th class="historyCell">
+          <h2 class="neon">Score</h2>
         </th>
-        <th>
-          <p>Score</p>
+        <th class="historyCell">
+          <h2 class="neon">Player 2</h2>
         </th>
-        <th>
-          <p>Winner</p>
+        <th class="historyCell">
+          <h2 class="neon">Score</h2>
+        </th>
+        <th class="historyCell">
+          <h2 class="neon">Winner</h2>
         </th>
       </tr>
     </thead>
     <tbody>
       {% for game in user.get_games.all%}
       <tr>
-        <td>
-	      {% if game.player1 is not None %}
-		  	<a href="{% url 'userProfile' game.player1.username %}">
-		  	{% if game.round and game.player1.nickname %}
-		  		{{ game.player1.nickname }}
-		  	{% else %}
-		  		{{ game.player1.username }}
-		  	{% endif %}
-		  	</a>
-	      {% else %}
-			<p>"Deleted User"</p>
-		  {% endif %}
+        <td class="historyCell">
+			  {{ game.date }}
         </td>
-        <td>
+        <td class="historyCell">
+          {% if game.player1 is not None %}
+    	  	<a class="link" href="{% url 'userProfile' game.player1.username %}">
+    	  	{% if game.round and game.player1.nickname %}
+    	  		{{ game.player1.nickname }}
+    	  	{% else %}
+    	  		{{ game.player1.username }}
+    	  	{% endif %}
+    	  	</a>
+          {% else %}
+    		<p>"Deleted User"</p>
+    	  {% endif %}
+        </td>
+        <td class="historyCell">
           <p>{{ game.player1_points }}</p>
         </td>
-        <td>
-	      {% if game.player2 is not None %}
-		  	<a href="{% url 'userProfile' game.player2.username %}">
-		  	{% if game.round and game.player2.nickname %}
-		  		{{ game.player2.nickname }}
-		  	{% else %}
-		  		{{ game.player2.username }}
-		  	{% endif %}
-		  	</a>
-	      {% else %}
-			<p>"Deleted User"</p>
-		  {% endif %}
+        <td class="historyCell">
+          {% if game.player2 is not None %}
+    	  	<a class="link" href="{% url 'userProfile' game.player2.username %}">
+    	  	{% if game.round and game.player2.nickname %}
+    	  		{{ game.player2.nickname }}
+    	  	{% else %}
+    	  		{{ game.player2.username }}
+    	  	{% endif %}
+    	  	</a>
+          {% else %}
+    		<p>"Deleted User"</p>
+    	  {% endif %}
         </td>
-        <td>
+        <td class="historyCell">
           <p>{{ game.player2_points }}</p>
         </td>
-        <td>
-	      {% if game.winner is not None %}
-		  	<a href="{% url 'userProfile' game.winner.username %}">
-		  	{% if game.round and game.winner.nickname %}
-		  		{{ game.winner.nickname }}
-		  	{% else %}
-		  		{{ game.winner.username }}
-		  	{% endif %}
-		  	</a>
-	      {% else %}
-			<p>"Deleted User"</p>
-		  {% endif %}
+        <td class="historyCell">
+          {% if game.winner is not None %}
+    	  	<a class="link" href="{% url 'userProfile' game.winner.username %}">
+    	  	{% if game.round and game.winner.nickname %}
+    	  		{{ game.winner.nickname }}
+    	  	{% else %}
+    	  		{{ game.winner.username }}
+    	  	{% endif %}
+    	  	</a>
+          {% else %}
+    		<p>"Deleted User"</p>
+    	  {% endif %}
         </td>
       </tr>
       {% endfor %}
     </tbody>
   </table>
-  <a class="button" href="{% url 'history' user.username %}">History</a>
+  <a class="button" href="{% url 'history' user.username %}">History menu</a>
 </div>
 {% endblock %}

@@ -3,11 +3,13 @@
 {% block title %} History {% endblock %}
 
 {% block content %}
-<div>
-  <h2 class="neon">History</h2>
-  <div>
-    <img class="avatar" src="{{ user.avatar.url }}" alt="Avatar" />
-    <span>{{ user.username }}</span>
+<div class="historyContainer">
+  <div class="historyTitle">
+	<h2 class="neon">History</h2>
+  </div>
+  <div class="historyHeader">
+    <img class="historyAvatar" src="{{ user.avatar.url }}" alt="Avatar" />
+    <a class="link" href='{% url 'userProfile' user.username %}'>{{ user.username }}</a>
   </div>
   <a class="button" href="{% url 'matchHistory' user.username %}">Match History</a>
   <a class="button" href="{% url 'tournamentHistory' user.username %}">Tournament History</a>

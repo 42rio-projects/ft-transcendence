@@ -15,11 +15,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
         self.user = self.scope['user']
         in_chat = await is_in_chat(self.user, self.chat)
         if not in_chat:
+            self.close()
             return
         await self.channel_layer.group_add(
             self.room_group_name, self.channel_name
         )
         await self.accept()
+        await self.send(text_data=json.dumps({"html": ""}))
 
     async def disconnect(self, close_code):
         """Function called when websocket is disconnected"""
@@ -53,7 +55,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
 @database_sync_to_async
 def get_message(id):
-    message = models.Message.objects.get(pk=id)
+    message = models.Message.objects.prefetch_related('sender').get(pk=id)
     return message
 
 

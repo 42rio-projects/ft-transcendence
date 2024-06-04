@@ -5,6 +5,7 @@ from user.models import User
 from relations.models import IsFriendsWith
 from relations.models import IsBlockedBy
 
+
 class IsFriendsWithInline(admin.TabularInline):
     model = IsFriendsWith
     fk_name = 'user1'

@@ -12,8 +12,8 @@ from asgiref.sync import async_to_sync
 
 UPPER_PLAYER_LIMIT = 16
 LOWER_PLAYER_LIMIT = 4
-TOURNAMENT_START_LIMIT = 60 * 5  # seconds
-ROUND_TIMEOUT = 60 * 5  # seconds
+TOURNAMENT_START_LIMIT = 60 * 15  # seconds
+ROUND_TIMEOUT = 60 * 10  # seconds
 
 
 @async_to_sync
@@ -109,9 +109,9 @@ class Tournament(models.Model):
     def cancel(self):
         if self.started:
             raise Exception("Tournament already started.")
-        self.delete()
         html = render_to_string('pong/tournament/online/cancelled.html')
         tournament_update(self.pk, {"status": "cancelled", "html": html})
+        self.delete()
 
     def start(self):
         if self.started:
@@ -216,7 +216,7 @@ class TournamentInvite(models.Model):
             )
         if IsBlockedBy.objects.filter(
             Q(blocker=self.tournament.admin, blocked=self.receiver) | Q(
-                blocked=self.receiver, blocker=self.tournament.admin)
+                blocker=self.receiver, blocked=self.tournament.admin)
         ).exists():
             raise ValidationError("User blocked")
 
@@ -307,7 +307,7 @@ class Round(models.Model):
         await tournament.advance()
 
     def __str__(self):
-        return (f'{self.tournament.name} round {self.number}')
+        return (f'round {self.number}')
 
 
 class Game(models.Model):
@@ -408,14 +408,15 @@ class GameInvite(models.Model):
     def clean(self):
         if IsBlockedBy.objects.filter(
             Q(blocker=self.sender, blocked=self.receiver) | Q(
-                blocked=self.receiver, blocker=self.sender)
+                blocker=self.receiver, blocked=self.sender)
         ).exists():
             raise ValidationError("User blocked")
         if GameInvite.objects.filter(
                 sender=self.sender, receiver=self.receiver
         ).exists():
             raise ValidationError(
-                'You have already sent a game invite to this user')
+                'You have already sent a game invite to this user'
+            )
         if GameInvite.objects.filter(
                 sender=self.receiver, receiver=self.sender
         ).exists():

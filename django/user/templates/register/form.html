@@ -1,0 +1,33 @@
+{% csrf_token %}
+<span class="success">{{ success }}</span>
+<div class="column">
+  <span class="error text-sm">{{ username_error }}</span>
+  <input
+    class="input"
+    type="text"
+    name="username"
+    placeholder="Username"
+    value="{{ username }}"
+  />
+</div>
+<div class="column">
+  <span class="error text-sm">{{ password_error }}</span>
+  <input
+    class="input"
+    type="password"
+    name="password"
+    placeholder="Password"
+    value="{{ password }}"
+  />
+</div>
+<div class="column">
+  <span class="error text-sm">{{ password2_error }}</span>
+  <input
+    class="input"
+    type="password"
+    name="password2"
+    placeholder="Confirm password"
+    value="{{ password2 }}"
+  />
+</div>
+<button class="button" type="submit">Register</button>

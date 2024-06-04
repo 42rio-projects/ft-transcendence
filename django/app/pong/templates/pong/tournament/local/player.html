@@ -1,9 +1,9 @@
-<div class="verticalDiv" id="tournament_player_{{ alias }}">
-  <li>{{ alias }}</li>
-  <form onsubmit="localTournamentSocket.playerAction(event)">
+<li id="tournament_player_{{ alias }}" class="row justify-between items-center">
+  <span>{{ alias }}</span>
+  <form class="inline-block" onsubmit="localTournamentSocket.playerAction(event)">
     {% csrf_token %}
     <input type="hidden" name="alias" value="{{ alias }}" />
     <input type="hidden" name="user_action" value="remove_player" />
-    <button type="submit" class="input-button">Remove</button>
+    <button class="button" type="submit" class="input-button">Remove</button>
   </form>
-</div>
+</li>

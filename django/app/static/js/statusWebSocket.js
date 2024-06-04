@@ -15,27 +15,29 @@ class StatusWebSocket {
 
   onOpen() {
     this.loggedIn = true;
-    console.log("Status WebSocket connected");
   }
 
   onMessage(event) {
     const data = JSON.parse(event.data);
 
-    console.log(data);
-
     if (data.type === "user.status") {
       this.setUserStatus(data);
+    } else if (data.type === "no.login") {
+      this.loggedIn = false;
     }
   }
 
   onClose() {
     if (this.loggedIn && retries < maxRetries) {
       retries++;
-      console.log(`Trying to reconnect... Attempt ${retries}`);
 
       setTimeout(() => {
         this.socket = new WebSocket(
+<<<<<<< HEAD:django/app/static/js/statusWebSocket.js
           "wss://" + window.location.host + "/ws/status/"
+=======
+          "ws://" + window.location.host + "/ws/status/",
+>>>>>>> develop:django/static/js/statusWebSocket.js
         );
         this.bind();
       }, retries * 3000); // 3s
@@ -59,8 +61,10 @@ class StatusWebSocket {
     }
     const circle = document.getElementById(`${data.user_pk}-status-icon`);
     if (circle) {
-        data.user_status === "Online" ? circle.className = "online-icon" : circle.className = "offline-icon";
-      }
+      data.user_status === "Online"
+        ? (circle.className = "online-icon")
+        : (circle.className = "offline-icon");
+    }
   }
 }
 

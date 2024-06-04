@@ -1,3 +1,4 @@
+import sys
 from channels.db import database_sync_to_async
 from django.db import models
 from django.contrib.auth.models import AbstractUser
@@ -81,9 +82,21 @@ class User(AbstractUser):
         for friendship in friendships:
             if friendship.user1 != self:
                 friends.append(friendship.user1)
-            elif friendship.user2 != self:
+            else:
                 friends.append(friendship.user2)
         return friends
+
+    def get_online_friends(self):
+        friendships = IsFriendsWith.objects.filter(
+            Q(user1=self) | Q(user2=self)
+        ).prefetch_related('user1', 'user2')
+        online_friends = []
+        for friendship in friendships:
+            if friendship.user1 != self and friendship.user1.status == 'Online':
+                online_friends.append(friendship.user1)
+            elif friendship.user2.status == 'Online':
+                online_friends.append(friendship.user2)
+        return online_friends
 
     def get_games(self, filters=None):
         home_games = self.home_games.filter(
@@ -94,14 +107,27 @@ class User(AbstractUser):
         ).prefetch_related('player1', 'player2')
         return home_games.union(away_games)
 
+    def get_games_filtered(self, filters=None):
+        filters = {}
+        filters['finished'] = True
+        if filters:
+            filters['winner'] = self
+        home_games = self.home_games.filter(
+            **filters
+        ).prefetch_related('player1', 'player2')
+        away_games = self.away_games.filter(
+            **filters
+        ).prefetch_related('player1', 'player2')
+        return home_games.union(away_games)
+
     def count_wins(self):
         filters = {'winner': self}
-        gamesWon = self.get_games(filters)
+        gamesWon = self.get_games_filtered(filters)
         return gamesWon.count()
 
     def count_losses(self):
         filters = {'winner': self}
-        gamesWon = self.get_games(filters)
+        gamesWon = self.get_games_filtered(filters)
         allGames = self.get_games()
         return allGames.count() - gamesWon.count()
 
@@ -122,6 +148,9 @@ class User(AbstractUser):
         for invite in invites:
             invited_users.append(invite.receiver)
         return invited_users
+
+    def count_tournament_wins(self):
+        return self.championships.count()
 
     def get_chats(self):
         blocked_users = self.get_blocks()

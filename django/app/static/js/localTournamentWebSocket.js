@@ -44,9 +44,7 @@ class LocalTournamentWebSocket {
       };
       form.reset();
       this.socket.send(JSON.stringify(message));
-    } catch (error) {
-      console.log(error);
-    }
+    } catch {}
   }
 
   tournamentAction(event) {
@@ -57,9 +55,7 @@ class LocalTournamentWebSocket {
       const data = new FormData(form);
       const message = { user_action: data.get("user_action") };
       this.socket.send(JSON.stringify(message));
-    } catch (error) {
-      console.log(error);
-    }
+    } catch {}
   }
 
   addPlayer(html) {

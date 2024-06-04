@@ -2,43 +2,87 @@
   <h1 class="neon text-2xl">
     ft_transcendence - {% block title %}Home{% endblock %}
   </h1>
-  <nav class="header-section">
-    {% if user.is_authenticated %}
+  <nav class="header-nav">
+    {% if request.user.is_authenticated %}
     <div class="header-section">
-      <a href="/">Home</a>
-      <a href="/pong/">Pong</a>
-      <a href="/friends/">Friends</a>
-	  <a href="{% url 'history' request.user.username %}">History</a>
-	  <a href="{% url 'notifications' %}">Notifications</a>
+      <a class="link" href="/">Home</a>
+      <a class="link" href="/pong/">Pong</a>
+      <a class="link" href="/friends/">Friends</a>
+      <a class="link" href="/history/{{ request.user.username }}/">History</a>
+      <a class="link" href="/notifications/">Notifications</a>
     </div>
-    <span class="vertical-line"></span>
+    <span class="header-vertical-line"></span>
     <div class="header-section">
-      <a href="/profile/">
-        Perfil
-      </a>
-      <button
-        class="link"
-        type="submit"
-        onclick="handleLogout(event)"
-      >
-        Logout
-      </button>
+      <a class="link" href="/profile/">{{ request.user.username }}</a>
+      <img
+        class="header-avatar"
+        src="{{ request.user.avatar.url }}"
+        alt="{{ request.user.username }} avatar"
+      />
     </div>
+    <button
+      class="logout-button"
+      type="submit"
+      onclick="handleLogout('/logout/')"
+    >
+      <img
+        class="logout-icon"
+        src="/media/icons/logout-icon.svg"
+        alt="Logout icon"
+      />
+    </button>
     {% else %}
-    <a href="/register/">Register</a>
-    <span class="vertical-line"></span>
-    <a href="/login/">Login</a>
+    <a href="/">Home</a>
+    <span class="header-vertical-line"></span>
+    <div class="header-section">
+      <a href="/register/">Register</a>
+      <a href="/login/">Login</a>
+    </div>
     {% endif %}
   </nav>
 </header>
-
-<main class="main-container">
+<main class="main">
   {% block content %}
-  <div class="home">
-    <h1 class="neon">Search user</h1>
-    <form id="form" method="post" onsubmit="handleFormSubmit(event)">
-      {% include 'search_user_form.html' %}
-    </form>
+  {% if user.is_authenticated %}
+  <div class="home items-center gap-4">
+    <div class="column items-center gap-2">
+      <h1 class="neon">Search user</h1>
+      <form id="form" class="column gap-1" method="post" onsubmit="handleFormSubmit(event)">
+        {% include 'search_user_form.html' %}
+      </form>
+    </div>
+    <hr class="width-full" />
+    <div class="column items-center gap-2">
+      <h2 class="neon">Online friends</h2>
+      <ul class="user-list">
+        {% if user.get_friends %}
+        {% for user in user.get_online_friends %}
+        <li class="row gap-4">
+          <div>
+            <span>{{ user.username }}</span>
+            {% if user.status == 'Online' %}
+            <div id="{{ user.pk }}-status-icon" class="online-icon"></div>
+            {% else %}
+            <div id="{{ user.pk }}-status-icon" class="offline-icon"></div>
+            {% endif %}
+            <span id="{{ user.pk }}-status">{{ user.status }}</span>
+          </div>
+          <a class="button" href="/profile/{{ user.username }}/">See profile</a>
+        </li>
+        {% endfor %}
+        {% else %}
+        <li class="empty-item">No friends</li>
+        {% endif %}
+      </ul>
+    </div>
   </div>
+  {% else %}
+  <div>
+    <h1 class="neon">Welcome</h1>
+    <a class="button" href="/pong/local-game/">Local Game</a>
+    <a class="button" href="/pong/local-tournament/">Local Tournament</a>
+    <a class="button" href="/login/">Login</a>
+  </div>
+  {% endif %}
   {% endblock %}
 </main>

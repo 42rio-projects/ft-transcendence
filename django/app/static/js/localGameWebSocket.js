@@ -34,8 +34,6 @@ class LocalGameWebSocket {
       this.stop();
     } else if (data["status"] == "result") {
       this.renderResult(data["html"]);
-    } else if (data["status"] == "invalid") {
-      console.error(data["message"]);
     }
   }
 

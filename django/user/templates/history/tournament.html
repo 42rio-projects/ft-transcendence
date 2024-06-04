@@ -3,58 +3,72 @@
 {% block title %} Tournament History {% endblock %}
 
 {% block content %}
-<div>
-  <div class="tab-content active">
-    <table>
-      <thead>
-        <tr class="head">
-          <th><p>Name</p></th>
-          <th><p>Admin</p></th>
-          <th><p>Winner</p></th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for tournament in user.finished_tournaments %}
-          <tr>
-            <td>
-				<a href='{% url 'onlineTournament' tournament.id %}'>
-					{{ tournament.name }}
-				</a>
-			</td>
-            <td>
-	          {% if tournament.admin is not None %}
-	          	{% if tournament.admin.nickname %}
-	          		<a href="{% url 'userProfile' tournament.admin.username %}">
-	          			{{ tournament.admin.nickname }}
-	          		</a>
-	          	{% else %}
-	          		<a href="{% url 'userProfile' tournament.admin.username %}">
-	          			{{ tournament.admin.username }}
-	          		</a>
-	          	{% endif %}
-	          {% else %}
-	          	<p>"Deleted User"</p>
-	          {% endif %}
-			</td>
-            <td>
-	          {% if tournament.winner is not None %}
-	          	{% if tournament.winner.nickname %}
-	          		<a href="{% url 'userProfile' tournament.winner.username %}">
-	          			{{ tournament.winner.nickname }}
-	          		</a>
-	          	{% else %}
-	          		<a href="{% url 'userProfile' tournament.winner.username %}">
-	          			{{ tournament.winner.username }}
-	          		</a>
-	          	{% endif %}
-	          {% else %}
-	          	<p>"Deleted User"</p>
-	          {% endif %}
-			</td>
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+<div class="historyContainer">
+  <div class="historyTitle">
+	<h2 class="neon">Tournaments</h2>
   </div>
+  <table class="historyTable">
+    <thead>
+      <tr class="historyHeadRow">
+        <th class="historyCell">
+			<h2 class="neon">Date</h2>
+		</th>
+        <th class="historyCell">
+			<h2 class="neon">Name</h2>
+		</th>
+        <th class="historyCell">
+			<h2 class="neon">Admin</h2>
+		</th>
+        <th class="historyCell">
+			<h2 class="neon">Winner</h2>
+		</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for tournament in user.finished_tournaments %}
+        <tr>
+          <td class="historyCell">
+			  {{ tournament.date }}
+          </td>
+          <td class="historyCell">
+            <a class="link" href='{% url 'onlineTournament' tournament.id %}'>
+			  {{ tournament.name }}
+            </a>
+          </td>
+          <td class="historyCell">
+            {% if tournament.admin is not None %}
+              {% if tournament.admin.nickname %}
+                <a class="link" href="{% url 'userProfile' tournament.admin.username %}">
+                  {{ tournament.admin.nickname }}
+                </a>
+              {% else %}
+                <a class="link" href="{% url 'userProfile' tournament.admin.username %}">
+                  {{ tournament.admin.username }}
+                </a>
+              {% endif %}
+            {% else %}
+              <p>"Deleted User"</p>
+            {% endif %}
+          </td>
+          <td class="historyCell">
+            {% if tournament.winner is not None %}
+              {% if tournament.winner.nickname %}
+                <a class="link" href="{% url 'userProfile' tournament.winner.username %}">
+                  {{ tournament.winner.nickname }}
+                </a>
+              {% else %}
+                <a class="link" href="{% url 'userProfile' tournament.winner.username %}">
+                  {{ tournament.winner.username }}
+                </a>
+              {% endif %}
+            {% else %}
+              <p>"Deleted User"</p>
+            {% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <a class="button" href="{% url 'history' user.username %}">History menu</a>
 </div>
 {% endblock %}

@@ -27,6 +27,11 @@ class LocalTournament():
                 {"status": "warning", "content": "Player limit reached"}
             )
             return
+        if len(player) > 16:
+            await self.send_message(
+                {"status": "warning", "content": "Player alias too long, 16 characters max"}
+            )
+            return
         self.players.add(player)
         if previous_size < len(self.players):
             html = render_to_string(

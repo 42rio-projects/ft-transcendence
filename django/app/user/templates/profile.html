@@ -11,69 +11,116 @@ Profile
 {% block content %}
 <div class="profile">
   <h1 class="neon">Profile</h1>
-
   <hr />
-
-  {% if success %}
-  <span class="color-success">{{ success }}</span>
-  {% endif %} {% if error %}
-  <span class="color-error">{{ error }}</span>
-  {% endif %}
-  <div>
-    <img class="avatar" src="{{ user.avatar.url }}" alt="Avatar" />
-    <span>{{ user.username }}</span>
-    <span id="{{ user.pk }}-status">{{ user.status }}</span>
-  </div>
-  <span>
-    {% if user.email_verified %}
-    Verified
+  <span class="success">{{ success }}</span>
+  <span class="error">{{ error }}</span>
+  <div class="profile-header">
+    <div class="user-info">
+      <img class="user-info-avatar" src="{{ user.avatar.url }}" alt="Avatar" />
+      <div class="user-info-container">
+        <span>{{ user.username }}</span>
+        <div class="user-info-status">
+          {% if user.status == 'Online' %}
+          <div id="{{ user.pk }}-status-icon" class="online-icon"></div>
+          {% else %}
+          <div id="{{ user.pk }}-status-icon" class="offline-icon"></div>
+          {% endif %}
+          <span id="{{ user.pk }}-status">{{ user.status }}</span>
+        </div>
+      </div>
+    </div>
+    {% if request.user != user %}
+      {% if request.user not in user.get_blocks and user not in request.user.get_blocks %}
+        <form method="post" onsubmit="handleFormSubmit(event)">
+          {% csrf_token %}
+          <input type="hidden" name="user-id" value="{{ user.id }}" />
+          {% if user in request.user.users_invited_to_friend %}
+            <input type="hidden" name="user-action" value="cancel-friend-invite" />
+            <button class="button" type="submit">Cancel friend invite</button>
+          {% elif user not in request.user.get_friends %}
+            <input type="hidden" name="user-action" value="send-friend-invite" />
+            <button class="button" type="submit">Send friend invite</button>
+          {% else %}
+            <input type="hidden" name="user-action" value="remove-friend" />
+            <button class="button" type="submit">Remove friend</button>
+          {% endif %}
+        </form>
+	  {% elif request.user in user.get_blocks %}
+	    <h3> User blocked you</h3>
+	  {% elif user in request.user.get_blocks %}
+	    <h3> User blocked by you</h3>
+      {% endif %}
     {% else %}
-    Not verified
+    <a class="button" href="/edit-profile/">Edit profile</a>
     {% endif %}
-  </span>
+  </div>
+  <div class="profile-data">
+    <div>
+      <label>Games won:</label>
+      <span>{{ user.count_wins }}</span>
+    </div>
+    <div>
+      <label>Games lost:</label>
+      <span>{{ user.count_losses }}</span>
+    </div>
+    <div>
+      <label>Tournament won:</label>
+      <span>{{ user.count_tournament_wins }}</span>
+    </div>
+    {% if user.email %}
+    <div>
+      <label>Email:</label>
+      <span>{{ user.email }}</span>
+    </div>
+    {% endif %}
+    {% if user.nickname %}
+    <div>
+      <label>Nickname:</label>
+      <span>{{ user.nickname }}</span>
+    </div>
+    {% endif %}
+  </div>
   {% if user == request.user %}
-  <a class="button" href="/edit_profile/">Edit profile</a>
+  <div class="profile-actions">
+    {% if user.email %}
+    <a class="button" href="/change-email/">Change email</a>
+    {% else %}
+    <a class="button" href="/change-email/">Add email</a>
+    {% endif %}
+    {% if user.email and not user.email_verified %}
+    <a class="button" href="/verify-email/">Verify email</a>
+    {% endif %}
+    {% if user.email_verified %}
+    <a class="button" href="/change-password/">Change password</a>
+    {% endif %}
+  </div>
   {% else %}
-  <div class="profile-buttons">
-	{% if request.user not in user.get_blocks and user not in request.user.get_blocks %}
-      <form method="post" onsubmit="handleFormSubmit(event)">
-        {% csrf_token %}
-        <input type="hidden" name="user-id" value="{{ user.id }}" />
-	    {% if user in request.user.users_invited_to_friend %}
-        <input type="hidden" name="user-action" value="cancel-friend-invite" />
-        <button type="submit">Cancel friend invite</button>
-	    {% elif user not in request.user.get_friends %}
-        <input type="hidden" name="user-action" value="send-friend-invite" />
-        <button type="submit">Send friend invite</button>
-      {% else %}
-        <input type="hidden" name="user-action" value="remove-friend" />
-        <button type="submit">Remove friend</button>
-	    {% endif %}
-      </form>
-      <form method="post" onsubmit="handleFormSubmit(event)">
-        {% csrf_token %}
-        <input type="hidden" name="user-id" value="{{ user.id }}" />
-        <input type="hidden" name="user-action" value="game-invite" />
-        <button type="submit">Invite to Game</button>
-      </form>
-      <form method="post" onsubmit="handleFormSubmit(event)">
-        {% csrf_token %}
-        <input type="hidden" name="user-id" value="{{ user.id }}" />
-        <input type="hidden" name="user-action" value="send-message" />
-        <button type="submit">Send Message</button>
-      </form>
-	{% endif %}
-	<a class="button" href="{% url 'history' user.username %}">History</a>
-    <form method="post" onsubmit="handleFormSubmit(event)">
+  <div class="profile-actions">
+    {% if request.user not in user.get_blocks and user not in request.user.get_blocks %}
+    <form class="column" method="post" onsubmit="handleFormSubmit(event)">
       {% csrf_token %}
       <input type="hidden" name="user-id" value="{{ user.id }}" />
-	  {% if user in request.user.get_blocks %}
+      <input type="hidden" name="user-action" value="game-invite" />
+      <button class="button" type="submit">Invite to game</button>
+    </form>
+    <form class="column" method="post" onsubmit="handleFormSubmit(event)">
+      {% csrf_token %}
+      <input type="hidden" name="user-id" value="{{ user.id }}" />
+      <input type="hidden" name="user-action" value="send-message" />
+      <button class="button" type="submit">Send message</button>
+    </form>
+    {% endif %}
+    <a class="button" href="/history/{{ user.username }}">History</a>
+    <form class="column" method="post" onsubmit="handleFormSubmit(event)">
+      {% csrf_token %}
+      <input type="hidden" name="user-id" value="{{ user.id }}" />
+      {% if user in request.user.get_blocks %}
       <input type="hidden" name="user-action" value="unblock" />
-      <button type="submit">Unblock</button>
-	  {% else %}
+      <button class="button" type="submit">Unblock</button>
+      {% else %}
       <input type="hidden" name="user-action" value="block" />
-      <button type="submit">Block</button>
-	  {% endif %}
+      <button class="button" type="submit">Block</button>
+      {% endif %}
     </form>
   </div>
   {% endif %}

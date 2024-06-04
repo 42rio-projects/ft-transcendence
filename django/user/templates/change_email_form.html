@@ -1,0 +1,18 @@
+<span class="error">{{ error }}</span>
+{% if success %}
+<div class='success-and-back-button' >
+  <a class="button" href="/profile/">Back to profile</a>
+  <span class="success">{{ success }}</span>
+</div>
+{% else %}
+<div>
+  {% csrf_token %}
+  <input
+    class="input width-full"
+    type="email"
+    name="email"
+    placeholder="New email"
+  />
+</div>
+<button class="button" type="submit">Change email</button>
+{% endif %}

@@ -1,0 +1,15 @@
+{% extends 'index.html' %}
+
+{% block title %}Change email{% endblock %}
+
+{% block content %}
+<div>
+  <h1 class="neon">Change email</h1>
+
+  <hr />
+
+  <form id="form" class="column gap-1" method="post" onsubmit="handleFormSubmit(event)">
+    {% include 'change_email_form.html' %}
+  </form>
+</div>
+{% endblock %}
