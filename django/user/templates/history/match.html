@@ -11,6 +11,9 @@
     <thead>
       <tr class="historyHeadRow">
         <th class="historyCell">
+          <h2 class="neon">Date</h2>
+        </th>
+        <th class="historyCell">
           <h2 class="neon">Player 1</h2>
         </th>
         <th class="historyCell">
@@ -30,6 +33,9 @@
     <tbody>
       {% for game in user.get_games.all%}
       <tr>
+        <td class="historyCell">
+			  {{ game.date }}
+        </td>
         <td class="historyCell">
           {% if game.player1 is not None %}
     	  	<a class="link" href="{% url 'userProfile' game.player1.username %}">
