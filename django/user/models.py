@@ -94,7 +94,7 @@ class User(AbstractUser):
         for friendship in friendships:
             if friendship.user1 != self and friendship.user1.status == 'Online':
                 online_friends.append(friendship.user1)
-            elif friendship.user2.status == 'Online':
+            elif friendship.user2 != self and friendship.user2.status == 'Online':
                 online_friends.append(friendship.user2)
         return online_friends
 
