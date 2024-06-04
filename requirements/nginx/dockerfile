@@ -10,4 +10,4 @@ RUN chmod +x /wait-for-it.sh && chmod +x /script.sh
 
 
 # CMD ["nginx", "-g", "daemon off;"]
-ENTRYPOINT ["/wait-for-it.sh", "kibana:5601", "--timeout=120", "--strict", "--", "./script.sh"]
+ENTRYPOINT ["/wait-for-it.sh", "django:8000", "--timeout=20", "--strict", "--", "./script.sh"]
