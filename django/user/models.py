@@ -237,12 +237,12 @@ class User(AbstractUser):
         ).order_by('-date').all())
 
     def finished_player_tournaments(self):
-        return (self.my_tournaments.filter(
+        return (self.tournaments.filter(
             Q(finished=True)
         ).order_by('-date').all())
 
     def finished_admin_tournaments(self):
-        return (self.my_tournaments.filter(
+        return (self.tournaments.filter(
             Q(finished=True)
         ).order_by('-date').all())
 
