@@ -212,6 +212,11 @@ class User(AbstractUser):
             return game
         except Exception as e:
             game.delete()
+            invite = GameInvite.objects.filter(sender=user, receiver=self)
+            if invite.exists():
+                game = invite[0].game
+                invite[0].respond(True)
+                return game
             raise e
 
     def finished_tournaments(self):
