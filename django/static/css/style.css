@@ -193,6 +193,24 @@ hr {
   gap: 10px;
 }
 
+.toast {
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  bottom: 10px;
+  right: 10px;
+  padding: 10px 20px;
+  border-radius: 10px 10px 0 10px;
+  color: var(--foreground-color);
+  background-color: var(--primary-color-darker);
+  gap: 10px;
+  font-size: large;
+}
+
+.toast:empty {
+  display: none;
+}
+
 .offline-icon {
   width: 10px;
   height: 10px;
